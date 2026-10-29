@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Reveal } from "@/components/ui/reveal";
+import { CountUp } from "@/components/ui/count-up";
 import {
   SwatchBook,
   Music4,
@@ -111,7 +113,7 @@ export default function HomePage() {
 
           {/* Real product pattern: an actual mission question card */}
           <div
-            className="animate-fade-up relative md:translate-x-6 md:rotate-[1.5deg]"
+            className="animate-float animate-fade-up relative md:translate-x-6"
             style={{ animationDelay: "160ms" }}
           >
             <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-raised">
@@ -158,35 +160,34 @@ export default function HomePage() {
 
       {/* Proof strip — factual product stats, no fabricated traction */}
       <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+        <Reveal>
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           <div>
-            <p className="font-display text-4xl font-semibold tabular-nums">
-              3
-            </p>
+            <CountUp value={3} className="font-display text-4xl font-semibold tabular-nums" />
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
               wilayah budaya: Jawa Tengah, Jawa Barat, Yogyakarta
             </p>
           </div>
           <div>
-            <p className="font-display text-4xl font-semibold tabular-nums">
-              6
-            </p>
+            <CountUp value={6} className="font-display text-4xl font-semibold tabular-nums" />
+
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
               soal misi dengan pembahasan di tiap jawaban
             </p>
           </div>
           <div>
-            <p className="font-display text-4xl font-semibold tabular-nums">
-              2
-            </p>
+            <CountUp value={2} className="font-display text-4xl font-semibold tabular-nums" />
+
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
               asesmen pembelajaran: pre-test dan post-test
             </p>
           </div>
         </div>
+      </Reveal>
       </section>
 
       {/* Feature row 1 — scoring, real result card */}
+      <Reveal>
       <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
         <div className="grid items-center gap-10 md:grid-cols-2">
           <div className="md:order-1">
@@ -228,8 +229,10 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </Reveal>
 
       {/* Feature row 2 — sources, real source card */}
+      <Reveal>
       <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
         <div className="grid items-center gap-10 md:grid-cols-2">
           <div>
@@ -269,10 +272,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </Reveal>
 
       <div className="tenun mx-auto max-w-6xl" aria-hidden="true" />
 
       {/* Missions — list rows, not a card grid */}
+      <Reveal>
       <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
         <div className="mb-8 flex items-end justify-between gap-4">
           <h2 className="font-display text-3xl font-semibold">
@@ -319,8 +324,10 @@ export default function HomePage() {
           ))}
         </ul>
       </section>
+      </Reveal>
 
       {/* How it works — 3 real steps in order */}
+      <Reveal>
       <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
         <h2 className="font-display text-3xl font-semibold">Cara kerjanya</h2>
         <ol className="mt-10 grid gap-8 md:grid-cols-3">
@@ -343,8 +350,10 @@ export default function HomePage() {
           ))}
         </ol>
       </section>
+      </Reveal>
 
       {/* Educator band */}
+      <Reveal>
       <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
         <div className="rounded-3xl border border-border/60 bg-secondary px-6 py-12 md:px-12">
           <div className="grid items-center gap-10 md:grid-cols-2">
@@ -388,8 +397,10 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </Reveal>
 
       {/* Final CTA */}
+      <Reveal>
       <section className="mx-auto max-w-3xl px-4 py-16 text-center md:py-24">
         <h2 className="font-display text-4xl font-semibold leading-tight">
           Warisan budaya menunggu untuk dijelajahi
@@ -402,7 +413,9 @@ export default function HomePage() {
           <Link href="/auth/register">Mulai Petualangan</Link>
         </Button>
       </section>
+      </Reveal>
 
+      {/* Footer — boring on purpose */}
       {/* Footer — boring on purpose */}
       <footer className="border-t border-border">
         <div className="mx-auto max-w-6xl px-4 py-10">
@@ -440,6 +453,18 @@ export default function HomePage() {
                 className="text-muted-foreground hover:text-foreground"
               >
                 Daftar
+              </Link>
+              <Link
+                href="/sumber"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Sumber budaya
+              </Link>
+              <Link
+                href="/leaderboard"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Leaderboard
               </Link>
             </nav>
           </div>

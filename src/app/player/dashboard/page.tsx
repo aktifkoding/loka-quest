@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { calculateLevel } from "@/lib/scoring";
+import { Onboarding } from "@/components/layout/onboarding";
 import {
   Zap,
   Target,
@@ -105,6 +106,7 @@ export default async function PlayerDashboardPage() {
 
     return (
       <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
+        <Onboarding />
         <header className="max-w-2xl">
           <h1 className="font-display text-4xl font-semibold tracking-tight">
             Dasbor

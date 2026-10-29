@@ -7,7 +7,27 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ArrowLeft, MapPin, Gamepad2, ArrowRight, Compass } from "lucide-react";
+import { Reveal } from "@/components/ui/reveal";
+import {
+  ArrowLeft,
+  MapPin,
+  Gamepad2,
+  ArrowRight,
+  Compass,
+  BookMarked,
+  ScrollText,
+  Landmark,
+  Users,
+} from "lucide-react";
+
+interface RegionContent {
+  id: string;
+  title: string;
+  description: string;
+  content_type: string;
+  body: string | null;
+  source: { title: string; publisher: string | null; license: string | null } | null;
+}
 
 interface RegionDetail {
   id: string;
@@ -16,6 +36,7 @@ interface RegionDetail {
   description: string;
   geographic_context: string;
   image_url: string | null;
+  contents: RegionContent[];
 }
 
 interface Mission {
@@ -31,6 +52,13 @@ const difficultyLabel: Record<string, string> = {
   beginner: "Pemula",
   intermediate: "Menengah",
   advanced: "Lanjutan",
+};
+
+const contentTypeMeta: Record<string, { label: string; icon: typeof ScrollText }> = {
+  tradition: { label: "Tradisi", icon: ScrollText },
+  artifact: { label: "Artefak", icon: Landmark },
+  practice: { label: "Praktik", icon: Users },
+  story: { label: "Cerita", icon: BookMarked },
 };
 
 export default function RegionDetailPage() {
@@ -131,10 +159,75 @@ export default function RegionDetailPage() {
         </p>
       </section>
 
-      <section className="mt-12" aria-label="Misi di wilayah ini">
-        <h2 className="font-display text-xl font-semibold">
-          Misi di wilayah ini
-        </h2>
+      {/* Konten budaya dengan atribusi sumber */}
+      {region.contents.length > 0 && (
+        <section className="mt-14" aria-label="Tradisi dan cerita">
+          <Reveal>
+            <h2 className="font-display text-2xl font-semibold">
+              Tradisi & cerita
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Setiap tulisan bersumber tercatat — sentuh sumbernya untuk tahu
+              rujukannya.
+            </p>
+          </Reveal>
+
+          <div className="mt-6 space-y-5">
+            {region.contents.map((content, index) => {
+              const meta = contentTypeMeta[content.content_type] ?? contentTypeMeta.tradition;
+              return (
+                <Reveal key={content.id} delay={index * 80}>
+                  <Card className="overflow-hidden">
+                    <div className="border-b border-border bg-secondary/40 px-6 py-4">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <meta.icon className="size-4" aria-hidden="true" />
+                        </span>
+                        <p className="text-[13px] font-semibold text-primary">
+                          {meta.label}
+                        </p>
+                      </div>
+                      <h3 className="mt-2.5 font-display text-xl font-semibold leading-snug">
+                        {content.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {content.description}
+                      </p>
+                    </div>
+                    <div className="px-6 py-5">
+                      {(content.body ?? "").split("\n\n").map((para, i) => (
+                        <p
+                          key={i}
+                          className="mb-3 leading-relaxed text-foreground/85 last:mb-0"
+                        >
+                          {para}
+                        </p>
+                      ))}
+                    </div>
+                    {content.source && (
+                      <div className="flex flex-wrap items-center gap-1.5 border-t border-border px-6 py-3.5 text-[12px] text-muted-foreground">
+                        <BookMarked className="size-3.5 shrink-0" aria-hidden="true" />
+                        <span>
+                          Sumber: {content.source.title}
+                          {content.source.publisher ? ` · ${content.source.publisher}` : ""}
+                          {content.source.license ? ` · ${content.source.license}` : ""}
+                        </span>
+                      </div>
+                    )}
+                  </Card>
+                </Reveal>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      <section className="mt-14" aria-label="Misi di wilayah ini">
+        <Reveal>
+          <h2 className="font-display text-2xl font-semibold">
+            Misi di wilayah ini
+          </h2>
+        </Reveal>
 
         {missions.length === 0 ? (
           <div className="mt-6">
@@ -150,34 +243,34 @@ export default function RegionDetailPage() {
             {missions.map((mission, index) => (
               <li key={mission.id}>
                 <Link href={`/missions/${mission.slug}`} className="group block">
-                  <Card
-                    interactive
-                    className="animate-fade-up"
-                    style={{ animationDelay: `${index * 70}ms` }}
-                  >
-                    <div className="flex items-center gap-4 px-6 py-5">
-                      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                        <Gamepad2 className="size-5" aria-hidden="true" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold">{mission.title}</p>
-                        <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
-                          {mission.description}
-                        </p>
-                        <p className="mt-1.5 text-[13px] text-muted-foreground">
-                          <span>{difficultyLabel[mission.difficulty] ?? mission.difficulty}</span>
-                          <span aria-hidden="true"> · </span>
-                          <span className="font-semibold tabular-nums text-gold">
-                            {mission.xp_reward} XP
-                          </span>
-                        </p>
+                  <Reveal delay={index * 80}>
+                    <Card interactive>
+                      <div className="flex items-center gap-4 px-6 py-5">
+                        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <Gamepad2 className="size-5" aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold">{mission.title}</p>
+                          <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
+                            {mission.description}
+                          </p>
+                          <p className="mt-1.5 text-[13px] text-muted-foreground">
+                            <span>
+                              {difficultyLabel[mission.difficulty] ?? mission.difficulty}
+                            </span>
+                            <span aria-hidden="true"> · </span>
+                            <span className="font-semibold tabular-nums text-gold">
+                              {mission.xp_reward} XP
+                            </span>
+                          </p>
+                        </div>
+                        <ArrowRight
+                          className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
+                          aria-hidden="true"
+                        />
                       </div>
-                      <ArrowRight
-                        className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
-                        aria-hidden="true"
-                      />
-                    </div>
-                  </Card>
+                    </Card>
+                  </Reveal>
                 </Link>
               </li>
             ))}

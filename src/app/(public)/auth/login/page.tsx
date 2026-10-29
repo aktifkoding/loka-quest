@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Gamepad2, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Gamepad2, Loader2, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -15,8 +15,24 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+
+  const startDemo = async () => {
+    setDemoLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/v1/auth/demo", { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Gagal memulai demo");
+      router.push("/player/dashboard");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memulai demo");
+      setDemoLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,7 +172,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || demoLoading}>
             {loading ? (
               <>
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -164,6 +180,32 @@ export default function LoginPage() {
               </>
             ) : (
               "Masuk"
+            )}
+          </Button>
+
+          <div className="flex items-center gap-3" role="presentation">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-[12px] text-muted-foreground">atau</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={startDemo}
+            disabled={loading || demoLoading}
+          >
+            {demoLoading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                Menyiapkan akun demo…
+              </>
+            ) : (
+              <>
+                <Sparkles className="size-4 text-gold" aria-hidden="true" />
+                Coba demo instan — tanpa daftar
+              </>
             )}
           </Button>
 

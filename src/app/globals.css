@@ -91,6 +91,11 @@
     background-position: 0 0, 12px 12px;
   }
 
+  /* Gentle levitation for hero artifacts. */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
   /* Woven (tenun) divider line. */
   .tenun {
     height: 2px;
@@ -115,6 +120,16 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(1.5deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1.5deg);
   }
 }
 

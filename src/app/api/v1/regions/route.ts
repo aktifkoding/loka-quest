@@ -23,7 +23,28 @@ export async function GET(request: Request) {
         );
       }
 
-      return Response.json({ success: true, data: region });
+      // Published cultural entries with their source attribution
+      const { data: contents } = await supabase
+        .from("cultural_contents")
+        .select(
+          "id, title, description, content_type, body, cultural_sources (title, publisher, license)"
+        )
+        .eq("region_id", region.id)
+        .eq("status", "published")
+        .order("sort_order", { ascending: true });
+
+      return Response.json({
+        success: true,
+        data: {
+          ...region,
+          contents: (contents ?? []).map((c) => ({
+            ...c,
+            source: Array.isArray(c.cultural_sources)
+              ? c.cultural_sources[0] ?? null
+              : c.cultural_sources ?? null,
+          })),
+        },
+      });
     }
 
     const { page, limit } = paginationSchema.parse({
