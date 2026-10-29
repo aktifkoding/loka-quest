@@ -12,6 +12,10 @@ import {
   ArrowRight,
   Gamepad2,
   Trophy,
+  BookOpen,
+  Gem,
+  UserRound,
+  BarChart3,
 } from "lucide-react";
 
 const XP_PER_LEVEL = 500;
@@ -21,7 +25,7 @@ export default async function PlayerDashboardPage() {
     const user = await requireAuth();
     const supabase = await createClient();
 
-    const [progressRes, achievementsRes, attemptsRes] = await Promise.all([
+    const [progressRes, achievementsRes, attemptsRes, assessmentsRes] = await Promise.all([
       supabase
         .from("player_progress")
         .select("total_xp, missions_completed, current_level")
@@ -34,10 +38,15 @@ export default async function PlayerDashboardPage() {
         .order("earned_at", { ascending: false }),
       supabase
         .from("mission_attempts")
-        .select("id, mission_id, score, xp_earned, completed, completed_at")
+        .select("id, mission_id, score, xp_earned, completed, completed_at, missions (title)")
         .eq("profile_id", user.id)
         .order("completed_at", { ascending: false, nullsFirst: false })
         .limit(5),
+      supabase
+        .from("assessment_responses")
+        .select("score, learning_assessments (assessment_type)")
+        .eq("profile_id", user.id)
+        .order("submitted_at", { ascending: false }),
     ]);
 
     const progress = progressRes.data ?? {
@@ -56,7 +65,38 @@ export default async function PlayerDashboardPage() {
         Array.isArray(ua.achievements) ? ua.achievements[0] : ua.achievements
       )
       .filter((a): a is AchievementRow => Boolean(a));
-    const recentAttempts = attemptsRes.data ?? [];
+    const recentAttempts = (attemptsRes.data ?? []).map(
+      (a: {
+        mission_id: string;
+        score: number;
+        xp_earned: number;
+        missions: { title: string } | { title: string }[] | null;
+      }) => ({
+        ...a,
+        missionTitle: Array.isArray(a.missions)
+          ? a.missions[0]?.title
+          : a.missions?.title ?? null,
+      })
+    );
+
+    // Pre/post assessment delta
+    const byType: Record<string, number[]> = {};
+    ((assessmentsRes.data ?? []) as {
+      score: number;
+      learning_assessments: { assessment_type: string } | { assessment_type: string }[] | null;
+    }[]).forEach((r) => {
+      const t = Array.isArray(r.learning_assessments)
+        ? r.learning_assessments[0]?.assessment_type
+        : r.learning_assessments?.assessment_type;
+      if (t) {
+        byType[t] = byType[t] ?? [];
+        byType[t].push(r.score);
+      }
+    });
+    const avg = (xs: number[]) =>
+      xs.length > 0 ? Math.round(xs.reduce((s, v) => s + v, 0) / xs.length) : null;
+    const preScore = avg(byType.pre ?? []);
+    const postScore = avg(byType.post ?? []);
 
     const totalXp = progress.total_xp;
     const level = calculateLevel(totalXp);
@@ -150,6 +190,68 @@ export default async function PlayerDashboardPage() {
           </Card>
         </div>
 
+        {/* Pre/post assessment progress */}
+        {(preScore !== null || postScore !== null) && (
+          <Card className="mt-4">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 p-5">
+              <p className="flex items-center gap-2 text-sm">
+                <BookOpen className="size-4 text-muted-foreground" aria-hidden="true" />
+                <span className="text-muted-foreground">Asesmen:</span>
+                <span className="tabular-nums">
+                  pre {preScore ?? "—"} → post {postScore ?? "—"}
+                </span>
+              </p>
+              {preScore !== null && postScore !== null && postScore !== preScore && (
+                <p
+                  className={`rounded-full px-3 py-1 text-[13px] font-semibold tabular-nums ${
+                    postScore > preScore
+                      ? "bg-primary/10 text-primary"
+                      : "bg-secondary text-secondary-foreground"
+                  }`}
+                >
+                  {postScore > preScore ? "+" : ""}
+                  {postScore - preScore} poin pemahaman
+                </p>
+              )}
+              <Button asChild variant="ghost" size="sm" className="ml-auto -mr-2">
+                <Link href="/player/assessments">
+                  Lihat asesmen
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Quick links */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          {[
+            { href: "/player/collection", label: "Koleksi artefak", icon: Gem, desc: "Artefak dari tiap wilayah" },
+            { href: "/player/profile", label: "Profil", icon: UserRound, desc: "Nama tampilan & akun" },
+            { href: "/leaderboard", label: "Leaderboard", icon: BarChart3, desc: "Peringkat XP" },
+          ].map((link) => (
+            <Link key={link.href} href={link.href} className="group">
+              <Card interactive className="h-full">
+                <div className="flex items-center gap-3.5 p-5">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <link.icon className="size-4" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">{link.label}</p>
+                    <p className="truncate text-[12px] text-muted-foreground">
+                      {link.desc}
+                    </p>
+                  </div>
+                  <ArrowRight
+                    className="ml-auto size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-primary"
+                    aria-hidden="true"
+                  />
+                </div>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
         {/* Two content columns: achievements + recent attempts */}
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
           <Card>
@@ -213,11 +315,11 @@ export default async function PlayerDashboardPage() {
                   <tbody className="divide-y divide-border">
                     {recentAttempts.map((attempt) => (
                       <tr
-                        key={attempt.id}
+                        key={`${attempt.mission_id}-${attempt.score}-${attempt.xp_earned}`}
                         className="transition-colors hover:bg-secondary/50"
                       >
                         <td className="py-2.5 font-medium">
-                          #{String(attempt.mission_id).slice(0, 8)}
+                          {attempt.missionTitle ?? `#${String(attempt.mission_id).slice(0, 8)}`}
                         </td>
                         <td className="py-2.5 text-right tabular-nums">
                           {attempt.score}

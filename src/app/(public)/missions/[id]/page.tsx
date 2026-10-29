@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ArrowLeft, Loader2, CheckCircle2, XCircle, Zap, Gamepad2 } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle2, XCircle, Zap, Gamepad2, Trophy, Gem } from "lucide-react";
+import { Confetti } from "@/components/ui/confetti";
 
 interface Mission {
   id: string;
@@ -29,6 +30,21 @@ interface Question {
   sort_order: number;
 }
 
+interface EarnedAchievement {
+  slug: string;
+  title: string;
+  description: string;
+  icon: string;
+  xpBonus: number;
+}
+
+interface EarnedArtifact {
+  name: string;
+  description: string;
+  rarity: string;
+  imageUrl: string | null;
+}
+
 interface AttemptResult {
   score: number;
   xpEarned: number;
@@ -41,7 +57,16 @@ interface AttemptResult {
     isCorrect: boolean;
     explanation: string | null;
   }[];
+  earnedAchievements?: EarnedAchievement[];
+  earnedArtifact?: EarnedArtifact | null;
 }
+
+const rarityLabel: Record<string, string> = {
+  common: "Umum",
+  uncommon: "Tak Biasa",
+  rare: "Langka",
+  legendary: "Legendaris",
+};
 
 const difficultyLabel: Record<string, string> = {
   beginner: "Pemula",
@@ -261,49 +286,112 @@ export default function MissionPage() {
         </div>
       )}
 
-      {result && (
-        <div className="animate-fade-up space-y-6">
-          <Card>
-            <div className="px-6 py-8 text-center sm:px-10">
-              <h2 className="font-display text-2xl font-semibold">
-                Misi selesai
-              </h2>
-              <p className="mt-5 font-display text-5xl font-semibold tabular-nums">
-                {result.score}
-                <span className="text-2xl text-muted-foreground">/100</span>
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {result.correctCount} dari {result.totalQuestions} jawaban benar
-              </p>
-              <div className="mx-auto mt-5 flex w-fit items-center gap-1.5 rounded-full bg-gold/10 px-4 py-2">
-                <Zap className="size-4 text-gold" aria-hidden="true" />
-                <span className="text-sm font-semibold tabular-nums">
-                  +{result.xpEarned} XP
-                </span>
-                <span className="text-sm text-muted-foreground" aria-hidden="true">
-                  ·
-                </span>
-                <span className="text-sm tabular-nums text-muted-foreground">
-                  Total {result.newTotalXp} XP, Level {result.newLevel}
-                </span>
-              </div>
-              <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setResult(null);
-                    setGameStarted(false);
-                    setSubmitError(null);
-                  }}
-                >
-                  Mainkan lagi
-                </Button>
-                <Button asChild>
-                  <Link href="/player/dashboard">Lihat dasbor</Link>
-                </Button>
-              </div>
-            </div>
-          </Card>
+          {result && (
+            <div className="animate-fade-up space-y-6">
+              <Confetti count={result.earnedAchievements?.length ? 90 : 50} />
+              <Card>
+                <div className="px-6 py-8 text-center sm:px-10">
+                  <h2 className="font-display text-2xl font-semibold">
+                    Misi selesai
+                  </h2>
+                  <p className="mt-5 font-display text-5xl font-semibold tabular-nums">
+                    {result.score}
+                    <span className="text-2xl text-muted-foreground">/100</span>
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {result.correctCount} dari {result.totalQuestions} jawaban benar
+                  </p>
+                  <div className="mx-auto mt-5 flex w-fit items-center gap-1.5 rounded-full bg-gold/10 px-4 py-2">
+                    <Zap className="size-4 text-gold" aria-hidden="true" />
+                    <span className="text-sm font-semibold tabular-nums">
+                      +{result.xpEarned} XP
+                    </span>
+                    <span className="text-sm text-muted-foreground" aria-hidden="true">
+                      ·
+                    </span>
+                    <span className="text-sm tabular-nums text-muted-foreground">
+                      Total {result.newTotalXp} XP, Level {result.newLevel}
+                    </span>
+                  </div>
+                  <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setResult(null);
+                        setGameStarted(false);
+                        setSubmitError(null);
+                      }}
+                    >
+                      Mainkan lagi
+                    </Button>
+                    <Button asChild>
+                      <Link href="/player/dashboard">Lihat dasbor</Link>
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Reveal: lencana baru */}
+              {result.earnedAchievements && result.earnedAchievements.length > 0 && (
+                <Card className="border-gold/40 bg-gold/5">
+                  <div className="p-6">
+                    <h3 className="font-display text-xl font-semibold">
+                      Lencana baru diraih!
+                    </h3>
+                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                      {result.earnedAchievements.map((badge) => (
+                        <div
+                          key={badge.slug}
+                          className="flex items-center gap-4 rounded-xl border border-gold/30 bg-card p-4"
+                        >
+                          <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gold/15 text-2xl">
+                            {badge.icon}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="flex items-center gap-2 font-semibold">
+                              {badge.title}
+                              <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-gold">
+                                +{badge.xpBonus} XP
+                              </span>
+                            </p>
+                            <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">
+                              {badge.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Reveal: artefak budaya */}
+              {result.earnedArtifact && (
+                <Card className="border-primary/30 bg-primary/5">
+                  <div className="flex items-center gap-4 p-6">
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <Gem className="size-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="flex flex-wrap items-center gap-2 font-semibold">
+                        Artefak baru di koleksimu: {result.earnedArtifact.name}
+                        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
+                          {rarityLabel[result.earnedArtifact.rarity] ?? result.earnedArtifact.rarity}
+                        </span>
+                      </p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        {result.earnedArtifact.description}
+                      </p>
+                    </div>
+                    <Button asChild variant="outline" size="sm" className="shrink-0">
+                      <Link href="/player/collection">
+                        <Trophy className="size-4" aria-hidden="true" />
+                        Koleksi
+                      </Link>
+                    </Button>
+                  </div>
+                </Card>
+              )}
 
           <Card>
             <div className="px-6 py-6">
