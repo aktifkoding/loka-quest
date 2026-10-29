@@ -23,25 +23,33 @@ export async function GET(request: Request) {
         );
       }
 
-      // Published cultural entries with their source attribution
+      // Published cultural entries with text source + photo credit
       const { data: contents } = await supabase
         .from("cultural_contents")
         .select(
-          "id, title, description, content_type, body, cultural_sources (title, publisher, license)"
+          "id, title, description, content_type, body, media_url, media_type, source:cultural_sources!source_id (title, publisher, license), image_credit:cultural_sources!image_source_id (title, author, license)"
         )
         .eq("region_id", region.id)
         .eq("status", "published")
         .order("sort_order", { ascending: true });
 
+      const { data: imageSource } = await supabase
+        .from("cultural_sources")
+        .select("title, author, license")
+        .eq("id", region.image_source_id ?? "")
+        .maybeSingle();
+
       return Response.json({
         success: true,
         data: {
           ...region,
+          image_credit: imageSource ?? null,
           contents: (contents ?? []).map((c) => ({
             ...c,
-            source: Array.isArray(c.cultural_sources)
-              ? c.cultural_sources[0] ?? null
-              : c.cultural_sources ?? null,
+            source: Array.isArray(c.source) ? c.source[0] ?? null : c.source,
+            image_credit: Array.isArray(c.image_credit)
+              ? c.image_credit[0] ?? null
+              : c.image_credit,
           })),
         },
       });

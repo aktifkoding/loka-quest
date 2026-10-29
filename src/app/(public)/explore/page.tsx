@@ -92,6 +92,15 @@ export default function ExplorePage() {
                   className="animate-fade-up h-full"
                   style={{ animationDelay: `${index * 70}ms` }}
                 >
+                  {region.image_url && (
+                    <img
+                      src={region.image_url}
+                      alt={region.name}
+                      loading="lazy"
+                      className="mx-6 mt-6 h-40 w-auto rounded-xl border border-border/60 object-cover"
+                      style={{ width: "calc(100% - 3rem)" }}
+                    />
+                  )}
                   <div className="flex items-start justify-between px-6 pt-6">
                     <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                       <MapPin className="size-5" aria-hidden="true" />

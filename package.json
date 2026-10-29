@@ -15,7 +15,8 @@
     "db:reset": "supabase db reset",
     "db:diff": "supabase db diff",
     "prepare": "husky install",
-    "db:seed:remote": "node scripts/seed-remote.mjs"
+    "db:seed:remote": "node scripts/seed-remote.mjs",
+    "db:seed:images": "node --env-file=.env.local scripts/seed-images.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

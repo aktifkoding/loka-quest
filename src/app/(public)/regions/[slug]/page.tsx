@@ -20,13 +20,22 @@ import {
   Users,
 } from "lucide-react";
 
+interface ImageCredit {
+  title: string;
+  author: string | null;
+  license: string | null;
+}
+
 interface RegionContent {
   id: string;
   title: string;
   description: string;
   content_type: string;
   body: string | null;
+  media_url: string | null;
+  media_type: string | null;
   source: { title: string; publisher: string | null; license: string | null } | null;
+  image_credit: ImageCredit | null;
 }
 
 interface RegionDetail {
@@ -36,6 +45,7 @@ interface RegionDetail {
   description: string;
   geographic_context: string;
   image_url: string | null;
+  image_credit: ImageCredit | null;
   contents: RegionContent[];
 }
 
@@ -149,6 +159,24 @@ export default function RegionDetailPage() {
         </div>
         <p className="mt-2 text-muted-foreground">{region.geographic_context}</p>
       </header>
+
+      {region.image_url && (
+        <Reveal>
+          <figure className="mt-8">
+            <img
+              src={region.image_url}
+              alt={`Suasana ${region.name}`}
+              className="h-60 w-full rounded-2xl border border-border/70 object-cover shadow-card sm:h-72"
+            />
+            {region.image_credit && (
+              <figcaption className="mt-2 text-[12px] text-muted-foreground">
+                Foto: {region.image_credit.author} · {region.image_credit.license} ·
+                Wikimedia Commons
+              </figcaption>
+            )}
+          </figure>
+        </Reveal>
+      )}
 
       <div className="tenun my-8" aria-hidden="true" />
 
