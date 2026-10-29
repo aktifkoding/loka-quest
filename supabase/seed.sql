@@ -1,13 +1,16 @@
 -- Seed demo data for LokaQuest
 -- This can be safely re-run without duplicating records
 
--- Insert demo cultural sources
+-- Insert demo cultural sources (idempotent without a unique constraint)
 insert into public.cultural_sources (title, author, publisher, year, url, license, attribution)
-values
+select * from (values
   ('Ensiklopedia Batik Indonesia', 'Hasan', 'Gramedia Pustaka Utama', 2010, 'https://example.com/batik', 'CC BY-SA 4.0', 'Hasan (2010). Ensiklopedia Batik Indonesia. Gramedia Pustaka Utama.'),
   ('Gamelan: Traditional Music of Indonesia', 'Sumarsam', 'Wesleyan University Press', 1995, 'https://example.com/gamelan', 'CC BY-NC 4.0', 'Sumarsam (1995). Gamelan: Traditional Music of Indonesia. Wesleyan University Press.'),
   ('Wayang Kulit: Shadow Puppetry of Java', 'Brandon', 'KITLV Press', 1967, 'https://example.com/wayang', 'Public Domain', 'Brandon (1967). Wayang Kulit: Shadow Puppetry of Java. KITLV Press.')
-on conflict (title) do nothing;
+) as v(title, author, publisher, year, url, license, attribution)
+where not exists (
+  select 1 from public.cultural_sources where cultural_sources.title = v.title
+);
 
 -- Insert demo regions
 insert into public.cultural_regions (slug, name, description, geographic_context, image_url, sort_order, status)
