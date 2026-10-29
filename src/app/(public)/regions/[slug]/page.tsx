@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ArrowLeft, MapPin, Gamepad2, ArrowRight, Compass } from "lucide-react";
 
 interface RegionDetail {
   id: string;
@@ -24,6 +26,12 @@ interface Mission {
   difficulty: string;
   xp_reward: number;
 }
+
+const difficultyLabel: Record<string, string> = {
+  beginner: "Pemula",
+  intermediate: "Menengah",
+  advanced: "Lanjutan",
+};
 
 export default function RegionDetailPage() {
   const params = useParams();
@@ -44,13 +52,13 @@ export default function RegionDetailPage() {
         const missionsData = await missionsRes.json();
 
         if (!regionRes.ok) {
-          throw new Error(regionData.error || "Failed to fetch region");
+          throw new Error(regionData.error || "Gagal memuat wilayah");
         }
 
-        setRegion(regionData.data?.[0] || null);
+        setRegion(regionData.data ?? null);
         setMissions(missionsData.data || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
       } finally {
         setLoading(false);
       }
@@ -63,95 +71,119 @@ export default function RegionDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Memuat detail wilayah...</p>
+      <div className="mx-auto max-w-4xl px-4 py-10" aria-busy="true">
+        <Skeleton className="h-9 w-40 rounded-md" />
+        <Skeleton className="mt-8 h-10 w-1/2" />
+        <Skeleton className="mt-3 h-5 w-1/3" />
+        <Skeleton className="mt-8 h-28 w-full rounded-xl" />
+        <Skeleton className="mt-10 h-7 w-48" />
+        <div className="mt-6 space-y-3">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+        </div>
       </div>
     );
   }
 
   if (error || !region) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-destructive mb-4">{error || "Wilayah tidak ditemukan"}</p>
-          <Button asChild>
-            <Link href="/explore">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Kembali ke Jelajahi
-            </Link>
-          </Button>
-        </div>
+      <div className="mx-auto max-w-4xl px-4 py-16">
+        <EmptyState
+          icon={Compass}
+          title="Wilayah tidak ditemukan"
+          description={
+            error ??
+            "Wilayah budaya ini belum dipublikasikan atau sudah dipindahkan."
+          }
+          action={{ label: "Kembali ke peta jelajah", href: "/explore" }}
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-12">
-      <div className="container mx-auto px-4">
-        <Button asChild variant="ghost" className="mb-6">
-          <Link href="/explore">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Kembali
-          </Link>
-        </Button>
+    <div className="mx-auto max-w-4xl px-4 py-10 md:py-14">
+      <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
+        <Link href="/explore">
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          Jelajahi
+        </Link>
+      </Button>
 
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <MapPin className="h-6 w-6 text-primary" />
-              <h1 className="text-4xl font-bold">{region.name}</h1>
-            </div>
-            <p className="text-muted-foreground text-lg">{region.geographic_context}</p>
-          </div>
-
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Tentang Wilayah Ini</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground whitespace-pre-line">
-                {region.description}
-              </p>
-            </CardContent>
-          </Card>
-
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-4">Misi di Wilayah Ini</h2>
-            <div className="grid gap-4">
-              {missions.map((mission) => (
-                <Card key={mission.id}>
-                  <CardHeader>
-                    <CardTitle>{mission.title}</CardTitle>
-                    <CardDescription>{mission.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="capitalize">{mission.difficulty}</span>
-                        <span>•</span>
-                        <span>{mission.xp_reward} XP</span>
-                      </div>
-                      <Button asChild>
-                        <Link href={`/missions/${mission.slug}`}>Mainkan Misi</Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {missions.length === 0 && (
-              <Card>
-                <CardContent className="py-8 text-center">
-                  <p className="text-muted-foreground">
-                    Belum ada misi tersedia di wilayah ini.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+      <header>
+        <div className="flex items-center gap-3">
+          <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <MapPin className="size-6" aria-hidden="true" />
+          </span>
+          <h1 className="font-display text-4xl font-semibold tracking-tight">
+            {region.name}
+          </h1>
         </div>
-      </div>
+        <p className="mt-2 text-muted-foreground">{region.geographic_context}</p>
+      </header>
+
+      <div className="tenun my-8" aria-hidden="true" />
+
+      <section aria-label="Tentang wilayah">
+        <h2 className="font-display text-xl font-semibold">Tentang wilayah ini</h2>
+        <p className="mt-3 leading-relaxed text-muted-foreground">
+          {region.description}
+        </p>
+      </section>
+
+      <section className="mt-12" aria-label="Misi di wilayah ini">
+        <h2 className="font-display text-xl font-semibold">
+          Misi di wilayah ini
+        </h2>
+
+        {missions.length === 0 ? (
+          <div className="mt-6">
+            <EmptyState
+              icon={Gamepad2}
+              title="Misi belum dibuka"
+              description="Belum ada misi yang dipublikasikan untuk wilayah ini. Cek lagi nanti."
+              action={{ label: "Lihat wilayah lain", href: "/explore" }}
+            />
+          </div>
+        ) : (
+          <ul className="mt-6 space-y-3">
+            {missions.map((mission, index) => (
+              <li key={mission.id}>
+                <Link href={`/missions/${mission.slug}`} className="group block">
+                  <Card
+                    interactive
+                    className="animate-fade-up"
+                    style={{ animationDelay: `${index * 70}ms` }}
+                  >
+                    <div className="flex items-center gap-4 px-6 py-5">
+                      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Gamepad2 className="size-5" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold">{mission.title}</p>
+                        <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
+                          {mission.description}
+                        </p>
+                        <p className="mt-1.5 text-[13px] text-muted-foreground">
+                          <span>{difficultyLabel[mission.difficulty] ?? mission.difficulty}</span>
+                          <span aria-hidden="true"> · </span>
+                          <span className="font-semibold tabular-nums text-gold">
+                            {mission.xp_reward} XP
+                          </span>
+                        </p>
+                      </div>
+                      <ArrowRight
+                        className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </Card>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

@@ -4,21 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, Gamepad2, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { Gamepad2 } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -36,80 +30,151 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setError(error.message);
+        setError(
+          error.message === "Invalid login credentials"
+            ? "Email atau kata sandi tidak cocok."
+            : error.message
+        );
         return;
       }
 
       router.push("/player/dashboard");
       router.refresh();
     } catch {
-      setError("An unexpected error occurred");
+      setError("Terjadi kesalahan. Coba lagi.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <Gamepad2 className="h-12 w-12 text-primary" />
+    <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 md:grid-cols-2 md:items-center md:gap-16 md:py-16">
+      {/* Brand panel — tinted neutral, one proof asset, trust footer */}
+      <aside className="batik-grid hidden rounded-3xl border border-border/60 bg-secondary/70 p-8 md:block">
+        <div className="flex items-center gap-2.5">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Gamepad2 className="size-4" aria-hidden="true" />
+          </span>
+          <span className="font-display text-lg font-semibold">LokaQuest</span>
+        </div>
+
+        <div className="mt-10 rounded-2xl border border-border/70 bg-card p-6 shadow-card">
+          <div className="flex items-center justify-between">
+            <p className="text-[13px] font-medium text-muted-foreground">
+              Misi Batik Detective
+            </p>
+            <p className="text-[13px] font-semibold tabular-nums text-gold">
+              150 XP
+            </p>
           </div>
-          <CardTitle className="text-2xl">Masuk ke LokaQuest</CardTitle>
-          <CardDescription>
-            Masukkan email dan kata sandi untuk melanjutkan petualangan
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
-                {error}
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="nama@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+          <p className="mt-3 font-display text-lg font-semibold leading-snug">
+            Motif batik yang melambangkan keberanian adalah…
+          </p>
+          <div className="mt-4 space-y-2 text-sm" role="presentation">
+            <p className="rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 font-medium text-primary">
+              Parang Rusak
+            </p>
+            <p className="rounded-lg border border-border px-4 py-2.5 text-muted-foreground">
+              Kawung
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-10 border-t border-border pt-6 text-[13px] leading-relaxed text-muted-foreground">
+          Progres pemain hanya bisa diakses pemiliknya. Data tersimpan aman di
+          Supabase dengan proteksi tingkat baris.
+        </p>
+      </aside>
+
+      {/* Form column — 360-400px, speed is the design */}
+      <div className="mx-auto w-full max-w-[400px]">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">
+          Selamat datang kembali
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          Masuk untuk melanjutkan petualangan budayamu.
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          {error && (
+            <div
+              role="alert"
+              className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+            >
+              {error}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Kata Sandi</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Memuat..." : "Masuk"}
-            </Button>
-            <div className="text-center text-sm text-muted-foreground">
-              Belum punya akun?{" "}
-              <Link href="/auth/register" className="text-primary hover:underline">
-                Daftar di sini
-              </Link>
-            </div>
-            <div className="text-center">
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="nama@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Kata sandi</Label>
               <Link
                 href="/auth/forgot-password"
-                className="text-sm text-muted-foreground hover:text-primary"
+                className="text-[13px] font-medium text-primary hover:underline"
               >
                 Lupa kata sandi?
               </Link>
             </div>
-          </form>
-        </CardContent>
-      </Card>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                placeholder="Kata sandi kamu"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="pr-11"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={
+                  showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
+                }
+                className="absolute right-1 top-1 flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                {showPassword ? (
+                  <EyeOff className="size-4" aria-hidden="true" />
+                ) : (
+                  <Eye className="size-4" aria-hidden="true" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                Memproses…
+              </>
+            ) : (
+              "Masuk"
+            )}
+          </Button>
+
+          <p className="text-center text-sm text-muted-foreground">
+            Baru di LokaQuest?{" "}
+            <Link href="/auth/register" className="font-medium text-primary hover:underline">
+              Buat akun
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

@@ -3,17 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Loader2, MailCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { Gamepad2 } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -39,68 +32,86 @@ export default function ForgotPasswordPage() {
 
       setSuccess(true);
     } catch {
-      setError("An unexpected error occurred");
+      setError("Terjadi kesalahan. Coba lagi.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <Gamepad2 className="h-12 w-12 text-primary" />
+    <div className="mx-auto w-full max-w-[400px] px-4 py-16 md:py-24">
+      {success ? (
+        <div className="text-center">
+          <div className="mx-auto mb-5 flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <MailCheck className="size-5" aria-hidden="true" />
           </div>
-          <CardTitle className="text-2xl">Lupa Kata Sandi</CardTitle>
-          <CardDescription>
-            Kami akan mengirimkan tautan untuk mereset kata sandi Anda
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {success ? (
-            <div className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Jika email tersebut terdaftar, Anda akan menerima tautan reset
-                kata sandi.
-              </p>
-              <Button asChild variant="outline">
-                <Link href="/auth/login">Kembali ke Masuk</Link>
-              </Button>
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
+            Periksa kotak masukmu
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            Jika <span className="font-medium text-foreground">{email}</span>{" "}
+            terdaftar, tautan untuk mengatur ulang kata sandi sudah dikirim.
+            Tautan berlaku selama satu jam.
+          </p>
+          <Button variant="outline" asChild className="mt-6">
+            <Link href="/auth/login">Kembali ke halaman masuk</Link>
+          </Button>
+        </div>
+      ) : (
+        <>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">
+            Atur ulang kata sandi
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            Masukkan emailmu dan kami kirim tautan pengaturan ulang.
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            {error && (
+              <div
+                role="alert"
+                className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+              >
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="nama@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
-                  {error}
-                </div>
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  Mengirim…
+                </>
+              ) : (
+                "Kirim tautan"
               )}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="nama@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Memuat..." : "Kirim Tautan Reset"}
-              </Button>
-              <div className="text-center">
-                <Link
-                  href="/auth/login"
-                  className="text-sm text-muted-foreground hover:text-primary"
-                >
-                  Kembali ke Masuk
-                </Link>
-              </div>
-            </form>
-          )}
-        </CardContent>
-      </Card>
+            </Button>
+
+            <p className="text-center text-sm text-muted-foreground">
+              Ingat kata sandinya?{" "}
+              <Link
+                href="/auth/login"
+                className="font-medium text-primary hover:underline"
+              >
+                Masuk
+              </Link>
+            </p>
+          </form>
+        </>
+      )}
     </div>
   );
 }

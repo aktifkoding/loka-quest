@@ -4,48 +4,51 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    /* Warm paper + nila indigo. One accent (primary), gold is subordinate. */
+    --background: 40 43% 97%;
+    --foreground: 233 30% 14%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 233 30% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 142.1 76.2% 36.3%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
+    --popover-foreground: 233 30% 14%;
+    --primary: 233 48% 32%;
+    --primary-foreground: 40 43% 97%;
+    --secondary: 38 30% 92%;
+    --secondary-foreground: 233 30% 18%;
+    --muted: 38 28% 93%;
+    --muted-foreground: 233 12% 40%;
+    --accent: 38 30% 90%;
+    --accent-foreground: 233 30% 14%;
+    --gold: 32 94% 44%;
+    --destructive: 0 72% 44%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 142.1 76.2% 36.3%;
-    --radius: 0.5rem;
+    --border: 35 22% 87%;
+    --input: 35 22% 84%;
+    --ring: 233 48% 40%;
+    --radius: 0.625rem;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 142.1 70.6% 45.3%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --background: 233 28% 8%;
+    --foreground: 38 30% 94%;
+    --card: 233 24% 11%;
+    --card-foreground: 38 30% 94%;
+    --popover: 233 24% 11%;
+    --popover-foreground: 38 30% 94%;
+    --primary: 233 55% 64%;
+    --primary-foreground: 233 40% 10%;
+    --secondary: 233 18% 16%;
+    --secondary-foreground: 38 30% 94%;
+    --muted: 233 18% 15%;
+    --muted-foreground: 233 12% 62%;
+    --accent: 233 18% 17%;
+    --accent-foreground: 38 30% 94%;
+    --gold: 38 92% 56%;
+    --destructive: 0 62% 52%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 142.1 70.6% 45.3%;
+    --border: 233 15% 20%;
+    --input: 233 15% 22%;
+    --ring: 233 55% 62%;
   }
 }
 
@@ -53,9 +56,103 @@
   * {
     @apply border-border;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    @apply tracking-tight;
+    text-wrap: balance;
+  }
+  ::selection {
+    background: hsl(var(--primary) / 0.18);
+  }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer utilities {
+  /* Signature motif: kawung-inspired dot lattice. Subtle, one hue. */
+  .batik-grid {
+    background-image:
+      radial-gradient(hsl(var(--primary) / 0.09) 1.4px, transparent 1.5px),
+      radial-gradient(hsl(var(--primary) / 0.05) 1.4px, transparent 1.5px);
+    background-size: 24px 24px;
+    background-position: 0 0, 12px 12px;
+  }
+
+  /* Woven (tenun) divider line. */
+  .tenun {
+    height: 2px;
+    background-image: repeating-linear-gradient(
+      90deg,
+      hsl(var(--primary) / 0.4) 0 10px,
+      transparent 10px 18px
+    );
+  }
+
+  .font-display {
+    font-family: var(--font-display), Georgia, serif;
+  }
+}
+
+/* Entrances: subtle, short, staggered via animation-delay at usage sites. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Skeleton shimmer for loading states. */
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--accent)) 45%,
+    hsl(var(--muted)) 65%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -65,10 +162,13 @@
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
-  aspect-ratio: 4/3;
-  background: #1a1a2e;
-  border-radius: 0.5rem;
+  aspect-ratio: 4 / 3;
+  background: #10152e;
+  border-radius: 0.875rem;
   overflow: hidden;
+  box-shadow:
+    0 1px 2px hsl(233 30% 10% / 0.12),
+    0 12px 32px hsl(233 30% 10% / 0.18);
 }
 
 .phaser-container canvas {

@@ -45,14 +45,15 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
       const Phaser = (await import("phaser")).default;
       if (cancelled) return;
 
+      // Aligned with the app theme: nila indigo + sogan gold, warm white text
       const UI = {
-        bg: "#1a1a2e",
-        panel: "#16213e",
-        text: "#f1f5f9",
-        muted: "#94a3b8",
-        accent: "#22c55e",
-        accentDark: "#166534",
-        gold: "#fbbf24",
+        bg: "#10152e",
+        panel: "#1a2142",
+        text: "#f2f0e9",
+        muted: "#9aa0b8",
+        accent: "#8b9cf5",
+        accentDark: "#3d4a9e",
+        gold: "#f0b429",
       };
 
       class MissionScene extends Phaser.Scene {
@@ -120,7 +121,7 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
           // Progress bar
           const progress = this.currentQuestionIndex / questions.length;
           this.add
-            .rectangle(width / 2, 24, (width - 80) * progress, 10, 0x22c55e)
+            .rectangle(width / 2, 24, (width - 80) * progress, 10, 0x8b9cf5)
             .setOrigin(0.5);
 
           // Question text

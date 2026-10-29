@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Gamepad2, Trophy } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Gamepad2, ArrowRight, Zap } from "lucide-react";
 
 interface Mission {
   id: string;
@@ -14,6 +15,12 @@ interface Mission {
   difficulty: string;
   xp_reward: number;
 }
+
+const difficultyLabel: Record<string, string> = {
+  beginner: "Pemula",
+  intermediate: "Menengah",
+  advanced: "Lanjutan",
+};
 
 export default function MissionsPage() {
   const [missions, setMissions] = useState<Mission[]>([]);
@@ -27,12 +34,12 @@ export default function MissionsPage() {
         const result = await response.json();
 
         if (!response.ok) {
-          throw new Error(result.error || "Failed to fetch missions");
+          throw new Error(result.error || "Gagal memuat misi");
         }
 
         setMissions(result.data || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
       } finally {
         setLoading(false);
       }
@@ -41,83 +48,92 @@ export default function MissionsPage() {
     fetchMissions();
   }, []);
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "beginner":
-        return "bg-green-100 text-green-700";
-      case "intermediate":
-        return "bg-yellow-100 text-yellow-700";
-      case "advanced":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Memuat misi...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-destructive">{error}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen py-12">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <Gamepad2 className="h-12 w-12 text-primary mx-auto mb-4" />
-          <h1 className="text-4xl font-bold mb-4">Misi Budaya</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Pilih misi untuk memulai petualangan pembelajaran budaya Indonesia.
-          </p>
-        </div>
+    <div className="mx-auto max-w-4xl px-4 py-10 md:py-14">
+      <header className="max-w-2xl">
+        <h1 className="font-display text-4xl font-semibold tracking-tight">
+          Misi budaya
+        </h1>
+        <p className="mt-3 leading-relaxed text-muted-foreground">
+          Jawaban dinilai di server setelah misi selesai. Masuk dulu supaya
+          XP dan lencanamu tersimpan.
+        </p>
+      </header>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {missions.map((mission) => (
-            <Link key={mission.id} href={`/missions/${mission.slug}`}>
-              <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <div className="flex items-start justify-between mb-2">
-                    <CardTitle className="text-xl">{mission.title}</CardTitle>
-                    <span
-                      className={`text-xs px-3 py-1 rounded-full capitalize ${getDifficultyColor(
-                        mission.difficulty
-                      )}`}
-                    >
-                      {mission.difficulty}
-                    </span>
-                  </div>
-                  <CardDescription>{mission.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Trophy className="h-4 w-4" />
-                    <span>{mission.xp_reward} XP</span>
-                  </div>
-                  <Button variant="outline" className="w-full mt-4">
-                    Mainkan Misi
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-
-        {missions.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              Belum ada misi tersedia saat ini.
-            </p>
+      <div className="mt-10">
+        {loading ? (
+          <div
+            className="space-y-3"
+            aria-busy="true"
+            aria-label="Memuat daftar misi"
+          >
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 rounded-xl border border-border/70 px-6 py-5"
+              >
+                <Skeleton className="size-11 rounded-xl" />
+                <div className="flex-1">
+                  <Skeleton className="h-5 w-1/3" />
+                  <Skeleton className="mt-2 h-4 w-2/3" />
+                </div>
+                <Skeleton className="h-5 w-16" />
+              </div>
+            ))}
           </div>
+        ) : error ? (
+          <EmptyState
+            icon={Gamepad2}
+            title="Misi tidak bisa dimuat"
+            description={error}
+          />
+        ) : missions.length === 0 ? (
+          <EmptyState
+            icon={Gamepad2}
+            title="Belum ada misi terbuka"
+            description="Misi muncul di sini setelah tim konten mempublikasikannya."
+            action={{ label: "Jelajahi wilayah budaya", href: "/explore" }}
+          />
+        ) : (
+          <ul className="space-y-3">
+            {missions.map((mission, index) => (
+              <li key={mission.id}>
+                <Link href={`/missions/${mission.slug}`} className="group block">
+                  <Card
+                    interactive
+                    className="animate-fade-up"
+                    style={{ animationDelay: `${index * 70}ms` }}
+                  >
+                    <div className="flex items-center gap-4 px-6 py-5">
+                      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Gamepad2 className="size-5" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold">{mission.title}</p>
+                        <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
+                          {mission.description}
+                        </p>
+                        <p className="mt-1.5 flex items-center gap-2 text-[13px] text-muted-foreground">
+                          <span>
+                            {difficultyLabel[mission.difficulty] ?? mission.difficulty}
+                          </span>
+                          <span aria-hidden="true">·</span>
+                          <span className="inline-flex items-center gap-1 font-semibold tabular-nums text-gold">
+                            <Zap className="size-3.5" aria-hidden="true" />
+                            {mission.xp_reward} XP
+                          </span>
+                        </p>
+                      </div>
+                      <ArrowRight
+                        className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </Card>
+                </Link>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </div>

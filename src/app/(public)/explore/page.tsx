@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Compass, MapPin } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Compass, MapPin, ArrowRight } from "lucide-react";
 
 interface Region {
   id: string;
@@ -27,12 +28,12 @@ export default function ExplorePage() {
         const result = await response.json();
 
         if (!response.ok) {
-          throw new Error(result.error || "Failed to fetch regions");
+          throw new Error(result.error || "Gagal memuat wilayah");
         }
 
         setRegions(result.data || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
       } finally {
         setLoading(false);
       }
@@ -41,63 +42,79 @@ export default function ExplorePage() {
     fetchRegions();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Memuat wilayah budaya...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-destructive">{error}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen py-12">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <Compass className="h-12 w-12 text-primary mx-auto mb-4" />
-          <h1 className="text-4xl font-bold mb-4">Jelajahi Wilayah Budaya</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Pilih wilayah untuk mempelajari warisan budaya, tradisi, dan cerita
-            yang kaya dari Nusantara.
-          </p>
-        </div>
+    <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
+      <header className="max-w-2xl">
+        <h1 className="font-display text-4xl font-semibold tracking-tight">
+          Jelajahi wilayah budaya
+        </h1>
+        <p className="mt-3 leading-relaxed text-muted-foreground">
+          Setiap wilayah menyimpan tradisi dan cerita yang berbeda. Pilih satu
+          untuk memulai, lalu selesaikan misinya.
+        </p>
+      </header>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {regions.map((region) => (
-            <Link key={region.id} href={`/regions/${region.slug}`}>
-              <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    <CardTitle>{region.name}</CardTitle>
+      <div className="mt-10">
+        {loading ? (
+          <div
+            className="grid gap-6 md:grid-cols-3"
+            aria-busy="true"
+            aria-label="Memuat wilayah budaya"
+          >
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="rounded-xl border border-border/70 p-6">
+                <Skeleton className="size-11 rounded-xl" />
+                <Skeleton className="mt-4 h-6 w-2/3" />
+                <Skeleton className="mt-2 h-4 w-1/2" />
+                <Skeleton className="mt-4 h-16 w-full" />
+                <Skeleton className="mt-5 h-9 w-full rounded-md" />
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <EmptyState
+            icon={Compass}
+            title="Wilayah tidak bisa dimuat"
+            description={error}
+          />
+        ) : regions.length === 0 ? (
+          <EmptyState
+            icon={Compass}
+            title="Belum ada wilayah terbuka"
+            description="Tim konten sedang menyiapkan wilayah budaya. Muncul di sini begitu dipublikasikan."
+          />
+        ) : (
+          <div className="grid gap-6 md:grid-cols-3">
+            {regions.map((region, index) => (
+              <Link key={region.id} href={`/regions/${region.slug}`} className="group">
+                <Card
+                  interactive
+                  className="animate-fade-up h-full"
+                  style={{ animationDelay: `${index * 70}ms` }}
+                >
+                  <div className="flex items-start justify-between px-6 pt-6">
+                    <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <MapPin className="size-5" aria-hidden="true" />
+                    </span>
+                    <ArrowRight
+                      className="size-5 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
+                      aria-hidden="true"
+                    />
                   </div>
-                  <CardDescription>{region.geographic_context}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {region.description}
-                  </p>
-                  <Button variant="outline" className="w-full mt-4">
-                    Jelajahi Wilayah
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-
-        {regions.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              Belum ada wilayah budaya yang tersedia.
-            </p>
+                  <div className="px-6 pb-6 pt-4">
+                    <h2 className="font-display text-xl font-semibold">
+                      {region.name}
+                    </h2>
+                    <p className="mt-0.5 text-[13px] text-muted-foreground">
+                      {region.geographic_context}
+                    </p>
+                    <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                      {region.description}
+                    </p>
+                  </div>
+                </Card>
+              </Link>
+            ))}
           </div>
         )}
       </div>

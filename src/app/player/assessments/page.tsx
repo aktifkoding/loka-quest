@@ -1,15 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { BookOpen, CheckCircle } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { BookOpen, CheckCircle2 } from "lucide-react";
 
 interface Assessment {
   id: string;
@@ -22,15 +17,17 @@ interface Assessment {
 export default function AssessmentsPage() {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAssessments = async () => {
       try {
         const res = await fetch("/api/v1/assessments");
         const data = await res.json();
-        if (res.ok) setAssessments(data.data || []);
+        if (!res.ok) throw new Error(data.error || "Gagal memuat asesmen");
+        setAssessments(data.data || []);
       } catch (err) {
-        console.error("Failed to fetch assessments:", err);
+        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
       } finally {
         setLoading(false);
       }
@@ -40,70 +37,88 @@ export default function AssessmentsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen py-12">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2">Assessment Pembelajaran</h1>
-            <p className="text-muted-foreground">
-              Ukur pemahaman Anda tentang budaya Indonesia.
-            </p>
+    <div className="mx-auto max-w-4xl px-4 py-10 md:py-14">
+      <header className="max-w-2xl">
+        <h1 className="font-display text-4xl font-semibold tracking-tight">
+          Asesmen pembelajaran
+        </h1>
+        <p className="mt-3 leading-relaxed text-muted-foreground">
+          Kerjakan pre-test sebelum bermain dan post-test setelahnya untuk
+          melihat perkembangan pemahamanmu.
+        </p>
+      </header>
+
+      <div className="mt-10">
+        {loading ? (
+          <div
+            className="space-y-4"
+            aria-busy="true"
+            aria-label="Memuat asesmen"
+          >
+            {[0, 1].map((i) => (
+              <div key={i} className="rounded-xl border border-border/70 p-6">
+                <Skeleton className="h-6 w-2/3" />
+                <Skeleton className="mt-3 h-4 w-full" />
+                <Skeleton className="mt-2 h-4 w-1/2" />
+                <Skeleton className="mt-5 h-10 w-40 rounded-md" />
+              </div>
+            ))}
           </div>
-
-          {loading ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Memuat assessment...</p>
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              {assessments.map((assessment) => (
-                <Card key={assessment.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          <BookOpen className="h-5 w-5 text-primary" />
-                          {assessment.title}
-                        </CardTitle>
-                        <CardDescription className="mt-2">
-                          {assessment.description}
-                        </CardDescription>
-                      </div>
-                      <span
-                        className={`text-xs px-3 py-1 rounded-full capitalize ${
-                          assessment.assessment_type === "pre"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-green-100 text-green-700"
-                        }`}
-                      >
-                        {assessment.assessment_type === "pre" ? "Pre-test" : "Post-test"}
-                      </span>
+        ) : error ? (
+          <EmptyState
+            icon={BookOpen}
+            title="Asesmen tidak bisa dimuat"
+            description={error}
+          />
+        ) : assessments.length === 0 ? (
+          <EmptyState
+            icon={BookOpen}
+            title="Belum ada asesmen"
+            description="Asesmen pre-test dan post-test akan muncul di sini."
+          />
+        ) : (
+          <div className="space-y-4">
+            {assessments.map((assessment, index) => (
+              <Card
+                key={assessment.id}
+                className="animate-fade-up"
+                style={{ animationDelay: `${index * 70}ms` }}
+              >
+                <div className="p-6">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h2 className="font-display text-xl font-semibold">
+                        {assessment.title}
+                      </h2>
+                      <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                        {assessment.description}
+                      </p>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <CheckCircle className="h-4 w-4" />
-                        <span>{assessment.questions.length} pertanyaan</span>
-                      </div>
-                      <Button>Kerjakan Assessment</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {assessments.length === 0 && (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <p className="text-muted-foreground">
-                      Belum ada assessment tersedia.
+                    <p className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                      <CheckCircle2 className="size-4" aria-hidden="true" />
+                      {assessment.questions.length} soal
                     </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
-        </div>
+                  </div>
+                  <div className="mt-5 flex items-center justify-between border-t border-border pt-5">
+                    <p className="text-[13px] text-muted-foreground">
+                      {assessment.assessment_type === "pre"
+                        ? "Kerjakan sebelum memainkan misi"
+                        : "Kerjakan setelah menyelesaikan misi"}
+                    </p>
+                    <button
+                      type="button"
+                      className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-card transition-[background-color,box-shadow] duration-200 hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-55"
+                      disabled
+                      title="Segera tersedia"
+                    >
+                      Kerjakan sekarang
+                    </button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

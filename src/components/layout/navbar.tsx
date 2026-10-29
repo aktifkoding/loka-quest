@@ -6,12 +6,19 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Compass, LogIn, LogOut, Trophy, Gamepad2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 type NavUser = {
   id: string;
   email: string;
   fullName: string | null;
 };
+
+const navLinks = [
+  { href: "/explore", label: "Jelajahi", icon: Compass },
+  { href: "/missions", label: "Misi", icon: Gamepad2 },
+  { href: "/player/dashboard", label: "Dasbor", icon: Trophy },
+];
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,52 +67,68 @@ export function Navbar() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setIsOpen(false);
     router.push("/");
     router.refresh();
   };
 
-  const navLinks = [
-    { href: "/explore", label: "Jelajahi", icon: Compass },
-    { href: "/missions", label: "Misi", icon: Gamepad2 },
-    { href: "/player/dashboard", label: "Dasbor", icon: Trophy },
-  ];
+  const isActive = (href: string) =>
+    href === "/player/dashboard"
+      ? pathname.startsWith("/player") || pathname.startsWith("/educator")
+      : pathname.startsWith(href);
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
-          <Gamepad2 className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold">LokaQuest</span>
+    <header className="fixed inset-x-0 top-3 z-50 px-3 md:px-6">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between rounded-2xl border border-border/80 bg-background/85 pl-4 pr-2 shadow-card backdrop-blur-md">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 rounded-md"
+          aria-label="LokaQuest, ke beranda"
+        >
+          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Gamepad2 className="size-5" aria-hidden="true" />
+          </span>
+          <span className="font-display text-lg font-semibold tracking-tight">
+            LokaQuest
+          </span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-6">
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Utama">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary ${
-                pathname.startsWith(link.href)
-                  ? "text-primary"
-                  : "text-muted-foreground"
-              }`}
+              aria-current={isActive(link.href) ? "page" : undefined}
+              className={cn(
+                "flex min-h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors duration-200",
+                isActive(link.href)
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+              )}
             >
-              <link.icon className="h-4 w-4" />
+              <link.icon className="size-4" aria-hidden="true" />
               {link.label}
             </Link>
           ))}
-        </div>
+        </nav>
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden items-center gap-2 md:flex">
           {loading ? (
-            <span className="h-8 w-24 animate-pulse rounded-md bg-muted" />
+            <span
+              className="h-9 w-40 animate-shimmer rounded-full"
+              aria-hidden="true"
+            />
           ) : user ? (
             <>
-              <span className="max-w-48 truncate text-sm text-muted-foreground">
+              <span
+                className="max-w-44 truncate rounded-full bg-secondary px-3 py-1.5 text-sm text-secondary-foreground"
+                title={user.email}
+              >
                 {user.fullName || user.email}
               </span>
               <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-1" />
+                <LogOut className="size-4" aria-hidden="true" />
                 Keluar
               </Button>
             </>
@@ -113,7 +136,7 @@ export function Navbar() {
             <>
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/auth/login">
-                  <LogIn className="h-4 w-4 mr-1" />
+                  <LogIn className="size-4" aria-hidden="true" />
                   Masuk
                 </Link>
               </Button>
@@ -124,67 +147,75 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Mobile menu button */}
+        {/* Mobile toggle */}
         <button
-          className="md:hidden p-2"
+          className="flex size-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent md:hidden"
           onClick={() => setIsOpen(!isOpen)}
-          aria-label={isOpen ? "Tutup menu" : "Buka menu"}
+          aria-expanded={isOpen}
+          aria-controls="mobile-nav"
+          aria-label={isOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
         >
           {isOpen ? (
-            <X className="h-6 w-6" />
+            <X className="size-5" aria-hidden="true" />
           ) : (
-            <Menu className="h-6 w-6" />
+            <Menu className="size-5" aria-hidden="true" />
           )}
         </button>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile panel */}
       {isOpen && (
-        <div className="md:hidden border-t bg-background">
-          <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+        <div
+          id="mobile-nav"
+          className="mx-auto mt-2 max-w-6xl rounded-2xl border border-border/80 bg-background/95 p-3 shadow-raised backdrop-blur-md md:hidden"
+        >
+          <nav className="flex flex-col" aria-label="Utama mobile">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-2 p-2 rounded-md hover:bg-accent ${
-                  pathname.startsWith(link.href)
-                    ? "bg-accent text-primary"
-                    : ""
-                }`}
+                aria-current={isActive(link.href) ? "page" : undefined}
+                className={cn(
+                  "flex min-h-11 items-center gap-2.5 rounded-xl px-3.5 text-[15px] font-medium transition-colors",
+                  isActive(link.href)
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground hover:bg-accent"
+                )}
                 onClick={() => setIsOpen(false)}
               >
-                <link.icon className="h-4 w-4" />
+                <link.icon className="size-5" aria-hidden="true" />
                 {link.label}
               </Link>
             ))}
-            <div className="flex gap-2 pt-2 border-t">
-              {user ? (
+          </nav>
+          <div className="mt-3 border-t border-border pt-3">
+            {user ? (
+              <div className="space-y-2">
+                <p className="truncate px-1 text-sm text-muted-foreground">
+                  {user.fullName || user.email}
+                </p>
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => {
-                    setIsOpen(false);
-                    handleLogout();
-                  }}
+                  className="w-full"
+                  onClick={handleLogout}
                 >
-                  <LogOut className="h-4 w-4 mr-1" />
+                  <LogOut className="size-4" aria-hidden="true" />
                   Keluar
                 </Button>
-              ) : (
-                <>
-                  <Button variant="outline" size="sm" className="flex-1" asChild>
-                    <Link href="/auth/login">Masuk</Link>
-                  </Button>
-                  <Button size="sm" className="flex-1" asChild>
-                    <Link href="/auth/register">Daftar</Link>
-                  </Button>
-                </>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" asChild>
+                  <Link href="/auth/login">Masuk</Link>
+                </Button>
+                <Button className="flex-1" asChild>
+                  <Link href="/auth/register">Daftar</Link>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 }
