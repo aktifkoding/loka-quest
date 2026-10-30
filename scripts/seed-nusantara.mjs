@@ -116,6 +116,18 @@ const CONTENT_IMG_KEY = {
   "Festival Lembah Baliem: Pesta Bumi Dani": "papua_baliem",
 };
 
+const REGION_HERO_KEY = {
+  aceh: "aceh_hero",
+  sumatera_barat: "sumbar_hero",
+  jakarta: "jakarta_hero",
+  kalimantan: "kalimantan_hero",
+  sulawesi_selatan: "sulsel_hero",
+  bali: "bali_hero",
+  nusa_tenggara_timur: "ntt_hero",
+  maluku: "maluku_hero",
+  papua: "papua_hero",
+};
+
 // ─── Sumber referensi ───────────────────────────────────────────────────────
 const SOURCES = [
   { title: "Kopi Gayo — Ensiklopedia Kabupaten Aceh Tenggara", author: "Pemkab Aceh Tenggara", publisher: "Wikipedia bahasa Indonesia", year: 2024, url: "https://id.wikipedia.org/wiki/Kopi_Gayo", license: "CC BY-SA 3.0", attribution: "Kopi Gayo — Wikipedia bahasa Indonesia, CC BY-SA 3.0." },
@@ -265,7 +277,8 @@ async function main() {
   for (const region of REGIONS) {
     const rid = regionId(region.slug);
     if (!rid) continue;
-    const img = IMG[`${region.slug}_hero`];
+    const heroKey = REGION_HERO_KEY[region.slug.replace(/-/g, "_")] || `${region.slug.replace(/-/g, "_")}_hero`;
+    const img = IMG[heroKey];
     if (!img) continue;
     const sid = sourceId(img.title);
     const payload = { image_url: img.url };
