@@ -466,6 +466,12 @@ export default function HomePage() {
               >
                 Leaderboard
               </Link>
+              <Link
+                href="/tentang"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Tentang
+              </Link>
             </nav>
           </div>
           <p className="mt-8 text-[13px] text-muted-foreground">

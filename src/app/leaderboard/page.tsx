@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service-role";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, Zap, Medal, ArrowLeft } from "lucide-react";
+import { ShareButton } from "@/components/layout/share-button";
 
 export const metadata = {
   title: "Leaderboard",
@@ -51,9 +52,12 @@ export default async function LeaderboardPage() {
         <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight">
           Papan peringkat
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-muted-foreground">
-          20 penjelajah dengan XP tertinggi. Hanya nama tampilan yang ditampilkan.
-        </p>
+        <div className="mx-auto mt-2 flex max-w-md flex-col items-center gap-3">
+          <p className="text-muted-foreground">
+            20 penjelajah dengan XP tertinggi. Hanya nama tampilan yang ditampilkan.
+          </p>
+          <ShareButton title="LokaQuest Leaderboard" text="Lihat papan peringkat penjelajah budaya di LokaQuest!" />
+        </div>
       </header>
 
       <Card className="mt-10 overflow-hidden">
