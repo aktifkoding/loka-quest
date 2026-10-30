@@ -4,18 +4,18 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium touch-manipulation select-none disabled:pointer-events-none disabled:opacity-55 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 ease-out active:translate-y-px",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium touch-manipulation select-none disabled:pointer-events-none disabled:opacity-55 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 transition-[background-color,border-color,box-shadow,color,opacity,transform] duration-200 ease-out active:translate-y-0",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-card hover:bg-primary/90 hover:shadow-raised",
+          "bg-primary text-primary-foreground shadow-card hover:bg-primary/92 hover:-translate-y-px hover:shadow-raised active:translate-y-0",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-card hover:bg-destructive/90",
+          "bg-destructive text-destructive-foreground shadow-card hover:bg-destructive/90 hover:-translate-y-px",
         outline:
-          "border border-input bg-card hover:bg-accent hover:text-accent-foreground",
+          "border border-input bg-card hover:bg-accent hover:text-accent-foreground hover:-translate-y-px hover:shadow-card",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/70",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/70 hover:-translate-y-px",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline rounded-sm",
       },
