@@ -41,11 +41,21 @@ function getCtx(): AudioContext {
   return audioCtx;
 }
 
+/** Pengaturan suara pengguna (disimpan lokal, default aktif). */
+export function isSoundMuted(): boolean {
+  try {
+    return window.localStorage.getItem("lq-sound") === "off";
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Approximate gamelan instrument timbres with oscillators + noise.
  * Envelopes carry the character; pitches are pelog-adjacent.
  */
 function playInstrument(name: InstrumentName) {
+  if (isSoundMuted()) return;
   const ctx = getCtx();
   const t0 = ctx.currentTime;
   const master = ctx.createGain();
@@ -471,7 +481,7 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
           });
 
           this.add
-            .text(width / 2, 302, "Boleh diputar berkali-kali", {
+            .text(width / 2, 302, isSoundMuted() ? "Suara nonaktif — grafik tetap bisa dinikmati" : "Boleh diputar berkali-kali", {
               fontFamily: FONT, fontSize: "13px", color: UI.muted,
             })
             .setOrigin(0.5);
