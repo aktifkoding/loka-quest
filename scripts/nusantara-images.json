@@ -1,0 +1,362 @@
+{
+  "aceh:hero": {
+    "file": "File:Meuseujid Raya Baiturrahman .jpg",
+    "license": "CC BY-SA 3.0",
+    "artist": "Si_Gam",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Meuseujid_Raya_Baiturrahman_.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Meuseujid_Raya_Baiturrahman_.jpg/1920px-Meuseujid_Raya_Baiturrahman_.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4208,
+    "height": 2368,
+    "landscape": true
+  },
+  "aceh:saman": {
+    "file": "File:Penari Saman Aceh.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Muhammad Iqbal",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Penari_Saman_Aceh.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/73/Penari_Saman_Aceh.jpg/1920px-Penari_Saman_Aceh.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 6000,
+    "height": 3999,
+    "landscape": true
+  },
+  "aceh:rencong": {
+    "file": "File:Rencong Aceh (DSCF0862).jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Yu Chu Chin",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Rencong_Aceh_(DSCF0862).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6e/Rencong_Aceh_%28DSCF0862%29.jpg/1920px-Rencong_Aceh_%28DSCF0862%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 3766,
+    "height": 7287,
+    "landscape": false
+  },
+  "aceh:kopi-gayo": {
+    "file": "File:Kopi Hitam King Gayo Arabika.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Adilarmaya",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Kopi_Hitam_King_Gayo_Arabika.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/Kopi_Hitam_King_Gayo_Arabika.jpg/1920px-Kopi_Hitam_King_Gayo_Arabika.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4695,
+    "height": 3130,
+    "landscape": true
+  },
+  "sumatera-barat:hero": {
+    "file": "File:Rumah Gadang Ranah Pantai Cermin 04.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Zhilal Darma",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Rumah_Gadang_Ranah_Pantai_Cermin_04.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Rumah_Gadang_Ranah_Pantai_Cermin_04.jpg/1920px-Rumah_Gadang_Ranah_Pantai_Cermin_04.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 6000,
+    "height": 4000,
+    "landscape": true
+  },
+  "sumatera-barat:rendang": {
+    "file": "File:D2D 9945 wikimedia2020 deni dahniel randang.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Deni Dahniel",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:D2D_9945_wikimedia2020_deni_dahniel_randang.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/D2D_9945_wikimedia2020_deni_dahniel_randang.jpg/1920px-D2D_9945_wikimedia2020_deni_dahniel_randang.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 6000,
+    "height": 4000,
+    "landscape": true
+  },
+  "sumatera-barat:rumah-gadang": {
+    "file": "File:Istana Pagaruyung 17.jpg",
+    "license": "Public domain",
+    "artist": "Official Website of The Ministry of Public Works Indonesia",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Istana_Pagaruyung_17.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e7/Istana_Pagaruyung_17.jpg/1920px-Istana_Pagaruyung_17.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4928,
+    "height": 3264,
+    "landscape": true
+  },
+  "sumatera-barat:tari-piring": {
+    "file": "File:Tari Piring Bergelut Kaca.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Erisonjkambari",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Tari_Piring_Bergelut_Kaca.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/Tari_Piring_Bergelut_Kaca.jpg/1920px-Tari_Piring_Bergelut_Kaca.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 5066,
+    "height": 3421,
+    "landscape": true
+  },
+  "jakarta:hero": {
+    "file": "File:Warna Warni Ondel Ondel Betawi.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Herusutimbul",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Warna_Warni_Ondel_Ondel_Betawi.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Warna_Warni_Ondel_Ondel_Betawi.jpg/1920px-Warna_Warni_Ondel_Ondel_Betawi.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 3000,
+    "height": 2000,
+    "landscape": true
+  },
+  "jakarta:ondel-ondel": {
+    "file": "File:Ondel-Ondel Betawi.jpg",
+    "license": "CC BY-SA 3.0",
+    "artist": "Gunawan Kartapranata",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Ondel-Ondel_Betawi.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Ondel-Ondel_Betawi.jpg/1920px-Ondel-Ondel_Betawi.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 3264,
+    "height": 1878,
+    "landscape": true
+  },
+  "jakarta:lenong": {
+    "file": "File:ErwinKurniawan TopengBetawi.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Erwin saleh Kurniawan",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:ErwinKurniawan_TopengBetawi.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/ErwinKurniawan_TopengBetawi.jpg/1920px-ErwinKurniawan_TopengBetawi.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 3092,
+    "height": 2048,
+    "landscape": true
+  },
+  "jakarta:kerak-telor": {
+    "file": "File:Bir Pletok dan Kerak Telor 20240622 112819.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Naval Scene",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Bir_Pletok_dan_Kerak_Telor_20240622_112819.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Bir_Pletok_dan_Kerak_Telor_20240622_112819.jpg/1920px-Bir_Pletok_dan_Kerak_Telor_20240622_112819.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4096,
+    "height": 3072,
+    "landscape": true
+  },
+  "kalimantan:hero": {
+    "file": "File:Rumah Betang Gerbang.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Mia Cisa",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Rumah_Betang_Gerbang.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/Rumah_Betang_Gerbang.jpg/1920px-Rumah_Betang_Gerbang.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4608,
+    "height": 2592,
+    "landscape": true
+  },
+  "kalimantan:rumah-panjang": {
+    "file": "File:Rumah Betang di Tumbang Gagu.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Hellandac",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Rumah_Betang_di_Tumbang_Gagu.jpg",
+    "thumb": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Rumah_Betang_di_Tumbang_Gagu.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+    "width": 1280,
+    "height": 720,
+    "landscape": true
+  },
+  "kalimantan:hudoq": {
+    "file": "File:Praying in the Beginning of Hudoq Kawit Ritual in Dayak Bahau People's Planting Season.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Jisdmax",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Praying_in_the_Beginning_of_Hudoq_Kawit_Ritual_in_Dayak_Bahau_People%27s_Planting_Season.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/Praying_in_the_Beginning_of_Hudoq_Kawit_Ritual_in_Dayak_Bahau_People%27s_Planting_Season.jpg/1920px-Praying_in_the_Beginning_of_Hudoq_Kawit_Ritual_in_Dayak_Bahau_People%27s_Planting_Season.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 6000,
+    "height": 3376,
+    "landscape": true
+  },
+  "kalimantan:mandau": {
+    "file": "File:Dayak Performers in Sape Concert.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "AjarnRichard",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Dayak_Performers_in_Sape_Concert.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/Dayak_Performers_in_Sape_Concert.jpg/1920px-Dayak_Performers_in_Sape_Concert.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4201,
+    "height": 2504,
+    "landscape": true
+  },
+  "sulawesi-selatan:hero": {
+    "file": "File:Kete' Kesu' Toraja.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Ansensius",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Kete%27_Kesu%27_Toraja.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7d/Kete%27_Kesu%27_Toraja.jpg/1920px-Kete%27_Kesu%27_Toraja.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 5184,
+    "height": 3361,
+    "landscape": true
+  },
+  "sulawesi-selatan:tongkonan": {
+    "file": "File:Tongkonan traditionnal Toraja house.jpg",
+    "license": "CC0",
+    "artist": "Benoît Vicart",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Tongkonan_traditionnal_Toraja_house.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/Tongkonan_traditionnal_Toraja_house.jpg/1920px-Tongkonan_traditionnal_Toraja_house.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 5184,
+    "height": 3888,
+    "landscape": true
+  },
+  "sulawesi-selatan:tau-tau": {
+    "file": "File:Tana Toraja, Lemo, tau taus (6969212585).jpg",
+    "license": "CC BY 2.0",
+    "artist": "Arian Zwegers",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Tana_Toraja,_Lemo,_tau_taus_(6969212585).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Tana_Toraja%2C_Lemo%2C_tau_taus_%286969212585%29.jpg/1920px-Tana_Toraja%2C_Lemo%2C_tau_taus_%286969212585%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4272,
+    "height": 2848,
+    "landscape": true
+  },
+  "sulawesi-selatan:pinisi": {
+    "file": "File:Kapal Pinisi Pelabuhan Sunda Kelapa.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Cun Cun",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Kapal_Pinisi_Pelabuhan_Sunda_Kelapa.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Kapal_Pinisi_Pelabuhan_Sunda_Kelapa.jpg/1920px-Kapal_Pinisi_Pelabuhan_Sunda_Kelapa.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 5152,
+    "height": 3864,
+    "landscape": true
+  },
+  "bali:hero": {
+    "file": "File:Jatiluwih rice terraces SF0001.jpg",
+    "license": "CC BY-SA 3.0",
+    "artist": "Stefan Fussan",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Jatiluwih_rice_terraces_SF0001.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/Jatiluwih_rice_terraces_SF0001.jpg/1920px-Jatiluwih_rice_terraces_SF0001.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 10158,
+    "height": 3780,
+    "landscape": true
+  },
+  "bali:subak": {
+    "file": "File:Brantan Bali Pura-Ulun-Danu-Bratan-01.jpg",
+    "license": "CC BY-SA 3.0",
+    "artist": "CEphoto, Uwe Aranas",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Brantan_Bali_Pura-Ulun-Danu-Bratan-01.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Brantan_Bali_Pura-Ulun-Danu-Bratan-01.jpg/1920px-Brantan_Bali_Pura-Ulun-Danu-Bratan-01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 5097,
+    "height": 3398,
+    "landscape": true
+  },
+  "bali:barong": {
+    "file": "File:Kris and barong dance on Bali February 1962 4 of 5.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Don Christie",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Kris_and_barong_dance_on_Bali_February_1962_4_of_5.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Kris_and_barong_dance_on_Bali_February_1962_4_of_5.jpg/1920px-Kris_and_barong_dance_on_Bali_February_1962_4_of_5.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4918,
+    "height": 3253,
+    "landscape": true
+  },
+  "bali:nyepi": {
+    "file": "File:Ogoh-ogoh carried during the Ngrupuk parade in Ubud 10.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "MagdaLena7",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Ogoh-ogoh_carried_during_the_Ngrupuk_parade_in_Ubud_10.jpg",
+    "thumb": "https://upload.wikimedia.org/wikipedia/commons/9/94/Ogoh-ogoh_carried_during_the_Ngrupuk_parade_in_Ubud_10.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+    "width": 1920,
+    "height": 1440,
+    "landscape": true
+  },
+  "nusa-tenggara-timur:hero": {
+    "file": "File:Wae rebo village, Ruteng, NTT, Indonesia.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Fitri Mayeni",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Wae_rebo_village,_Ruteng,_NTT,_Indonesia.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Wae_rebo_village%2C_Ruteng%2C_NTT%2C_Indonesia.jpg/1920px-Wae_rebo_village%2C_Ruteng%2C_NTT%2C_Indonesia.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 5184,
+    "height": 3456,
+    "landscape": true
+  },
+  "nusa-tenggara-timur:tenun-ikai": {
+    "file": "File:Man’s Shoulder Cloth (Hinggi), early 20th century; cotton; warp ikat; Indonesia, East Sumba, Kingdom of Kapunduk.jpg",
+    "license": "Public domain",
+    "artist": "AnonymousUnknown author",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Man%E2%80%99s_Shoulder_Cloth_(Hinggi),_early_20th_century;_cotton;_warp_ikat;_Indonesia,_East_Sumba,_Kingdom_of_Kapunduk.jpg",
+    "thumb": "https://upload.wikimedia.org/wikipedia/commons/9/90/Man%E2%80%99s_Shoulder_Cloth_%28Hinggi%29%2C_early_20th_century%3B_cotton%3B_warp_ikat%3B_Indonesia%2C_East_Sumba%2C_Kingdom_of_Kapunduk.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+    "width": 1901,
+    "height": 1221,
+    "landscape": true
+  },
+  "nusa-tenggara-timur:pasola": {
+    "file": "File:Upacara adat Pasola.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Fakhri Anindita",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Upacara_adat_Pasola.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e1/Upacara_adat_Pasola.jpg/1920px-Upacara_adat_Pasola.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 3000,
+    "height": 2000,
+    "landscape": true
+  },
+  "nusa-tenggara-timur:mbaru-niang": {
+    "file": "File:Rumah Adat Mbaru Niang.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "AsdarMunandar",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Rumah_Adat_Mbaru_Niang.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/Rumah_Adat_Mbaru_Niang.jpg/1920px-Rumah_Adat_Mbaru_Niang.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 5472,
+    "height": 3648,
+    "landscape": true
+  },
+  "maluku:hero2": {
+    "file": "File:Bandaneira-0039.JPG",
+    "license": "CC BY-SA 3.0",
+    "artist": "Anton Leddin",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Bandaneira-0039.JPG",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/aa/Bandaneira-0039.JPG/1920px-Bandaneira-0039.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 3537,
+    "height": 2324,
+    "landscape": true
+  },
+  "maluku:cengkih-pala": {
+    "file": "File:Nutmeg fruit with mace.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Schlawensko",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Nutmeg_fruit_with_mace.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Nutmeg_fruit_with_mace.jpg/1920px-Nutmeg_fruit_with_mace.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4608,
+    "height": 3456,
+    "landscape": true
+  },
+  "maluku:cakalele": {
+    "file": "File:Tarian Cakalele.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Rrinaldy",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Tarian_Cakalele.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Tarian_Cakalele.jpg/1920px-Tarian_Cakalele.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4000,
+    "height": 2667,
+    "landscape": true
+  },
+  "maluku:benteng": {
+    "file": "File:Fort Belgica 01.JPG",
+    "license": "CC BY-SA 3.0",
+    "artist": "Anton Leddin",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Fort_Belgica_01.JPG",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Fort_Belgica_01.JPG/1920px-Fort_Belgica_01.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 2607,
+    "height": 1737,
+    "landscape": true
+  },
+  "papua:hero": {
+    "file": "File:Vallée de Baliem en Papouasie (Indonésie) Village le matin.JPG",
+    "license": "CC BY-SA 4.0",
+    "artist": "Philomène Martinelli Globe-Trotting.com",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Vall%C3%A9e_de_Baliem_en_Papouasie_(Indon%C3%A9sie)_Village_le_matin.JPG",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Vall%C3%A9e_de_Baliem_en_Papouasie_%28Indon%C3%A9sie%29_Village_le_matin.JPG/1920px-Vall%C3%A9e_de_Baliem_en_Papouasie_%28Indon%C3%A9sie%29_Village_le_matin.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4224,
+    "height": 1941,
+    "landscape": true
+  },
+  "papua:ukir-asmat": {
+    "file": "File:Pemahat Patung Asmat.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Keenan63",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Pemahat_Patung_Asmat.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Pemahat_Patung_Asmat.jpg/1920px-Pemahat_Patung_Asmat.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4610,
+    "height": 3198,
+    "landscape": true
+  },
+  "papua:honai": {
+    "file": "File:Honai House Papua.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Irfantraveller",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Honai_House_Papua.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/Honai_House_Papua.jpg/1920px-Honai_House_Papua.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 4288,
+    "height": 2848,
+    "landscape": true
+  },
+  "papua:festival-baliem": {
+    "file": "File:Opening Ceremony of Baliem Valley Festival 2018.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Nurul Ichlasiah",
+    "creditUrl": "https://commons.wikimedia.org/wiki/File:Opening_Ceremony_of_Baliem_Valley_Festival_2018.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cc/Opening_Ceremony_of_Baliem_Valley_Festival_2018.jpg/1920px-Opening_Ceremony_of_Baliem_Valley_Festival_2018.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "width": 3535,
+    "height": 2651,
+    "landscape": true
+  }
+}
