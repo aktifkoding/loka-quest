@@ -1,24 +1,27 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Tilt3D } from "@/components/ui/tilt3d";
 
 function Card({
   className,
   interactive = false,
   ...props
 }: React.ComponentProps<"div"> & { interactive?: boolean }) {
-  return (
+  const card = (
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground rounded-xl border border-border/70 shadow-card",
-        "transition-[box-shadow,border-color,transform] duration-200 ease-out",
-        interactive &&
-          "cursor-pointer hover:-translate-y-1 hover:border-primary/30 hover:shadow-raised",
+        "bg-card text-card-foreground rounded-xl border border-border/70 shadow-card h-full",
+        "transition-[box-shadow,border-color] duration-200 ease-out",
+        interactive && "cursor-pointer hover:border-primary/30 hover:shadow-raised",
         className
       )}
       {...props}
     />
   );
+
+  // Kartu interaktif mendapat kedalaman 3D mengikuti kursor
+  return interactive ? <Tilt3D className="h-full">{card}</Tilt3D> : card;
 }
 
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
