@@ -431,6 +431,24 @@ export default function HomePage() {
               aria-label="Footer"
             >
               <Link
+                href="/jelajahi"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Grafik Budaya
+              </Link>
+              <Link
+                href="/komunitas"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Komunitas
+              </Link>
+              <Link
+                href="/asisten"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Asisten AI
+              </Link>
+              <Link
                 href="/explore"
                 className="text-muted-foreground hover:text-foreground"
               >
@@ -441,18 +459,6 @@ export default function HomePage() {
                 className="text-muted-foreground hover:text-foreground"
               >
                 Misi
-              </Link>
-              <Link
-                href="/auth/login"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Masuk
-              </Link>
-              <Link
-                href="/auth/register"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Daftar
               </Link>
               <Link
                 href="/sumber"
