@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Compass, LogIn, LogOut, Trophy, Gamepad2, Network, Users, Lightbulb } from "lucide-react";
+import { Menu, X, Compass, LogIn, LogOut, Trophy, Gamepad2, Network, Users, Lightbulb, BookOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ type NavUser = {
 };
 
 const navLinks = [
+  { href: "/encyclopedia", label: "Ensiklopedia", icon: BookOpen },
   { href: "/explore", label: "Jelajahi", icon: Compass },
   { href: "/missions", label: "Misi", icon: Gamepad2 },
   { href: "/jelajahi", label: "Grafik Budaya", icon: Network },

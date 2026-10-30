@@ -1,0 +1,11 @@
+import { MetadataRoute } from "next";
+
+export default function robots(): MetadataRoute.Robots {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://lokaquest.id";
+  return {
+    rules: [
+      { userAgent: "*", allow: ["/", "/encyclopedia/"], disallow: ["/admin/", "/player/", "/educator/", "/api/"] },
+    ],
+    sitemap: `${baseUrl}/sitemap.xml`,
+  };
+}
