@@ -44,6 +44,50 @@ describe("isAnswerCorrect", () => {
       )
     ).toBe(true);
   });
+
+  it("scores matching answers", () => {
+    expect(
+      isAnswerCorrect(
+        { matches: { Parang: "Keberanian", Kawung: "Kebersihan" } },
+        { matches: { Kawung: "Kebersihan", Parang: "Keberanian" } }
+      )
+    ).toBe(true);
+    expect(
+      isAnswerCorrect(
+        { matches: { Parang: "Kesetiaan" } },
+        { matches: { Parang: "Keberanian" } }
+      )
+    ).toBe(false);
+  });
+
+  it("scores sequencing answers", () => {
+    const events = ["Lahir", "Berjuang", "Menjadi raja"];
+    expect(
+      isAnswerCorrect(
+        { order: events },
+        { order: events },
+        { events }
+      )
+    ).toBe(true);
+    expect(
+      isAnswerCorrect(
+        { order: ["Berjuang", "Lahir", "Menjadi raja"] },
+        { order: events },
+        { events }
+      )
+    ).toBe(false);
+  });
+
+  it("translates legacy 1-based sequencing keys", () => {
+    const events = ["Lahir", "Berjuang", "Menjadi raja"];
+    expect(
+      isAnswerCorrect(
+        { order: events },
+        { order: [1, 2, 3] },
+        { events }
+      )
+    ).toBe(true);
+  });
 });
 
 describe("calculateScore", () => {

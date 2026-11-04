@@ -45,10 +45,17 @@ export default async function EducatorDashboardPage() {
               Pantau progres kelompok siswa dan hasil asesmen pembelajaran.
             </p>
           </div>
-          <Button>
-            <Plus className="size-4" aria-hidden="true" />
-            Buat kelompok
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild>
+              <Link href="/educator/groups">
+                <Plus className="size-4" aria-hidden="true" />
+                Kelola kelompok
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/educator/quiz">Kuis live</Link>
+            </Button>
+          </div>
         </header>
 
         {/* Metric strip */}

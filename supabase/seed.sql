@@ -75,7 +75,7 @@ select
   m.id,
   'matching',
   'Cocokkan motif batik dengan maknanya:',
-  '{"pairs": {"Parang Rusak": "Keberanian", "Kawung": "Kebersihan", "Semen Rama": "Kesetiaan"}}',
+  '{"lefts": ["Parang Rusak", "Kawung", "Semen Rama"], "rights": ["Keberanian", "Kebersihan", "Kesetiaan"]}',
   '{"matches": {"Parang Rusak": "Keberanian", "Kawung": "Kebersihan", "Semen Rama": "Kesetiaan"}}',
   'Setiap motif batik memiliki filosofi mendalam yang dijunjung oleh leluhur.',
   2

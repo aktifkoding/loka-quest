@@ -36,7 +36,8 @@ audit_logs: log aktivitas administratif (actor_id opsional)
 
 ## Row Level Security
 
-Semua 17 tabel mengaktifkan RLS (migrasi `20240101000001_rls_policies.sql`):
+Semua tabel mengaktifkan RLS (migrasi awal, lalu diperketat oleh
+`20261104000000_security_hardening.sql` dan `20261104000001_feature_expansion.sql`):
 
 - **profiles**: baca/update sendiri; admin baca semua.
 - **Konten publik** (regions/contents/missions/questions/sources/artifacts/achievements):
@@ -44,20 +45,26 @@ Semua 17 tabel mengaktifkan RLS (migrasi `20240101000001_rls_policies.sql`):
 - **mission_attempts / mission_answers**: hanya pemilik (`auth.uid() = profile_id`).
 - **player_progress / user_achievements / user_artifacts / assessment_responses**:
   hanya pemilik.
-- **educator_groups**: edukator hanya kelompoknya sendiri.
+- **educator_groups / educator_assignments**: edukator hanya kelompoknya sendiri; anggota hanya melihat kelompok dan tugasnya.
+- **community_submissions**: publik hanya yang `published`; pemilik melihat kirimannya; admin/edukator meninjau.
+- **ai_qa_logs / rate_limits / analytics_events**: hanya admin atau service role.
+- **player_streaks / review_items / daily_challenge_completions**: hanya pemilik.
+- **quiz_sessions / quiz_participants / quiz_answers**: host dan peserta terautentikasi.
 - **audit_logs**: hanya admin yang bisa baca.
 
-Kunci jawaban (`mission_questions.correct_answer`) tetap terbaca oleh klien
-terautentikasi pada level RLS — perlindungan aktual ada di lapis API yang
-tidak pernah memproyeksikan kolom tersebut ke browser (lihat
-`docs/api-contracts.md`). Untuk penguncian penuh di level DB, bisa
-ditambahkan policy `select` yang menyensor kolom via view — dicatat
-sebagai penyempurnaan lanjutan.
+Kunci jawaban (`mission_questions.correct_answer`, `learning_assessments.questions`)
+dan state game tidak lagi dapat dibaca/ditulis klien setelah migrasi hardening:
+kolom sensitif dicabut lewat column grants dan semua penulisan state memakai
+service role di route server (lihat `docs/api-contracts.md`).
 
 ## Trigger & Function
 
 - `handle_new_user()` — trigger `auth.users` INSERT → buat `profiles` (role `player`).
 - `update_updated_at()` — perbarui kolom `updated_at` otomatis di tabel utama.
+- `apply_xp(profile, xp, first_completion)` — update XP/level/misi secara atomik.
+- `touch_streak(profile)` — hitung streak harian.
+- `check_rate_limit(key, limit, window)` — rate limit durable lintas instance.
+- `is_group_member(group)` / `is_quiz_participant(session)` / `is_quiz_host(session)` — helper RLS tanpa rekursi.
 
 ## Idempotensi & Integritas
 

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service-role";
 import { AdminSubmissionsClient } from "./submissions-client";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ export default async function AdminSubmissionsPage() {
     redirect("/");
   }
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data: submissions } = await supabase
     .from("community_submissions")
     .select("*")

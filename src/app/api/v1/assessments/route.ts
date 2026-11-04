@@ -1,8 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service-role";
 import { requireAuth } from "@/lib/auth/session";
 import { withErrorHandling } from "@/lib/api/handler";
+import { parseJsonBody } from "@/lib/api/response";
 import { calculateScore } from "@/lib/scoring";
-import { rateLimit, clientKey } from "@/lib/security/rate-limit";
+import { durableRateLimit } from "@/lib/security/rate-limit-db";
 import { z } from "zod";
 
 const submitSchema = z.object({
@@ -37,7 +38,9 @@ function stripAnswers(questions: unknown): AssessmentQuestion[] {
 
 export async function GET() {
   return withErrorHandling(async () => {
-    const supabase = await createClient();
+    // The `questions` column holds the answer key, so it is not readable by
+    // anon/authenticated after the security-hardening migration.
+    const supabase = createServiceClient();
 
     const { data: assessments, error } = await supabase
       .from("learning_assessments")
@@ -60,7 +63,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   return withErrorHandling(async () => {
-    const rl = rateLimit(clientKey(request, "assessments"), 20, 60_000);
+    const rl = await durableRateLimit(request, "assessments", 20, 60);
     if (!rl.ok) {
       return Response.json(
         { success: false, error: "Terlalu banyak pengiriman. Coba lagi nanti." },
@@ -69,8 +72,8 @@ export async function POST(request: Request) {
     }
 
     const user = await requireAuth();
-    const supabase = await createClient();
-    const body = submitSchema.parse(await request.json());
+    const supabase = createServiceClient();
+    const body = await parseJsonBody(request, submitSchema);
 
     // Load the assessment to score server-side — never trust client scores
     const { data: assessment, error: assessmentError } = await supabase
@@ -89,7 +92,14 @@ export async function POST(request: Request) {
     const questions = ((assessment.questions as AssessmentQuestion[]) ?? []) ?? [];
     const questionMap = new Map(questions.map((q) => [q.id, q]));
 
-    const results = body.answers.map((a) => {
+    const seen = new Set<string>();
+    const submitted = body.answers.filter((a) => {
+      if (seen.has(a.questionId)) return false;
+      seen.add(a.questionId);
+      return true;
+    });
+
+    const results = submitted.map((a) => {
       const question = questionMap.get(a.questionId);
       const isCorrect = question
         ? a.selected.trim().toLowerCase() === question.correct.trim().toLowerCase()
@@ -105,14 +115,14 @@ export async function POST(request: Request) {
     });
 
     const correctCount = results.filter((r) => r.isCorrect).length;
-    const score = calculateScore(correctCount, body.answers.length);
+    const score = calculateScore(correctCount, questions.length);
 
     const { error } = await supabase
       .from("assessment_responses")
       .insert({
         assessment_id: body.assessmentId,
         profile_id: user.id,
-        answers: body.answers,
+        answers: submitted,
         score,
       });
 
@@ -126,7 +136,7 @@ export async function POST(request: Request) {
         data: {
           score,
           correctCount,
-          totalQuestions: body.answers.length,
+          totalQuestions: questions.length,
           results,
         },
       },

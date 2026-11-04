@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ArrowLeft, FileText, BookMarked } from "lucide-react";
+import { ContentForm } from "./content-form";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export default async function AdminContentsPage() {
     await requireRole(["admin"]);
     const supabase = await createClient();
 
-    const [{ data: contents }, { data: sources }] = await Promise.all([
+    const [{ data: contents }, { data: sources }, { data: regions }] = await Promise.all([
       supabase
         .from("cultural_contents")
         .select("id, title, content_type, status, cultural_regions (name)")
@@ -30,6 +31,7 @@ export default async function AdminContentsPage() {
         .from("cultural_sources")
         .select("id, title, publisher, license")
         .order("title", { ascending: true }),
+      supabase.from("cultural_regions").select("id, name").order("name"),
     ]);
 
     const contentRows = (contents ?? []).map((c) => ({
@@ -60,6 +62,7 @@ export default async function AdminContentsPage() {
 
         <section className="mt-10" aria-label="Konten budaya">
           <h2 className="font-display text-xl font-semibold">Konten budaya</h2>
+          <ContentForm regions={regions ?? []} sources={sourceRows} />
           {contentRows.length === 0 ? (
             <div className="mt-4">
               <EmptyState

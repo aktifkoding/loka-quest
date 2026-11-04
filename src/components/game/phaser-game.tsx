@@ -14,7 +14,7 @@ export interface PhaserGameQuestion {
   question_type: string;
   prompt: string;
   options: Record<string, unknown>;
-  explanation: string;
+  explanation?: string;
 }
 
 export interface PhaserGameProps {
@@ -322,14 +322,23 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
         /* ---------- matching: tap kiri lalu kanan, garis penghubung ---------- */
 
         private renderMatching(q: PhaserGameQuestion, width: number) {
-          const pairsMap = (q.options as { pairs?: Record<string, string> }).pairs ?? {};
-          const pairs = Object.entries(pairsMap).map(([left, right]) => ({
+          // New format ships independent left/right lists so the client never
+          // receives the answer mapping. Legacy `pairs` is still supported.
+          const matchingOptions = q.options as {
+            lefts?: string[];
+            rights?: string[];
+            pairs?: Record<string, string>;
+          };
+          const legacyPairs = matchingOptions.pairs ?? {};
+          const lefts = matchingOptions.lefts ?? Object.keys(legacyPairs);
+          const rightOptions = matchingOptions.rights ?? Object.values(legacyPairs);
+          const pairs = lefts.map((left) => ({
             left,
-            right,
+            right: "",
             matched: "",
           }));
 
-          const rights = Phaser.Utils.Array.Shuffle(pairs.map((p) => p.right));
+          const rights = Phaser.Utils.Array.Shuffle([...rightOptions]);
           const colLeftX = width / 2 - 130;
           const colRightX = width / 2 + 130;
           const startY = 250;

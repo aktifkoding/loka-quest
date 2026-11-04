@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import type { ComponentType } from "react";
+import type { PhaserGameProps } from "@/components/game/phaser-game";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,7 +28,7 @@ interface Question {
   question_type: string;
   prompt: string;
   options: Record<string, unknown>;
-  explanation: string;
+  explanation?: string;
   sort_order: number;
 }
 
@@ -85,17 +87,7 @@ const PhaserGame = dynamic(
       </div>
     ),
   }
-) as React.ComponentType<{
-  mission: { id: string; title: string; xp_reward: number };
-  questions: {
-    id: string;
-    question_type: string;
-    prompt: string;
-    options: Record<string, unknown>;
-    explanation: string;
-  }[];
-  onComplete: (answers: { questionId: string; answer: Record<string, unknown> }[]) => void;
-}>;
+) as unknown as ComponentType<PhaserGameProps>;
 
 export default function MissionPage() {
   const params = useParams();

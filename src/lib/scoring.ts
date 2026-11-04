@@ -31,20 +31,49 @@ const stableStringify = (value: unknown): string => {
 const extractSubmitted = (submitted: Record<string, unknown>): unknown => {
   if ("selected" in submitted) return submitted.selected;
   if ("value" in submitted) return submitted.value;
-  return submitted.correct ?? null;
+  // Matching answers arrive as { matches: { left: right } } and sequencing
+  // answers as { order: [...] } from the Phaser client.
+  if ("matches" in submitted) return { matches: submitted.matches };
+  if ("order" in submitted) return { order: submitted.order };
+  return null;
 };
 
 const extractCorrect = (correct: Record<string, unknown>): unknown => {
-  return correct.correct ?? correct.value ?? null;
+  if ("correct" in correct) return correct.correct;
+  if ("value" in correct) return correct.value;
+  // { matches: ... } and { order: ... } are already the comparable shape.
+  return correct;
 };
 
 /** Compare a submitted answer against the stored correct answer. */
 export function isAnswerCorrect(
   submitted: Record<string, unknown>,
-  correct: Record<string, unknown>
+  correct: Record<string, unknown>,
+  options?: Record<string, unknown>
 ): boolean {
   const submittedValue = extractSubmitted(submitted);
-  const correctValue = extractCorrect(correct);
+  let correctValue = extractCorrect(correct);
+
+  // Older sequencing rows store 1-based indices while the client sends the
+  // ordered event labels. Translate the key before comparing.
+  if (
+    options &&
+    correctValue &&
+    typeof correctValue === "object" &&
+    "order" in (correctValue as Record<string, unknown>)
+  ) {
+    const order = (correctValue as { order?: unknown }).order;
+    const events = options.events;
+    if (
+      Array.isArray(order) &&
+      order.every((item) => typeof item === "number") &&
+      Array.isArray(events)
+    ) {
+      correctValue = {
+        order: order.map((index) => events[Number(index) - 1] ?? index),
+      };
+    }
+  }
 
   // Empty submissions never count as correct
   if (

@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ArrowLeft, Plus, MapPin, FileText } from "lucide-react";
+import { ArrowLeft, Plus, MapPin } from "lucide-react";
 
 interface Region {
   id: string;
@@ -34,6 +35,15 @@ export default function AdminRegionsPage() {
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    slug: "",
+    description: "",
+    status: "draft",
+  });
 
   useEffect(() => {
     const fetchRegions = async () => {
@@ -49,8 +59,37 @@ export default function AdminRegionsPage() {
       }
     };
 
-    fetchRegions();
+    void fetchRegions();
   }, []);
+
+  async function createRegion(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setFormError(null);
+    try {
+      const response = await fetch("/api/v1/admin/regions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          sortOrder: regions.length,
+          geographicContext: null,
+          imageUrl: null,
+        }),
+      });
+      const json = await response.json();
+      if (!response.ok) throw new Error(json.error || "Gagal membuat wilayah");
+      setShowForm(false);
+      setForm({ name: "", slug: "", description: "", status: "draft" });
+      const refreshed = await fetch("/api/v1/admin/regions", { cache: "no-store" });
+      const refreshedJson = await refreshed.json();
+      setRegions(refreshedJson.data ?? []);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Gagal membuat wilayah");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
@@ -70,11 +109,78 @@ export default function AdminRegionsPage() {
             Atur wilayah lewat status editorial: draf, review, terbit, arsip.
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setShowForm((value) => !value)}>
           <Plus className="size-4" aria-hidden="true" />
           Tambah wilayah
         </Button>
       </header>
+
+      {formError && (
+        <p role="alert" className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {formError}
+        </p>
+      )}
+
+      {showForm && (
+        <Card className="mt-6 p-6">
+          <form onSubmit={createRegion} className="grid gap-4 sm:grid-cols-2">
+            <label className="block text-sm font-medium">
+              Nama
+              <Input
+                className="mt-1"
+                required
+                minLength={3}
+                value={form.name}
+                onChange={(event) => setForm({ ...form, name: event.target.value })}
+              />
+            </label>
+            <label className="block text-sm font-medium">
+              Slug
+              <Input
+                className="mt-1"
+                required
+                pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                placeholder="jawa-timur"
+                value={form.slug}
+                onChange={(event) => setForm({ ...form, slug: event.target.value })}
+              />
+            </label>
+            <label className="block text-sm font-medium sm:col-span-2">
+              Deskripsi
+              <textarea
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                rows={3}
+                required
+                minLength={20}
+                value={form.description}
+                onChange={(event) =>
+                  setForm({ ...form, description: event.target.value })
+                }
+              />
+            </label>
+            <label className="block text-sm font-medium">
+              Status
+              <select
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+                value={form.status}
+                onChange={(event) => setForm({ ...form, status: event.target.value })}
+              >
+                <option value="draft">Draf</option>
+                <option value="review">Review</option>
+                <option value="published">Terbit</option>
+              </select>
+            </label>
+            <div className="flex items-end gap-3">
+              <Button type="submit" disabled={busy}>
+                {busy ? "Menyimpan…" : "Simpan wilayah"}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                Batal
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
 
       <div className="mt-8">
         {loading ? (

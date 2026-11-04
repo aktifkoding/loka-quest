@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
+import { ConsentBanner } from "@/components/layout/consent-banner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -63,6 +64,7 @@ export default function RootLayout({
       >
         <Navbar />
         <main className="min-h-screen pt-24">{children}</main>
+        <ConsentBanner />
       </body>
     </html>
   );

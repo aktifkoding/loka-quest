@@ -1,4 +1,5 @@
 import { ApiError } from "./response";
+import { captureException } from "@/lib/observability";
 
 type Handler = () => Promise<Response>;
 
@@ -41,7 +42,7 @@ export async function withErrorHandling(handler: Handler): Promise<Response> {
     }
 
     // Log server-side, return generic error to client
-    console.error("[api] unhandled error:", error);
+    await captureException(error, { source: "api" });
     return Response.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

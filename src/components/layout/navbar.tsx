@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Compass, LogIn, LogOut, Trophy, Gamepad2, Network, Users, Lightbulb, BookOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { LanguageToggle } from "@/components/layout/language-toggle";
+import { dictionary, getLang, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 type NavUser = {
@@ -16,22 +18,27 @@ type NavUser = {
 };
 
 const navLinks = [
-  { href: "/encyclopedia", label: "Ensiklopedia", icon: BookOpen },
-  { href: "/explore", label: "Jelajahi", icon: Compass },
-  { href: "/missions", label: "Misi", icon: Gamepad2 },
-  { href: "/jelajahi", label: "Grafik Budaya", icon: Network },
-  { href: "/komunitas", label: "Komunitas", icon: Users },
-  { href: "/asisten", label: "Asisten AI", icon: Lightbulb },
-  { href: "/player/dashboard", label: "Dasbor", icon: Trophy },
-];
+  { href: "/encyclopedia", key: "encyclopedia", icon: BookOpen },
+  { href: "/explore", key: "explore", icon: Compass },
+  { href: "/missions", key: "missions", icon: Gamepad2 },
+  { href: "/jelajahi", key: "graph", icon: Network },
+  { href: "/komunitas", key: "community", icon: Users },
+  { href: "/asisten", key: "assistant", icon: Lightbulb },
+  { href: "/player/dashboard", key: "dashboard", icon: Trophy },
+] as const;
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<NavUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lang, setCurrentLang] = useState<Lang>("id");
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+
+  useEffect(() => {
+    setCurrentLang(getLang());
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -113,12 +120,14 @@ export function Navbar() {
               )}
             >
               <link.icon className="size-4" aria-hidden="true" />
-              {link.label}
+              {dictionary[lang][link.key]}
             </Link>
           ))}
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <LanguageToggle />
+          <ThemeToggle />
           {loading ? (
             <span
               className="h-9 w-40 animate-shimmer rounded-full"
@@ -134,7 +143,7 @@ export function Navbar() {
               </span>
               <Button variant="ghost" size="sm" onClick={handleLogout}>
                 <LogOut className="size-4" aria-hidden="true" />
-                Keluar
+                {dictionary[lang].logout}
               </Button>
             </>
           ) : (
@@ -142,11 +151,11 @@ export function Navbar() {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/auth/login">
                   <LogIn className="size-4" aria-hidden="true" />
-                  Masuk
+                  {dictionary[lang].login}
                 </Link>
               </Button>
               <Button size="sm" asChild>
-                <Link href="/auth/register">Daftar</Link>
+                <Link href="/auth/register">{dictionary[lang].register}</Link>
               </Button>
             </>
           )}
@@ -189,11 +198,14 @@ export function Navbar() {
                 onClick={() => setIsOpen(false)}
               >
                 <link.icon className="size-5" aria-hidden="true" />
-                {link.label}
+                {dictionary[lang][link.key]}
               </Link>
             ))}
           </nav>
           <div className="mt-3 border-t border-border pt-3">
+            <div className="mb-3 flex justify-end">
+              <LanguageToggle />
+            </div>
             {user ? (
               <div className="space-y-2">
                 <p className="truncate px-1 text-sm text-muted-foreground">
@@ -205,16 +217,16 @@ export function Navbar() {
                   onClick={handleLogout}
                 >
                   <LogOut className="size-4" aria-hidden="true" />
-                  Keluar
+                  {dictionary[lang].logout}
                 </Button>
               </div>
             ) : (
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" asChild>
-                  <Link href="/auth/login">Masuk</Link>
+                  <Link href="/auth/login">{dictionary[lang].login}</Link>
                 </Button>
                 <Button className="flex-1" asChild>
-                  <Link href="/auth/register">Daftar</Link>
+                  <Link href="/auth/register">{dictionary[lang].register}</Link>
                 </Button>
               </div>
             )}

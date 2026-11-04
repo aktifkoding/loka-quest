@@ -30,8 +30,15 @@ Buka **SQL Editor** di dashboard Supabase, lalu jalankan file-file berikut
 
 1. `supabase/migrations/20240101000000_initial_schema.sql` — tabel, index, constraint.
 2. `supabase/migrations/20240101000001_rls_policies.sql` — Row Level Security, trigger, function.
+3. `supabase/migrations/20240101000002_fix_rls_recursion.sql` — **wajib**; tanpa ini policy yang membaca `profiles` akan gagal `42P17`.
+4. `supabase/migrations/20250101000003_add_knowledge_graph_and_community.sql` — knowledge graph, komunitas, log asisten.
+5. `supabase/migrations/20261030000000_nusantara_encyclopedia.sql` — skema ensiklopedia + alur editorial.
+6. `supabase/migrations/20261104000000_security_hardening.sql` — hak kolom, RLS tabel baru, fungsi XP/streak, rate limit, antrean review.
+7. `supabase/migrations/20261104000001_feature_expansion.sql` — kelompok edukator, tugas, tantangan harian, analitik, kuis live, metadata audio.
 
-Verifikasi: **Table Editor** harus menampilkan 17 tabel, dan tiap tabel berlabel `RLS enabled`.
+Verifikasi: setiap tabel berlabel `RLS enabled` di **Table Editor**. Setelah migrasi #6, role `authenticated` hanya boleh mengubah `profiles.full_name`; perubahan role/XP dilakukan server.
+
+Jangan menjalankan `supabase db reset` pada project produksi.
 
 ### 2.3 Isi data demo
 
@@ -108,6 +115,9 @@ git push -u origin main
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | dari 2.5 | Production, Preview, Development |
 | `SUPABASE_SECRET_KEY` | dari 2.5 | Production, Preview (tandai **Sensitive**) |
 | `NEXT_PUBLIC_APP_URL` | `https://<project>.vercel.app` | Production |
+| `ZAI_API_KEY` / `ZAI_API_BASE` | opsional, untuk jawaban AI generatif | Production |
+| `RESEND_API_KEY` / `EMAIL_FROM` | opsional, untuk email moderasi | Production |
+| `ERROR_WEBHOOK_URL` | opsional, kolektor error eksternal | Production |
 
 4. **Deploy** — build pertama ± 2 menit.
 

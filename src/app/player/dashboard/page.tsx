@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { calculateLevel } from "@/lib/scoring";
 import { Onboarding } from "@/components/layout/onboarding";
+import { DailyChallengeCard } from "@/components/game/daily-challenge-card";
 import {
   Zap,
   Target,
@@ -17,6 +18,8 @@ import {
   Gem,
   UserRound,
   BarChart3,
+  RotateCcw,
+  Users,
 } from "lucide-react";
 
 const XP_PER_LEVEL = 500;
@@ -107,7 +110,8 @@ export default async function PlayerDashboardPage() {
     return (
       <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
         <Onboarding />
-        <header className="max-w-2xl">
+        <DailyChallengeCard />
+        <header className="mt-10 max-w-2xl">
           <h1 className="font-display text-4xl font-semibold tracking-tight">
             Dasbor
           </h1>
@@ -226,8 +230,10 @@ export default async function PlayerDashboardPage() {
         )}
 
         {/* Quick links */}
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {[
+            { href: "/player/classes", label: "Kelas saya", icon: Users, desc: "Tugas dari guru" },
+            { href: "/player/review", label: "Review pintar", icon: RotateCcw, desc: "Ulang soal yang salah" },
             { href: "/player/collection", label: "Koleksi artefak", icon: Gem, desc: "Artefak dari tiap wilayah" },
             { href: "/player/profile", label: "Profil", icon: UserRound, desc: "Nama tampilan & akun" },
             { href: "/leaderboard", label: "Leaderboard", icon: BarChart3, desc: "Peringkat XP" },
