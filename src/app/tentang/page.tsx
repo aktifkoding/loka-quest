@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Code2, TrendingUp, BookMarked } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { Code2, TrendingUp, BookMarked, Landmark } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 
 export const metadata = {
@@ -29,22 +29,13 @@ const ROLES = [
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
-      <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
-        <Link href="/">
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          Beranda
-        </Link>
-      </Button>
-
-      <h1 className="font-display text-4xl font-semibold tracking-tight">
-        Tentang LokaQuest
-      </h1>
-      <p className="mt-3 leading-relaxed text-muted-foreground">
-        LokaQuest lahir dari satu keyakinan: warisan budaya paling hidup
-        ketika generasi muda menyentuhnya lewat cara mereka paling suka —
-        bermain. Tiga misi kami (batik, gamelan, wayang) dibangun di atas
-        konten bersumber dan teknologi yang menghormati privasi pemain.
-      </p>
+      <PageHeader
+        icon={Landmark}
+        title="Tentang LokaQuest"
+        description="LokaQuest lahir dari satu keyakinan: warisan budaya paling hidup ketika generasi muda menyentuhnya lewat cara mereka paling suka — bermain. Tiga misi kami (batik, gamelan, wayang) dibangun di atas konten bersumber dan teknologi yang menghormati privasi pemain."
+        backHref="/"
+        backLabel="Beranda"
+      />
 
       <div className="mt-10 space-y-4">
         {ROLES.map((r, i) => (

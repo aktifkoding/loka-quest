@@ -416,7 +416,6 @@ export default function HomePage() {
       </Reveal>
 
       {/* Footer — boring on purpose */}
-      {/* Footer — boring on purpose */}
       <footer className="border-t border-border">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <div className="flex flex-col gap-8 sm:flex-row sm:justify-between">

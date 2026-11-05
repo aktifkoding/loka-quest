@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/service-role";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Trophy, Zap, Medal, ArrowLeft } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Trophy, Zap, Medal } from "lucide-react";
 import { ShareButton } from "@/components/layout/share-button";
 
 export const metadata = {
@@ -36,40 +36,33 @@ export default async function LeaderboardPage() {
     })
     .filter((r) => r.xp > 0);
 
-  const medals = ["text-gold", "text-muted-foreground", "text-amber-700"];
+  const medals = ["text-gold", "text-muted-foreground", "text-warning"];
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 md:py-14">
-      <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
-        <Link href="/">
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          Beranda
-        </Link>
-      </Button>
-
-      <header className="text-center">
-        <Trophy className="mx-auto size-9 text-gold" aria-hidden="true" />
-        <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight">
-          Papan peringkat
-        </h1>
-        <div className="mx-auto mt-2 flex max-w-md flex-col items-center gap-3">
-          <p className="text-muted-foreground">
-            20 penjelajah dengan XP tertinggi. Hanya nama tampilan yang ditampilkan.
-          </p>
-          <ShareButton title="LokaQuest Leaderboard" text="Lihat papan peringkat penjelajah budaya di LokaQuest!" />
-        </div>
-      </header>
+      <PageHeader
+        icon={Trophy}
+        title="Papan peringkat"
+        description="20 penjelajah dengan XP tertinggi. Hanya nama tampilan yang ditampilkan."
+        backHref="/"
+        backLabel="Beranda"
+        actions={
+          <ShareButton
+            title="LokaQuest Leaderboard"
+            text="Lihat papan peringkat penjelajah budaya di LokaQuest!"
+          />
+        }
+      />
 
       <Card className="mt-10 overflow-hidden">
         {board.length === 0 ? (
-          <div className="p-10 text-center">
-            <p className="font-medium">Belum ada peringkat</p>
-            <p className="mx-auto mt-1 max-w-xs text-sm text-muted-foreground">
-              Jadilah yang pertama menyelesaikan misi dan masuk papan peringkat.
-            </p>
-            <Button asChild size="sm" className="mt-4">
-              <Link href="/missions">Mulai misi</Link>
-            </Button>
+          <div className="m-4">
+            <EmptyState
+              icon={Trophy}
+              title="Belum ada peringkat"
+              description="Jadilah yang pertama menyelesaikan misi dan masuk papan peringkat."
+              action={{ label: "Mulai misi", href: "/missions" }}
+            />
           </div>
         ) : (
           <ol className="divide-y divide-border">

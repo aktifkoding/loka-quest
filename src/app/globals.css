@@ -22,6 +22,9 @@
     --gold: 32 94% 44%;
     --destructive: 0 72% 44%;
     --destructive-foreground: 0 0% 98%;
+    /* Semantic feedback hues, tinted to the palette (daun / kunyit). */
+    --success: 152 48% 30%;
+    --warning: 28 70% 36%;
     --border: 35 22% 87%;
     --input: 35 22% 84%;
     --ring: 233 48% 40%;
@@ -46,6 +49,8 @@
     --gold: 38 92% 56%;
     --destructive: 0 62% 52%;
     --destructive-foreground: 0 0% 98%;
+    --success: 152 42% 48%;
+    --warning: 32 78% 52%;
     --border: 233 15% 20%;
     --input: 233 15% 22%;
     --ring: 233 55% 62%;
@@ -63,10 +68,15 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
     text-rendering: optimizeLegibility;
+    /* Tekstur kertas daluang — grain halus di atas warna dasar. */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.032'/%3E%3C/svg%3E");
   }
   h1, h2, h3, h4 {
     @apply tracking-tight;
     text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
   }
   /* Display serif: optical sizing + ligature khas Fraunces */
   .font-display {
@@ -122,6 +132,25 @@
       90deg,
       hsl(var(--primary) / 0.4) 0 10px,
       transparent 10px 18px
+    );
+  }
+
+  /* Varian emas — untuk seksi perayaan (XP, pencapaian). */
+  .tenun-gold {
+    height: 2px;
+    background-image: repeating-linear-gradient(
+      90deg,
+      hsl(var(--gold) / 0.5) 0 10px,
+      transparent 10px 18px
+    );
+  }
+
+  /* Motif parang — serat diagonal tenun untuk panel & pita CTA. */
+  .batik-parang {
+    background-image: repeating-linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.05) 0 2px,
+      transparent 2px 14px
     );
   }
 

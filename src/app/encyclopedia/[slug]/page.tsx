@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ShareButton } from "@/components/layout/share-button";
 import { BookmarkButton } from "@/components/encyclopedia/bookmark-button";
 import { ReadingHistoryTracker } from "@/components/encyclopedia/reading-history-tracker";
 import { ArticleFeedback } from "@/components/encyclopedia/article-feedback";
-import { MapPin, Gamepad2, ExternalLink, Flag } from "lucide-react";
+import { MapPin, Gamepad2, ExternalLink, ArrowLeft } from "lucide-react";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -46,7 +45,7 @@ export default async function EncyclopediaArticlePage({ params }: Props) {
   const jsonLd = { "@context": "https://schema.org", "@type": "Article", headline: article.title, description: article.summary, datePublished: article.published_at, dateModified: article.updated_at, author: { "@type": "Organization", name: "Nusantara Cultural Encyclopedia" }, image: article.featured_image_url || undefined, citation: sources.map((source) => source.source_url).filter(Boolean) };
   return <article className="mx-auto max-w-4xl px-4 py-10 md:py-14">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-    <Link href="/encyclopedia/explore" className="text-sm text-muted-foreground hover:text-foreground">← Kembali ke ensiklopedia</Link>
+    <Link href="/encyclopedia/explore" className="inline-flex items-center gap-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true"/>Kembali ke ensiklopedia</Link>
     <header className="mt-6"><div className="flex flex-wrap gap-2">{categories.map((category) => <Link key={category.slug} href={`/encyclopedia/explore?category=${category.slug}`} className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">{category.name}</Link>)}</div><h1 className="mt-5 font-display text-4xl font-semibold tracking-tight md:text-5xl">{article.title}</h1><p className="mt-5 text-lg leading-relaxed text-muted-foreground">{article.summary}</p><div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">{regions.map((region) => <Link key={region.slug} href={`/encyclopedia/explore?region=${region.slug}`} className="inline-flex items-center gap-1 hover:text-primary"><MapPin className="size-4" aria-hidden="true"/>{region.name}</Link>)}{article.last_reviewed_at && <span>Ditinjau {new Date(article.last_reviewed_at).toLocaleDateString("id-ID")}</span>}</div></header>
     <div className="mt-6 flex flex-wrap items-center gap-3"><ShareButton title={article.title} text={article.summary}/><BookmarkButton articleId={article.id}/><ReadingHistoryTracker articleId={article.id}/></div>
     {article.audio_url && <div className="mt-6 rounded-2xl border border-border bg-secondary/40 p-4"><p className="text-sm font-medium">Narasi audio</p><audio controls preload="none" src={article.audio_url} className="mt-2 w-full">Browser Anda tidak mendukung pemutar audio.</audio>{article.audio_credit && <p className="mt-2 text-xs text-muted-foreground">Audio: {article.audio_credit}</p>}</div>}

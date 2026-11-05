@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { calculateLevel } from "@/lib/scoring";
 import { Onboarding } from "@/components/layout/onboarding";
 import { DailyChallengeCard } from "@/components/game/daily-challenge-card";
@@ -284,14 +285,13 @@ export default async function PlayerDashboardPage() {
                   ))}
                 </ul>
               ) : (
-                <div className="mt-5 rounded-xl border border-dashed border-border px-4 py-8 text-center">
-                  <p className="text-sm font-medium">Belum ada lencana</p>
-                  <p className="mt-1 text-[13px] text-muted-foreground">
-                    Selesaikan misi pertama untuk meraih lencana.
-                  </p>
-                  <Button asChild size="sm" className="mt-4">
-                    <Link href="/missions">Pilih misi</Link>
-                  </Button>
+                <div className="mt-5">
+                  <EmptyState
+                    icon={Award}
+                    title="Belum ada lencana"
+                    description="Selesaikan misi pertama untuk meraih lencana."
+                    action={{ label: "Pilih misi", href: "/missions" }}
+                  />
                 </div>
               )}
             </div>
@@ -340,17 +340,13 @@ export default async function PlayerDashboardPage() {
                   </tbody>
                 </table>
               ) : (
-                <div className="mt-5 rounded-xl border border-dashed border-border px-4 py-8 text-center">
-                  <p className="text-sm font-medium">Belum ada riwayat</p>
-                  <p className="mt-1 text-[13px] text-muted-foreground">
-                    Mainkan misi pertamamu — nilainya tercatat di sini.
-                  </p>
-                  <Button asChild size="sm" className="mt-4">
-                    <Link href="/missions">
-                      <Gamepad2 className="size-4" aria-hidden="true" />
-                      Mulai misi
-                    </Link>
-                  </Button>
+                <div className="mt-5">
+                  <EmptyState
+                    icon={Gamepad2}
+                    title="Belum ada riwayat"
+                    description="Mainkan misi pertamamu — nilainya tercatat di sini."
+                    action={{ label: "Mulai misi", href: "/missions" }}
+                  />
                 </div>
               )}
             </div>

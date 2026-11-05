@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import { Reveal } from "@/components/ui/reveal";
-import { Lightbulb, Send, BookMarked, ExternalLink } from "lucide-react";
+import { Lightbulb, Send, BookMarked, ArrowRight } from "lucide-react";
 
 type Citation = {
   content_id: string;
@@ -67,17 +67,11 @@ export default function AiAssistantPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
-      <header className="max-w-2xl">
-        <div className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Lightbulb className="size-5" aria-hidden="true" />
-          </span>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">Asisten Budaya AI</h1>
-        </div>
-        <p className="mt-3 leading-relaxed text-muted-foreground">
-          Tanyakan apa saja tentang budaya Indonesia. Jawaban disusun dari artikel dan sumber budaya terverifikasi di LokaQuest, dilengkapi referensi.
-        </p>
-      </header>
+      <PageHeader
+        icon={Lightbulb}
+        title="Asisten Budaya AI"
+        description="Tanyakan apa saja tentang budaya Indonesia. Jawaban disusun dari artikel dan sumber budaya terverifikasi di LokaQuest, dilengkapi referensi."
+      />
 
       <Reveal>
         <form onSubmit={handleAsk} className="mt-8">
@@ -100,7 +94,10 @@ export default function AiAssistantPage() {
       </Reveal>
 
       {error && (
-        <Card className="mt-6 border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+        <Card
+          className="mt-6 border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
+          role="alert"
+        >
           {error}
         </Card>
       )}
@@ -116,7 +113,7 @@ export default function AiAssistantPage() {
       {!asked && !loading && (
         <Card className="mt-8 p-6">
           <p className="text-sm font-medium">Coba pertanyaan:</p>
-          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+          <ul className="mt-3 space-y-2 text-sm">
             {[
               "Apa itu batik Parang Rusak?",
               "Ceritakan tentang wayang kulit Yogyakarta.",
@@ -126,9 +123,15 @@ export default function AiAssistantPage() {
                 <button
                   type="button"
                   onClick={() => setQuestion(q)}
-                  className="rounded-lg border border-border px-3 py-2 text-left hover:bg-secondary/60"
+                  className="group flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-card px-3.5 py-2.5 text-left transition-colors duration-200 hover:border-primary/40 hover:bg-secondary/60"
                 >
-                  {q}
+                  <span className="text-muted-foreground transition-colors group-hover:text-foreground">
+                    {q}
+                  </span>
+                  <ArrowRight
+                    className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
+                    aria-hidden="true"
+                  />
                 </button>
               </li>
             ))}

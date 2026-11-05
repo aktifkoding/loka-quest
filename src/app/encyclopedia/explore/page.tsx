@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { BookOpen, MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 
 export const metadata = { title: "Jelajahi Ensiklopedia" };
@@ -90,33 +91,27 @@ export default async function ExploreEncyclopediaPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-      <header className="max-w-2xl">
-        <Link
-          href="/encyclopedia"
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          ← Ensiklopedia
-        </Link>
-        <h1 className="mt-4 font-display text-4xl font-semibold">
-          Jelajahi pengetahuan budaya
-        </h1>
-        <p className="mt-3 leading-relaxed text-muted-foreground">
-          Artikel yang telah dipublikasikan melalui proses tinjauan editorial.
-        </p>
-        {filterLabel && (
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-            <span className="rounded-full bg-primary/10 px-3 py-1 font-medium text-primary">
-              {filterLabel}
-            </span>
-            <Link
-              href="/encyclopedia/explore"
-              className="text-muted-foreground underline-offset-4 hover:underline"
-            >
-              Hapus filter
-            </Link>
-          </div>
-        )}
-      </header>
+      <PageHeader
+        icon={BookOpen}
+        title="Jelajahi pengetahuan budaya"
+        description="Artikel yang telah dipublikasikan melalui proses tinjauan editorial."
+        backHref="/encyclopedia"
+        backLabel="Ensiklopedia"
+      />
+
+      {filterLabel && (
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+          <span className="rounded-full bg-primary/10 px-3 py-1 font-medium text-primary">
+            {filterLabel}
+          </span>
+          <Link
+            href="/encyclopedia/explore"
+            className="text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Hapus filter
+          </Link>
+        </div>
+      )}
 
       {error ? (
         <div className="mt-10">
@@ -138,11 +133,7 @@ export default async function ExploreEncyclopediaPage({
       ) : (
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {articles.map((article) => (
-            <Link
-              key={article.id}
-              href={`/encyclopedia/${article.slug}`}
-              className="group"
-            >
+            <Link key={article.id} href={`/encyclopedia/${article.slug}`} className="group">
               <Card interactive className="h-full overflow-hidden">
                 {article.featured_image_url ? (
                   <img
@@ -152,19 +143,19 @@ export default async function ExploreEncyclopediaPage({
                     className="aspect-[16/9] w-full object-cover"
                   />
                 ) : (
-                  <div className="flex aspect-[16/9] items-center justify-center bg-secondary">
+                  <div className="batik-grid flex aspect-[16/9] items-center justify-center bg-secondary">
                     <BookOpen className="size-9 text-primary/60" aria-hidden="true" />
                   </div>
                 )}
                 <div className="p-5">
                   <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    {article.encyclopedia_article_categories.map((row, index) => (
-                      <span key={index} className="rounded-full bg-secondary px-2.5 py-1">
+                    {article.encyclopedia_article_categories.map((row, i) => (
+                      <span key={i} className="rounded-full bg-secondary px-2.5 py-1">
                         {row.category?.name}
                       </span>
                     ))}
                   </div>
-                  <h2 className="mt-3 font-display text-xl font-semibold group-hover:text-primary">
+                  <h2 className="mt-3 font-display text-xl font-semibold transition-colors group-hover:text-primary">
                     {article.title}
                   </h2>
                   <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">

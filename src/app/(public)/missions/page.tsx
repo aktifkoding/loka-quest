@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Gamepad2, ArrowRight, Zap } from "lucide-react";
@@ -50,15 +51,11 @@ export default function MissionsPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 md:py-14">
-      <header className="max-w-2xl">
-        <h1 className="font-display text-4xl font-semibold tracking-tight">
-          Misi budaya
-        </h1>
-        <p className="mt-3 leading-relaxed text-muted-foreground">
-          Jawaban dinilai di server setelah misi selesai. Masuk dulu supaya
-          XP dan lencanamu tersimpan.
-        </p>
-      </header>
+      <PageHeader
+        icon={Gamepad2}
+        title="Misi budaya"
+        description="Jawaban dinilai di server setelah misi selesai. Masuk dulu supaya XP dan lencanamu tersimpan."
+      />
 
       <div className="mt-10">
         {loading ? (
