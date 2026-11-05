@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ArrowLeft, Loader2, CheckCircle2, XCircle, Zap, Gamepad2, Trophy, Gem } from "lucide-react";
 import { Confetti } from "@/components/ui/confetti";
+import { MissionMediaGuide } from "@/components/game/mission-media-guide";
 
 interface Mission {
   id: string;
@@ -219,6 +220,10 @@ export default function MissionPage() {
       </header>
 
       <div className="tenun my-8" aria-hidden="true" />
+
+      <div className="mb-6">
+        <MissionMediaGuide missionSlug={mission.slug} />
+      </div>
 
       {submitting && (
         <Card className="px-6 py-16 text-center" aria-busy="true">

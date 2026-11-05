@@ -8,6 +8,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { calculateLevel } from "@/lib/scoring";
 import { Onboarding } from "@/components/layout/onboarding";
 import { DailyChallengeCard } from "@/components/game/daily-challenge-card";
+import { PersonalizedRecommendations } from "@/components/dashboard/personalized-recommendations";
+import { generatePersonalizedRecommendations } from "@/lib/recommendations";
 import {
   Zap,
   Target,
@@ -21,6 +23,7 @@ import {
   BarChart3,
   RotateCcw,
   Users,
+  Languages,
 } from "lucide-react";
 
 const XP_PER_LEVEL = 500;
@@ -30,7 +33,7 @@ export default async function PlayerDashboardPage() {
     const user = await requireAuth();
     const supabase = await createClient();
 
-    const [progressRes, achievementsRes, attemptsRes, assessmentsRes] = await Promise.all([
+    const [progressRes, achievementsRes, attemptsRes, assessmentsRes, dueReviewsRes] = await Promise.all([
       supabase
         .from("player_progress")
         .select("total_xp, missions_completed, current_level")
@@ -43,7 +46,7 @@ export default async function PlayerDashboardPage() {
         .order("earned_at", { ascending: false }),
       supabase
         .from("mission_attempts")
-        .select("id, mission_id, score, xp_earned, completed, completed_at, missions (title)")
+        .select("id, mission_id, score, xp_earned, completed, completed_at, missions (title, slug)")
         .eq("profile_id", user.id)
         .order("completed_at", { ascending: false, nullsFirst: false })
         .limit(5),
@@ -52,6 +55,11 @@ export default async function PlayerDashboardPage() {
         .select("score, learning_assessments (assessment_type)")
         .eq("profile_id", user.id)
         .order("submitted_at", { ascending: false }),
+      supabase
+        .from("review_items")
+        .select("question_id", { count: "exact", head: true })
+        .eq("profile_id", user.id)
+        .lte("due_at", new Date().toISOString()),
     ]);
 
     const progress = progressRes.data ?? {
@@ -72,16 +80,21 @@ export default async function PlayerDashboardPage() {
       .filter((a): a is AchievementRow => Boolean(a));
     const recentAttempts = (attemptsRes.data ?? []).map(
       (a: {
+        id: string;
         mission_id: string;
         score: number;
         xp_earned: number;
-        missions: { title: string } | { title: string }[] | null;
-      }) => ({
-        ...a,
-        missionTitle: Array.isArray(a.missions)
-          ? a.missions[0]?.title
-          : a.missions?.title ?? null,
-      })
+        completed: boolean;
+        completed_at: string | null;
+        missions: { title: string; slug?: string } | { title: string; slug?: string }[] | null;
+      }) => {
+        const m = Array.isArray(a.missions) ? a.missions[0] : a.missions;
+        return {
+          ...a,
+          missionTitle: m?.title ?? null,
+          missionSlug: m?.slug ?? null,
+        };
+      }
     );
 
     // Pre/post assessment delta
@@ -107,6 +120,22 @@ export default async function PlayerDashboardPage() {
     const level = calculateLevel(totalXp);
     const xpIntoLevel = totalXp % XP_PER_LEVEL;
     const xpToNext = XP_PER_LEVEL - xpIntoLevel;
+
+    const completedSlugs = recentAttempts
+      .filter((a) => a.completed)
+      .map((a) => a.missionSlug)
+      .filter((s): s is string => Boolean(s));
+
+    const recommendations = generatePersonalizedRecommendations({
+      userId: user.id,
+      totalXp,
+      currentLevel: level,
+      missionsCompleted: progress.missions_completed,
+      completedSlugs,
+      recentScores: recentAttempts.map((a) => a.score),
+      dueReviewCount: dueReviewsRes.count ?? 0,
+      dailyCompletedToday: false,
+    });
 
     return (
       <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
@@ -230,12 +259,16 @@ export default async function PlayerDashboardPage() {
           </Card>
         )}
 
+        {/* Personalized Content Recommendations */}
+        <PersonalizedRecommendations recommendations={recommendations} />
+
         {/* Quick links */}
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {[
             { href: "/player/classes", label: "Kelas saya", icon: Users, desc: "Tugas dari guru" },
-            { href: "/player/review", label: "Review pintar", icon: RotateCcw, desc: "Ulang soal yang salah" },
-            { href: "/player/collection", label: "Koleksi artefak", icon: Gem, desc: "Artefak dari tiap wilayah" },
+            { href: "/player/review", label: "Review pintar", icon: RotateCcw, desc: "Jalur belajar adaptif" },
+            { href: "/bahasa", label: "Bahasa daerah", icon: Languages, desc: "Kosakata & kuis" },
+            { href: "/player/collection", label: "Koleksi artefak", icon: Gem, desc: "Artefak tiap wilayah" },
             { href: "/player/profile", label: "Profil", icon: UserRound, desc: "Nama tampilan & akun" },
             { href: "/leaderboard", label: "Leaderboard", icon: BarChart3, desc: "Peringkat XP" },
           ].map((link) => (

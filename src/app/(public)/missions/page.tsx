@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Gamepad2, ArrowRight, Zap } from "lucide-react";
+import { Gamepad2, ArrowRight, Zap, Sparkles } from "lucide-react";
 
 interface Mission {
   id: string;
@@ -25,20 +25,31 @@ const difficultyLabel: Record<string, string> = {
 
 export default function MissionsPage() {
   const [missions, setMissions] = useState<Mission[]>([]);
+  const [recommendedDiff, setRecommendedDiff] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMissions = async () => {
       try {
-        const response = await fetch("/api/v1/missions");
-        const result = await response.json();
+        const [missionsRes, adaptiveRes] = await Promise.all([
+          fetch("/api/v1/missions"),
+          fetch("/api/v1/adaptive").catch(() => null),
+        ]);
+        const result = await missionsRes.json();
 
-        if (!response.ok) {
+        if (!missionsRes.ok) {
           throw new Error(result.error || "Gagal memuat misi");
         }
 
         setMissions(result.data || []);
+
+        if (adaptiveRes && adaptiveRes.ok) {
+          const adaptiveData = await adaptiveRes.json();
+          if (adaptiveData.success && adaptiveData.data?.recommendedDifficulty) {
+            setRecommendedDiff(adaptiveData.data.recommendedDifficulty);
+          }
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Terjadi kesalahan");
       } finally {
@@ -106,7 +117,15 @@ export default function MissionsPage() {
                         <Gamepad2 className="size-5" aria-hidden="true" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold">{mission.title}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold">{mission.title}</p>
+                          {recommendedDiff && mission.difficulty === recommendedDiff && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                              <Sparkles className="size-3 text-gold" aria-hidden="true" />
+                              Rekomendasi Adaptif
+                            </span>
+                          )}
+                        </div>
                         <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
                           {mission.description}
                         </p>

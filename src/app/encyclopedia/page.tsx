@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Compass, MapPin, Search, Sparkles } from "lucide-react";
+import { BookOpen, Compass, MapPin, Search, Sparkles, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -12,9 +12,15 @@ const entryPoints = [
     icon: Compass,
   },
   {
+    href: "/bahasa",
+    label: "Bahasa Daerah",
+    description: "Kosakata, pelafalan fonetis, dan kuis bahasa daerah Nusantara.",
+    icon: Languages,
+  },
+  {
     href: "/encyclopedia/categories",
     label: "Kategori budaya",
-    description: "Seni, tradisi, bahasa, kuliner, kerajinan, dan lainnya.",
+    description: "Seni, tradisi, adat, kuliner, kerajinan, dan lainnya.",
     icon: BookOpen,
   },
   {
@@ -65,7 +71,7 @@ export default function EncyclopediaHomePage() {
         </div>
       </section>
 
-      <section className="mt-10 grid gap-5 md:grid-cols-3" aria-label="Jelajahi ensiklopedia">
+      <section className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4" aria-label="Jelajahi ensiklopedia">
         {entryPoints.map(({ href, label, description, icon: Icon }) => (
           <Link key={href} href={href} className="group">
             <Card interactive className="h-full">
