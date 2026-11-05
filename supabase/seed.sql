@@ -141,16 +141,22 @@ values
 on conflict do nothing;
 
 -- Insert demo learning assessments
+-- NOTE: learning_assessments has no UNIQUE on title, so we use a NOT EXISTS
+-- guard instead of "on conflict (title)" (which would error without a constraint).
 insert into public.learning_assessments (title, description, assessment_type, questions)
-values
+select v.title, v.description, v.assessment_type, v.questions
+from (values
   ('Pretest — Pengetahuan Budaya Indonesia', 'Uji pengetahuan awal Anda tentang budaya Indonesia sebelum memulai petualangan.', 'pre', '[
     {"id": "q1", "type": "multiple_choice", "prompt": "Batik berasal dari negara mana?", "choices": ["Indonesia", "Malaysia", "Thailand", "Filipina"], "correct": "Indonesia"},
     {"id": "q2", "type": "multiple_choice", "prompt": "Gamelan adalah...", "choices": ["Alat musik tradisional Indonesia", "Tarian tradisional", "Kuliner", "Arsitektur"], "correct": "Alat musik tradisional Indonesia"},
     {"id": "q3", "type": "multiple_choice", "prompt": "Wayang kulit terutama ada di pulau mana?", "choices": ["Jawa", "Sumatra", "Kalimantan", "Sulawesi"], "correct": "Jawa"}
-  ]'),
+  ]'::jsonb),
   ('Posttest — Pengetahuan Budaya Indonesia', 'Uji pengetahuan Anda setelah menyelesaikan petualangan.', 'post', '[
     {"id": "q1", "type": "multiple_choice", "prompt": "Motif batik Parang Rusak melambangkan...", "choices": ["Keberanian", "Kebersihan", "Kesetiaan", "Kecerdasan"], "correct": "Keberanian"},
     {"id": "q2", "type": "multiple_choice", "prompt": "Instrumen pengiring utama gamelan Jawa adalah...", "choices": ["Suling", "Kendang", "Bonang", "Gender"], "correct": "Kendang"},
     {"id": "q3", "type": "multiple_choice", "prompt": "Tokoh punakawan dalam wayang adalah...", "choices": ["Semar", "Arjuna", "Bima", "Gareng"], "correct": "Semar"}
-  ]')
-on conflict (title) do nothing;
+  ]'::jsonb)
+) as v(title, description, assessment_type, questions)
+where not exists (
+  select 1 from public.learning_assessments where learning_assessments.title = v.title
+);

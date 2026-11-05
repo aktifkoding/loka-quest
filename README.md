@@ -54,6 +54,7 @@ Aplikasi pembelajaran budaya Indonesia yang interaktif dan mengasyikkan.
    - Run **all** migrations in `supabase/migrations/` in filename order (see `docs/deployment-vercel.md` §2.2)
    - Seed demo data: `npm run db:seed`
    - Seed categories and articles: `supabase/seed-encyclopedia.sql`, then `supabase/seed-encyclopedia-articles.sql`
+   - **Seed konten lengkap (misi Nusantara, artikel, media, graph, akun demo — lokal & produksi, idempoten):** isi `.env.local` lalu `npm run db:seed:content`. Panduan penggunaan lengkap ada di [docs/panduan-aplikasi.md](docs/panduan-aplikasi.md)
 
 5. Optional integrations (see `.env.example`):
    - `ZAI_API_KEY` / `ZAI_API_BASE` for the grounded LLM assistant

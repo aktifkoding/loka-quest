@@ -42,3 +42,4 @@ supabase/.temp
 # OS
 Thumbs.db
 ehthumbs.db
+.env*

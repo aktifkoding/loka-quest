@@ -24,7 +24,7 @@ export default async function EncyclopediaArticlePage({ params }: Props) {
   const { slug } = await params;
   const supabase = await createClient();
   const { data: rawArticle } = await supabase.from("encyclopedia_articles")
-    .select("*,encyclopedia_article_categories(category:encyclopedia_categories(id,slug,name)),encyclopedia_article_regions(region:cultural_regions(id,slug,name)),encyclopedia_sources(id,source_title,publisher,source_url,source_type,notes,sort_order),encyclopedia_media(id,title,description,media_type,storage_path,external_url,creator,license,attribution,sort_order),encyclopedia_related_articles(related:encyclopedia_articles!encyclopedia_related_articles_related_article_id_fkey(id,slug,title,summary)),encyclopedia_article_missions(mission:missions(id,slug,title,description,xp_reward))")
+    .select("*,encyclopedia_article_categories(category:encyclopedia_categories(id,slug,name)),encyclopedia_article_regions(region:cultural_regions(id,slug,name)),encyclopedia_sources(id,source_title,publisher,source_url,source_type,notes,sort_order),encyclopedia_media(id,title,description,media_type,storage_path,external_url,creator,license,attribution,sort_order),encyclopedia_related_articles!article_id(related:encyclopedia_articles!related_article_id(id,slug,title,summary)),encyclopedia_article_missions(mission:missions(id,slug,title,description,xp_reward))")
     .eq("slug", slug).eq("status", "published").maybeSingle();
   if (!rawArticle) notFound();
   const article = rawArticle as unknown as {
