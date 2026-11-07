@@ -2,44 +2,97 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { CountUp } from "@/components/ui/count-up";
+import { createServiceClient } from "@/lib/supabase/service-role";
 import {
   SwatchBook,
   Music4,
   Drama,
+  Users,
+  Compass,
+  Shield,
+  Landmark,
+  Ship,
+  Sprout,
+  Flower,
+  Anchor,
+  ShoppingBag,
+  Sparkles,
   ArrowRight,
   Check,
   Zap,
   ShieldCheck,
   GraduationCap,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const missions = [
+// Statistik dan daftar misi diambil dari database, dirender ulang tiap jam.
+export const revalidate = 3600;
+
+type LandingStats = {
+  missions: number;
+  regions: number;
+  questions: number;
+  sources: number;
+};
+
+type LandingMission = {
+  slug: string;
+  title: string;
+  description: string;
+  xp: number;
+  region: string;
+  icon: LucideIcon;
+};
+
+const MISSION_ICONS: Record<string, LucideIcon> = {
+  "batik-detective": SwatchBook,
+  "gamelan-maestro": Music4,
+  "wayang-story": Drama,
+  "saman-harmony": Users,
+  "randai-minang": Compass,
+  "ondel-ondel-guardian": Shield,
+  "betang-heritage": Landmark,
+  "pinisi-voyage": Ship,
+  "subak-wisdom": Sprout,
+  "tenun-sumba": Flower,
+  "sasi-maluku": Anchor,
+  "noken-weaver": ShoppingBag,
+};
+
+// Dipakai jika database tidak terjangkau saat render — angka terakhir terverifikasi.
+const FALLBACK_STATS: LandingStats = {
+  missions: 12,
+  regions: 12,
+  questions: 33,
+  sources: 105,
+};
+
+const FALLBACK_MISSIONS: LandingMission[] = [
   {
     slug: "batik-detective",
     icon: SwatchBook,
     title: "Batik Detective",
-    description:
-      "Cocokkan motif batik dengan filosofinya, dari Parang Rusak sampai Kawung.",
-    difficulty: "Pemula",
+    description: "Pelajari pola dan makna di balik batik khas Jawa Tengah.",
     xp: 150,
+    region: "Jawa Tengah",
   },
   {
     slug: "gamelan-maestro",
     icon: Music4,
     title: "Gamelan Maestro",
     description:
-      "Kenali instrumen gamelan Jawa Barat dan peran masing-masing dalam orkestra.",
-    difficulty: "Menengah",
+      "Kenali instrumen gamelan dan peranannya dalam orkestra tradisional.",
     xp: 200,
+    region: "Jawa Barat",
   },
   {
     slug: "wayang-story",
     icon: Drama,
     title: "Wayang Story Adventure",
     description:
-      "Susun alur cerita wayang dan kenali tokoh-tokoh punakawan Yogyakarta.",
-    difficulty: "Menengah",
+      "Ikuti petualangan wayang dan pelajari cerita rakyat Nusantara.",
     xp: 200,
+    region: "Yogyakarta",
   },
 ];
 
@@ -61,7 +114,68 @@ const steps = [
   },
 ];
 
-export default function HomePage() {
+async function getLandingData(): Promise<{
+  stats: LandingStats;
+  missions: LandingMission[];
+}> {
+  const stats: LandingStats = { ...FALLBACK_STATS };
+  let missions: LandingMission[] = FALLBACK_MISSIONS;
+
+  try {
+    const supabase = createServiceClient();
+    const [missionsResult, regionsResult, questionsResult, sourcesResult] =
+      await Promise.all([
+        supabase
+          .from("missions")
+          .select("slug, title, description, xp_reward, difficulty, region_id")
+          .eq("status", "published")
+          .order("sort_order"),
+        supabase.from("cultural_regions").select("id, name"),
+        supabase
+          .from("mission_questions")
+          .select("id", { count: "exact", head: true }),
+        supabase
+          .from("cultural_sources")
+          .select("id", { count: "exact", head: true }),
+      ]);
+
+    if (!regionsResult.error && regionsResult.data) {
+      stats.regions = regionsResult.data.length;
+    }
+    if (!questionsResult.error && questionsResult.count !== null) {
+      stats.questions = questionsResult.count;
+    }
+    if (!sourcesResult.error && sourcesResult.count !== null) {
+      stats.sources = sourcesResult.count;
+    }
+    if (
+      !missionsResult.error &&
+      missionsResult.data &&
+      missionsResult.data.length > 0
+    ) {
+      const regionNames = new Map(
+        (regionsResult.data ?? []).map((region) => [region.id, region.name])
+      );
+      stats.missions = missionsResult.data.length;
+      missions = missionsResult.data.map((mission) => ({
+        slug: mission.slug,
+        title: mission.title,
+        description: mission.description,
+        xp: mission.xp_reward,
+        region: regionNames.get(mission.region_id) ?? "",
+        icon: MISSION_ICONS[mission.slug] ?? Sparkles,
+      }));
+    }
+  } catch {
+    // Database tidak terjangkau — biarkan fallback di atas.
+  }
+
+  return { stats, missions };
+}
+
+export default async function HomePage() {
+  const { stats, missions } = await getLandingData();
+
   return (
     <div>
       {/* Hero — split geometry, product visual built from real UI primitives */}
@@ -89,8 +203,9 @@ export default function HomePage() {
               className="animate-fade-up mt-5 max-w-md text-lg leading-relaxed text-muted-foreground"
               style={{ animationDelay: "120ms" }}
             >
-              Tiga misi interaktif untuk mengenal batik, gamelan, dan wayang.
-              Jawaban dinilai otomatis, progres tersimpan.
+              {stats.missions} misi interaktif dari {stats.regions} wilayah —
+              dari batik Jawa Tengah sampai noken Papua. Jawaban dinilai
+              otomatis, progres tersimpan.
             </p>
             <div
               className="animate-fade-up mt-8 flex flex-col gap-3 sm:flex-row"
@@ -122,14 +237,14 @@ export default function HomePage() {
                   Misi Batik Detective
                 </p>
                 <p className="text-[13px] tabular-nums text-muted-foreground">
-                  Soal 2 dari 6
+                  Soal 1 dari 2
                 </p>
               </div>
               <div
                 className="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-muted"
                 role="presentation"
               >
-                <div className="h-full w-1/3 rounded-full bg-primary" />
+                <div className="h-full w-1/2 rounded-full bg-primary" />
               </div>
               <p className="font-display text-lg font-semibold leading-snug">
                 Motif batik yang melambangkan keberanian dan keteguhan adalah…
@@ -158,332 +273,281 @@ export default function HomePage() {
 
       <div className="tenun mx-auto max-w-6xl" aria-hidden="true" />
 
-      {/* Proof strip — factual product stats, no fabricated traction */}
+      {/* Proof strip — live product stats from the database */}
       <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
         <Reveal>
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
-          <div>
-            <CountUp value={3} className="font-display text-4xl font-semibold tabular-nums" />
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              wilayah budaya: Jawa Tengah, Jawa Barat, Yogyakarta
-            </p>
+          <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
+            <div>
+              <CountUp
+                value={stats.missions}
+                className="font-display text-4xl font-semibold tabular-nums"
+              />
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                misi interaktif dengan soal, nilai, dan pembahasan
+              </p>
+            </div>
+            <div>
+              <CountUp
+                value={stats.regions}
+                className="font-display text-4xl font-semibold tabular-nums"
+              />
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                wilayah budaya dari Aceh sampai Papua
+              </p>
+            </div>
+            <div>
+              <CountUp
+                value={stats.questions}
+                className="font-display text-4xl font-semibold tabular-nums"
+              />
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                soal misi dengan pembahasan di tiap jawaban
+              </p>
+            </div>
+            <div>
+              <CountUp
+                value={stats.sources}
+                className="font-display text-4xl font-semibold tabular-nums"
+              />
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                sumber referensi tercatat di balik konten
+              </p>
+            </div>
           </div>
-          <div>
-            <CountUp value={6} className="font-display text-4xl font-semibold tabular-nums" />
-
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              soal misi dengan pembahasan di tiap jawaban
-            </p>
-          </div>
-          <div>
-            <CountUp value={2} className="font-display text-4xl font-semibold tabular-nums" />
-
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              asesmen pembelajaran: pre-test dan post-test
-            </p>
-          </div>
-        </div>
-      </Reveal>
+        </Reveal>
       </section>
 
       {/* Feature row 1 — scoring, real result card */}
       <Reveal>
-      <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
-        <div className="grid items-center gap-10 md:grid-cols-2">
-          <div className="md:order-1">
-            <h2 className="font-display text-3xl font-semibold leading-tight">
-              Nilai muncul, bukan tebakan
-            </h2>
-            <p className="mt-4 max-w-md leading-relaxed text-muted-foreground">
-              Setiap jawaban dinilai di server, bukan di browser. Begitu misi
-              selesai, kamu melihat pembahasan singkat untuk tiap soal.
-            </p>
-          </div>
-          <div className="md:order-2">
-            <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-card">
-              <div className="flex items-baseline justify-between">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Hasil misi
-                </p>
-                <p className="font-display text-3xl font-semibold tabular-nums">
-                  67<span className="text-lg text-muted-foreground">/100</span>
-                </p>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                2 dari 3 jawaban benar
-              </p>
-              <div className="mt-4 flex items-center gap-1.5 rounded-lg bg-gold/10 px-3.5 py-2.5">
-                <Zap className="size-4 text-gold" aria-hidden="true" />
-                <span className="text-sm font-semibold tabular-nums text-foreground">
-                  +100 XP
-                </span>
-                <span className="ml-auto text-sm text-muted-foreground">
-                  Level 3
-                </span>
-              </div>
-              <p className="mt-4 border-t border-border pt-4 text-sm leading-relaxed text-muted-foreground">
-                Parang Rusak melambangkan keberanian; Kawung melambangkan
-                kebersihan hati.
+        <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+          <div className="grid items-center gap-10 md:grid-cols-2">
+            <div className="md:order-1">
+              <h2 className="font-display text-3xl font-semibold leading-tight">
+                Nilai muncul, bukan tebakan
+              </h2>
+              <p className="mt-4 max-w-md leading-relaxed text-muted-foreground">
+                Setiap jawaban dinilai di server, bukan di browser. Begitu misi
+                selesai, kamu melihat pembahasan singkat untuk tiap soal.
               </p>
             </div>
+            <div className="md:order-2">
+              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-card">
+                <div className="flex items-baseline justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Hasil misi
+                  </p>
+                  <p className="font-display text-3xl font-semibold tabular-nums">
+                    67<span className="text-lg text-muted-foreground">/100</span>
+                  </p>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  2 dari 3 jawaban benar
+                </p>
+                <div className="mt-4 flex items-center gap-1.5 rounded-lg bg-gold/10 px-3.5 py-2.5">
+                  <Zap className="size-4 text-gold" aria-hidden="true" />
+                  <span className="text-sm font-semibold tabular-nums text-foreground">
+                    +100 XP
+                  </span>
+                  <span className="ml-auto text-sm text-muted-foreground">
+                    Level 3
+                  </span>
+                </div>
+                <p className="mt-4 border-t border-border pt-4 text-sm leading-relaxed text-muted-foreground">
+                  Parang Rusak melambangkan keberanian; Kawung melambangkan
+                  kebersihan hati.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
       </Reveal>
 
       {/* Feature row 2 — sources, real source card */}
       <Reveal>
-      <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
-        <div className="grid items-center gap-10 md:grid-cols-2">
-          <div>
-            <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-card">
-              <div className="flex items-start gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                  <ShieldCheck className="size-5 text-primary" aria-hidden="true" />
+        <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+          <div className="grid items-center gap-10 md:grid-cols-2">
+            <div>
+              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-card">
+                <div className="flex items-start gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                    <ShieldCheck
+                      className="size-5 text-primary"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-medium">Sumber tercatat</p>
+                    <p className="text-sm text-muted-foreground">
+                      Referensi wajib untuk konten yang dipublikasikan
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">Sumber tercatat</p>
-                  <p className="text-sm text-muted-foreground">
-                    Referensi wajib untuk konten yang dipublikasikan
+                <div className="mt-4 rounded-lg border border-border bg-secondary/60 p-4">
+                  <p className="text-sm font-medium">
+                    Ensiklopedia Batik Indonesia
+                  </p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    Gramedia Pustaka Utama, 2010
+                  </p>
+                  <p className="mt-2 text-[13px] text-muted-foreground">
+                    Lisensi: CC BY-SA 4.0
                   </p>
                 </div>
               </div>
-              <div className="mt-4 rounded-lg border border-border bg-secondary/60 p-4">
-                <p className="text-sm font-medium">
-                  Ensiklopedia Batik Indonesia
-                </p>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  Gramedia Pustaka Utama, 2010
-                </p>
-                <p className="mt-2 text-[13px] text-muted-foreground">
-                  Lisensi: CC BY-SA 4.0
-                </p>
-              </div>
+            </div>
+            <div>
+              <h2 className="font-display text-3xl font-semibold leading-tight">
+                Setiap konten punya sumber
+              </h2>
+              <p className="mt-4 max-w-md leading-relaxed text-muted-foreground">
+                Batik, gamelan, dan wayang ditulis dari referensi yang tercatat
+                dan bisa diperiksa. Tidak ada fakta karangan.
+              </p>
             </div>
           </div>
-          <div>
-            <h2 className="font-display text-3xl font-semibold leading-tight">
-              Setiap konten punya sumber
-            </h2>
-            <p className="mt-4 max-w-md leading-relaxed text-muted-foreground">
-              Batik, gamelan, dan wayang ditulis dari referensi yang tercatat
-              dan bisa diperiksa. Tidak ada fakta karangan.
-            </p>
-          </div>
-        </div>
-      </section>
+        </section>
       </Reveal>
 
       <div className="tenun mx-auto max-w-6xl" aria-hidden="true" />
 
-      {/* Missions — list rows, not a card grid */}
+      {/* Missions — list rows straight from the database */}
       <Reveal>
-      <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <h2 className="font-display text-3xl font-semibold">
-            Tiga misi, tiga wilayah
-          </h2>
-          <Link
-            href="/missions"
-            className="hidden shrink-0 items-center gap-1 text-sm font-medium text-primary hover:underline sm:flex"
-          >
-            Semua misi
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
-        </div>
-        <ul className="divide-y divide-border rounded-2xl border border-border/80 bg-card shadow-card">
-          {missions.map((mission) => (
-            <li key={mission.slug}>
-              <Link
-                href={`/missions/${mission.slug}`}
-                className="group flex items-center gap-4 px-5 py-5 transition-colors duration-200 hover:bg-secondary/50 sm:px-6"
-              >
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <mission.icon className="size-5" aria-hidden="true" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold">{mission.title}</p>
-                  <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                    {mission.description}
-                  </p>
-                </div>
-                <div className="hidden shrink-0 text-right sm:block">
-                  <p className="text-sm text-muted-foreground">
-                    {mission.difficulty}
-                  </p>
-                  <p className="text-sm font-semibold tabular-nums text-gold">
-                    {mission.xp} XP
-                  </p>
-                </div>
-                <ArrowRight
-                  className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
-                  aria-hidden="true"
-                />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+        <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <h2 className="font-display text-3xl font-semibold">
+              {missions.length} misi, {stats.regions} wilayah
+            </h2>
+            <Link
+              href="/missions"
+              className="hidden shrink-0 items-center gap-1 text-sm font-medium text-primary hover:underline sm:flex"
+            >
+              Semua misi
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
+          <ul className="divide-y divide-border rounded-2xl border border-border/80 bg-card shadow-card">
+            {missions.map((mission) => (
+              <li key={mission.slug}>
+                <Link
+                  href={`/missions/${mission.slug}`}
+                  className="group flex items-center gap-4 px-5 py-5 transition-colors duration-200 hover:bg-secondary/50 sm:px-6"
+                >
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <mission.icon className="size-5" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold">{mission.title}</p>
+                    <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                      {mission.description}
+                    </p>
+                  </div>
+                  <div className="hidden shrink-0 text-right sm:block">
+                    <p className="text-sm text-muted-foreground">
+                      {mission.region}
+                    </p>
+                    <p className="text-sm font-semibold tabular-nums text-gold">
+                      {mission.xp} XP
+                    </p>
+                  </div>
+                  <ArrowRight
+                    className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
+                    aria-hidden="true"
+                  />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       </Reveal>
 
       {/* How it works — 3 real steps in order */}
       <Reveal>
-      <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
-        <h2 className="font-display text-3xl font-semibold">Cara kerjanya</h2>
-        <ol className="mt-10 grid gap-8 md:grid-cols-3">
-          {steps.map((step, index) => (
-            <li key={step.number} className="relative">
-              <span className="flex size-9 items-center justify-center rounded-full bg-primary font-display text-sm font-semibold text-primary-foreground">
-                {step.number}
-              </span>
-              {index < steps.length - 1 && (
-                <span
-                  className="absolute left-[2.4rem] top-[1.1rem] hidden w-[calc(100%-3.5rem)] border-t-2 border-dashed border-border md:block"
-                  aria-hidden="true"
-                />
-              )}
-              <p className="mt-4 font-semibold">{step.title}</p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                {step.description}
-              </p>
-            </li>
-          ))}
-        </ol>
-      </section>
+        <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+          <h2 className="font-display text-3xl font-semibold">Cara kerjanya</h2>
+          <ol className="mt-10 grid gap-8 md:grid-cols-3">
+            {steps.map((step, index) => (
+              <li key={step.number} className="relative">
+                <span className="flex size-9 items-center justify-center rounded-full bg-primary font-display text-sm font-semibold text-primary-foreground">
+                  {step.number}
+                </span>
+                {index < steps.length - 1 && (
+                  <span
+                    className="absolute left-[2.4rem] top-[1.1rem] hidden w-[calc(100%-3.5rem)] border-t-2 border-dashed border-border md:block"
+                    aria-hidden="true"
+                  />
+                )}
+                <p className="mt-4 font-semibold">{step.title}</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  {step.description}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </section>
       </Reveal>
 
       {/* Educator band */}
       <Reveal>
-      <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
-        <div className="rounded-3xl border border-border/60 bg-secondary px-6 py-12 md:px-12">
-          <div className="grid items-center gap-10 md:grid-cols-2">
-            <div>
-              <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <GraduationCap className="size-5" aria-hidden="true" />
+        <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+          <div className="rounded-3xl border border-border/60 bg-secondary px-6 py-12 md:px-12">
+            <div className="grid items-center gap-10 md:grid-cols-2">
+              <div>
+                <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <GraduationCap className="size-5" aria-hidden="true" />
+                </div>
+                <h2 className="font-display text-3xl font-semibold leading-tight">
+                  Dibangun untuk kelas, bukan hanya layar pribadi
+                </h2>
+                <ul className="mt-6 space-y-3">
+                  {[
+                    "Pantau progres belajar per kelompok siswa",
+                    "Bandingkan hasil pre-test dan post-test",
+                    "Kelola konten budaya lewat dasbor admin",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2.5">
+                      <Check
+                        className="mt-0.5 size-4 shrink-0 text-primary"
+                        aria-hidden="true"
+                      />
+                      <span className="leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <h2 className="font-display text-3xl font-semibold leading-tight">
-                Dibangun untuk kelas, bukan hanya layar pribadi
-              </h2>
-              <ul className="mt-6 space-y-3">
-                {[
-                  "Pantau progres belajar per kelompok siswa",
-                  "Bandingkan hasil pre-test dan post-test",
-                  "Kelola konten budaya lewat dasbor admin",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2.5">
-                    <Check
-                      className="mt-0.5 size-4 shrink-0 text-primary"
-                      aria-hidden="true"
-                    />
-                    <span className="leading-relaxed">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="md:justify-self-end">
-              <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-card md:max-w-sm">
-                <p className="font-display text-lg font-semibold">
-                  Siap membawa LokaQuest ke kelas Anda?
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Buat akun, lalu minta admin menetapkan peran pendidik untuk
-                  membuka dasbor kelompok.
-                </p>
-                <Button asChild className="mt-5 w-full sm:w-auto">
-                  <Link href="/auth/register">Buat akun</Link>
-                </Button>
+              <div className="md:justify-self-end">
+                <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-card md:max-w-sm">
+                  <p className="font-display text-lg font-semibold">
+                    Siap membawa LokaQuest ke kelas Anda?
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Buat akun, lalu minta admin menetapkan peran pendidik untuk
+                    membuka dasbor kelompok.
+                  </p>
+                  <Button asChild className="mt-5 w-full sm:w-auto">
+                    <Link href="/auth/register">Buat akun</Link>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
       </Reveal>
 
       {/* Final CTA */}
       <Reveal>
-      <section className="mx-auto max-w-3xl px-4 py-16 text-center md:py-24">
-        <h2 className="font-display text-4xl font-semibold leading-tight">
-          Warisan budaya menunggu untuk dijelajahi
-        </h2>
-        <p className="mx-auto mt-4 max-w-md leading-relaxed text-muted-foreground">
-          Mulai dari misi pertama, kumpulkan XP, dan lihat seberapa jauh
-          pemahamanmu berkembang.
-        </p>
-        <Button size="lg" asChild className="mt-8">
-          <Link href="/auth/register">Mulai Petualangan</Link>
-        </Button>
-      </section>
-      </Reveal>
-
-      {/* Footer — boring on purpose */}
-      <footer className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-4 py-10">
-          <div className="flex flex-col gap-8 sm:flex-row sm:justify-between">
-            <div>
-              <p className="font-display text-lg font-semibold">LokaQuest</p>
-              <p className="mt-1 max-w-xs text-sm leading-relaxed text-muted-foreground">
-                Jelajahi Nusantara, hidupkan warisan budaya.
-              </p>
-            </div>
-            <nav
-              className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm"
-              aria-label="Footer"
-            >
-              <Link
-                href="/jelajahi"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Grafik Budaya
-              </Link>
-              <Link
-                href="/komunitas"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Komunitas
-              </Link>
-              <Link
-                href="/asisten"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Asisten AI
-              </Link>
-              <Link
-                href="/explore"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Jelajahi
-              </Link>
-              <Link
-                href="/missions"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Misi
-              </Link>
-              <Link
-                href="/sumber"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Sumber budaya
-              </Link>
-              <Link
-                href="/leaderboard"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Leaderboard
-              </Link>
-              <Link
-                href="/tentang"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Tentang
-              </Link>
-            </nav>
-          </div>
-          <p className="mt-8 text-[13px] text-muted-foreground">
-            © 2026 LokaQuest. Konten budaya disertai sumber referensi.
+        <section className="mx-auto max-w-3xl px-4 py-16 text-center md:py-24">
+          <h2 className="font-display text-4xl font-semibold leading-tight">
+            Warisan budaya menunggu untuk dijelajahi
+          </h2>
+          <p className="mx-auto mt-4 max-w-md leading-relaxed text-muted-foreground">
+            Mulai dari misi pertama, kumpulkan XP, dan lihat seberapa jauh
+            pemahamanmu berkembang.
           </p>
-        </div>
-      </footer>
+          <Button size="lg" asChild className="mt-8">
+            <Link href="/auth/register">Mulai Petualangan</Link>
+          </Button>
+        </section>
+      </Reveal>
     </div>
   );
 }
