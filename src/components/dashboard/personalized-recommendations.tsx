@@ -9,6 +9,7 @@ import {
   Languages,
   Zap,
   ArrowRight,
+  Lightbulb,
 } from "lucide-react";
 import type { PersonalizedRecommendation } from "@/lib/recommendations";
 
@@ -63,7 +64,7 @@ export function PersonalizedRecommendations({
             <Card
               key={rec.id}
               interactive
-              className="flex flex-col justify-between p-5 transition-all duration-200 hover:border-primary/40"
+              className="flex flex-col justify-between p-5 transition-[border-color,box-shadow] duration-200 hover:border-primary/40"
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
@@ -98,8 +99,12 @@ export function PersonalizedRecommendations({
                   {rec.description}
                 </p>
 
-                <p className="mt-2 text-[11px] text-primary/80 italic">
-                  💡 {rec.reason}
+                <p className="mt-2 flex items-start gap-1.5 text-[11px] text-primary/80 italic">
+                  <Lightbulb
+                    className="mt-px size-3.5 shrink-0 not-italic"
+                    aria-hidden="true"
+                  />
+                  <span>{rec.reason}</span>
                 </p>
               </div>
 

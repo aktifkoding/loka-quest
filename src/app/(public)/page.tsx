@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { CountUp } from "@/components/ui/count-up";
+import { HeroMotion, ScrollStagger } from "@/components/landing/motion";
 import { createServiceClient } from "@/lib/supabase/service-role";
 import {
   SwatchBook,
@@ -181,9 +182,9 @@ export default async function HomePage() {
       {/* Hero — split geometry, product visual built from real UI primitives */}
       <section className="relative overflow-hidden">
         <div className="batik-grid absolute inset-0" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-10 md:grid-cols-2 md:pb-28 md:pt-16 lg:gap-8">
+        <HeroMotion className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-10 md:grid-cols-2 md:pb-28 md:pt-16 lg:gap-8">
           <div>
-            <p className="animate-fade-up mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[13px] font-medium text-muted-foreground">
+            <p className="hero-badge mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[13px] font-medium text-muted-foreground">
               <span
                 className="size-1.5 rounded-full bg-gold"
                 aria-hidden="true"
@@ -191,26 +192,39 @@ export default async function HomePage() {
               Platform belajar budaya Indonesia
             </p>
             <h1
-              className="animate-fade-up font-display text-4xl font-semibold leading-[1.1] sm:text-5xl md:text-[3.4rem]"
-              style={{ animationDelay: "60ms" }}
+              aria-label="Jelajahi Nusantara, hidupkan warisan budaya"
+              className="font-display text-4xl font-semibold leading-[1.1] sm:text-5xl md:text-[3.4rem]"
             >
-              Jelajahi Nusantara, hidupkan{" "}
-              <span className="border-b-4 border-gold/50 pb-0.5">
-                warisan budaya
+              <span aria-hidden="true">
+                <span className="hero-word inline-block will-change-transform">
+                  Jelajahi
+                </span>{" "}
+                <span className="hero-word inline-block will-change-transform">
+                  Nusantara,
+                </span>{" "}
+                <span className="hero-word inline-block will-change-transform">
+                  hidupkan
+                </span>{" "}
+                <span className="relative inline-block pb-1">
+                  <span className="hero-word inline-block will-change-transform">
+                    warisan
+                  </span>{" "}
+                  <span className="hero-word inline-block will-change-transform">
+                    budaya
+                  </span>
+                  <span
+                    className="hero-underline absolute inset-x-0 bottom-0 h-1 origin-left rounded-full bg-gold/60"
+                    aria-hidden="true"
+                  />
+                </span>
               </span>
             </h1>
-            <p
-              className="animate-fade-up mt-5 max-w-md text-lg leading-relaxed text-muted-foreground"
-              style={{ animationDelay: "120ms" }}
-            >
+            <p className="hero-sub mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
               {stats.missions} misi interaktif dari {stats.regions} wilayah —
               dari batik Jawa Tengah sampai noken Papua. Jawaban dinilai
               otomatis, progres tersimpan.
             </p>
-            <div
-              className="animate-fade-up mt-8 flex flex-col gap-3 sm:flex-row"
-              style={{ animationDelay: "180ms" }}
-            >
+            <div className="hero-cta mt-8 flex flex-col gap-3 sm:flex-row">
               <Button size="lg" asChild>
                 <Link href="/auth/register">Mulai Petualangan</Link>
               </Button>
@@ -218,20 +232,16 @@ export default async function HomePage() {
                 <Link href="/missions">Jelajahi Misi</Link>
               </Button>
             </div>
-            <p
-              className="animate-fade-up mt-4 text-sm text-muted-foreground"
-              style={{ animationDelay: "240ms" }}
-            >
+            <p className="hero-note mt-4 text-sm text-muted-foreground">
               Gratis untuk pelajar. Tanpa iklan, tanpa biaya tersembunyi.
             </p>
           </div>
 
-          {/* Real product pattern: an actual mission question card */}
-          <div
-            className="animate-float animate-fade-up relative md:translate-x-6"
-            style={{ animationDelay: "160ms" }}
-          >
-            <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-raised">
+          {/* Real product pattern: an actual mission question card.
+              GSAP menganimasikan pembungkus luar; float CSS di kartu dalam
+              agar dua transform tidak saling menimpa. */}
+          <div className="hero-card relative md:translate-x-6">
+            <div className="animate-float rounded-2xl border border-border/80 bg-card p-6 shadow-raised">
               <div className="mb-4 flex items-center justify-between">
                 <p className="text-[13px] font-medium text-muted-foreground">
                   Misi Batik Detective
@@ -261,23 +271,23 @@ export default async function HomePage() {
                 </span>
               </div>
             </div>
-            <div className="absolute -right-3 -top-3 flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 shadow-card md:-right-6">
+            <div className="hero-xp absolute -right-3 -top-3 flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 shadow-card md:-right-6">
               <Zap className="size-4 text-gold" aria-hidden="true" />
               <span className="text-sm font-semibold tabular-nums">
                 +150 XP
               </span>
             </div>
           </div>
-        </div>
+        </HeroMotion>
       </section>
 
       <div className="tenun mx-auto max-w-6xl" aria-hidden="true" />
 
       {/* Proof strip — live product stats from the database */}
       <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
-        <Reveal>
+        <ScrollStagger>
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-            <div>
+            <div data-stagger-item>
               <CountUp
                 value={stats.missions}
                 className="font-display text-4xl font-semibold tabular-nums"
@@ -286,7 +296,7 @@ export default async function HomePage() {
                 misi interaktif dengan soal, nilai, dan pembahasan
               </p>
             </div>
-            <div>
+            <div data-stagger-item>
               <CountUp
                 value={stats.regions}
                 className="font-display text-4xl font-semibold tabular-nums"
@@ -295,7 +305,7 @@ export default async function HomePage() {
                 wilayah budaya dari Aceh sampai Papua
               </p>
             </div>
-            <div>
+            <div data-stagger-item>
               <CountUp
                 value={stats.questions}
                 className="font-display text-4xl font-semibold tabular-nums"
@@ -304,7 +314,7 @@ export default async function HomePage() {
                 soal misi dengan pembahasan di tiap jawaban
               </p>
             </div>
-            <div>
+            <div data-stagger-item>
               <CountUp
                 value={stats.sources}
                 className="font-display text-4xl font-semibold tabular-nums"
@@ -314,7 +324,7 @@ export default async function HomePage() {
               </p>
             </div>
           </div>
-        </Reveal>
+        </ScrollStagger>
       </section>
 
       {/* Feature row 1 — scoring, real result card */}
@@ -411,28 +421,28 @@ export default async function HomePage() {
       <div className="tenun mx-auto max-w-6xl" aria-hidden="true" />
 
       {/* Missions — list rows straight from the database */}
-      <Reveal>
-        <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
-          <div className="mb-8 flex items-end justify-between gap-4">
-            <h2 className="font-display text-3xl font-semibold">
-              {missions.length} misi, {stats.regions} wilayah
-            </h2>
-            <Link
-              href="/missions"
-              className="hidden shrink-0 items-center gap-1 text-sm font-medium text-primary hover:underline sm:flex"
-            >
-              Semua misi
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
-          </div>
+      <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <h2 className="font-display text-3xl font-semibold">
+            {missions.length} misi, {stats.regions} wilayah
+          </h2>
+          <Link
+            href="/missions"
+            className="hidden shrink-0 items-center gap-1 text-sm font-medium text-primary hover:underline sm:flex"
+          >
+            Semua misi
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+        </div>
+        <ScrollStagger>
           <ul className="divide-y divide-border rounded-2xl border border-border/80 bg-card shadow-card">
             {missions.map((mission) => (
-              <li key={mission.slug}>
+              <li key={mission.slug} data-stagger-item>
                 <Link
                   href={`/missions/${mission.slug}`}
                   className="group flex items-center gap-4 px-5 py-5 transition-colors duration-200 hover:bg-secondary/50 sm:px-6"
                 >
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-foreground">
                     <mission.icon className="size-5" aria-hidden="true" />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -441,8 +451,8 @@ export default async function HomePage() {
                       {mission.description}
                     </p>
                   </div>
-                  <div className="hidden shrink-0 text-right sm:block">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="shrink-0 text-right sm:text-right">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground sm:text-sm sm:normal-case sm:tracking-normal">
                       {mission.region}
                     </p>
                     <p className="text-sm font-semibold tabular-nums text-gold">
@@ -457,8 +467,8 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
-        </section>
-      </Reveal>
+        </ScrollStagger>
+      </section>
 
       {/* How it works — 3 real steps in order */}
       <Reveal>
@@ -535,17 +545,25 @@ export default async function HomePage() {
 
       {/* Final CTA */}
       <Reveal>
-        <section className="mx-auto max-w-3xl px-4 py-16 text-center md:py-24">
-          <h2 className="font-display text-4xl font-semibold leading-tight">
-            Warisan budaya menunggu untuk dijelajahi
-          </h2>
-          <p className="mx-auto mt-4 max-w-md leading-relaxed text-muted-foreground">
-            Mulai dari misi pertama, kumpulkan XP, dan lihat seberapa jauh
-            pemahamanmu berkembang.
-          </p>
-          <Button size="lg" asChild className="mt-8">
-            <Link href="/auth/register">Mulai Petualangan</Link>
-          </Button>
+        <section className="relative overflow-hidden px-4 py-16 text-center md:py-24">
+          <div className="batik-grid absolute inset-0" aria-hidden="true" />
+          <div className="relative mx-auto max-w-3xl">
+            <h2 className="font-display text-4xl font-semibold leading-tight">
+              Warisan budaya menunggu untuk dijelajahi
+            </h2>
+            <p className="mx-auto mt-4 max-w-md leading-relaxed text-muted-foreground">
+              Mulai dari misi pertama, kumpulkan XP, dan lihat seberapa jauh
+              pemahamanmu berkembang.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button size="lg" asChild>
+                <Link href="/auth/register">Mulai Petualangan</Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/encyclopedia">Baca Ensiklopedia</Link>
+              </Button>
+            </div>
+          </div>
         </section>
       </Reveal>
     </div>

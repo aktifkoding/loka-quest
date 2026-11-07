@@ -121,7 +121,7 @@ export function IndonesiaMap({ onRegionClick }: { onRegionClick?: (slug: string)
               key={region.slug}
               type="button"
               onClick={() => flyToRegion(region.slug)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs font-medium text-foreground/75 transition-all hover:border-primary/60 hover:text-primary"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs font-medium text-foreground/75 transition-[border-color,color] hover:border-primary/60 hover:text-primary"
             >
               <MapPin className="size-3.5" aria-hidden="true" />
               {region.name}

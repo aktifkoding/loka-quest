@@ -139,7 +139,7 @@ export default function ReviewPage() {
         <div className="mt-8 flex border-b border-border">
           <button
             onClick={() => setActiveView("queue")}
-            className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-all ${
+            className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-colors ${
               activeView === "queue"
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -150,7 +150,7 @@ export default function ReviewPage() {
           </button>
           <button
             onClick={() => setActiveView("adaptive")}
-            className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-all ${
+            className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-colors ${
               activeView === "adaptive"
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"

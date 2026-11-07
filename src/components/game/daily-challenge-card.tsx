@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarCheck, Flame, Zap } from "lucide-react";
+import { CalendarCheck, Check, Flame, Zap } from "lucide-react";
 
 type Daily = {
   date: string;
@@ -38,9 +38,9 @@ export function DailyChallengeCard() {
   if (!daily?.mission) return null;
 
   return (
-    <Card className="mt-4 border-gold/30 bg-gold/5">
+    <Card className="group mt-4 border-gold/30 bg-gold/5 hover:border-gold/50 hover:shadow-raised">
       <div className="flex flex-wrap items-center gap-4 p-5">
-        <span className="flex size-11 items-center justify-center rounded-xl bg-gold/15 text-gold">
+        <span className="flex size-11 items-center justify-center rounded-xl bg-gold/15 text-gold transition-transform duration-200 group-hover:scale-105 group-hover:rotate-3">
           <CalendarCheck className="size-5" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
@@ -63,7 +63,8 @@ export function DailyChallengeCard() {
             </span>
           )}
           {daily.completed ? (
-            <span className="rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
+            <span className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
+              <Check className="size-4" aria-hidden="true" />
               Selesai
             </span>
           ) : (

@@ -116,7 +116,7 @@ export default function LanguageDetailPage({
       <div className="mt-8 flex border-b border-border">
         <button
           onClick={() => setActiveTab("vocab")}
-          className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-all ${
+          className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-colors ${
             activeTab === "vocab"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -127,7 +127,7 @@ export default function LanguageDetailPage({
         </button>
         <button
           onClick={() => setActiveTab("quiz")}
-          className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-all ${
+          className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-colors ${
             activeTab === "quiz"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -166,7 +166,7 @@ export default function LanguageDetailPage({
             {vocabList.map((item) => (
               <Card
                 key={item.id}
-                className="flex flex-col justify-between p-5 transition-all hover:border-primary/40"
+                className="flex flex-col justify-between p-5 transition-[border-color,box-shadow,transform] hover:border-primary/40"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3">

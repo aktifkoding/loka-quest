@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 export type SessionUser = {
   id: string;
   email: string;
+  fullName: string | null;
   role: "player" | "educator" | "admin";
 };
 
@@ -19,13 +20,17 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, full_name")
     .eq("id", user.id)
     .single();
 
   return {
     id: user.id,
     email: user.email ?? "",
+    fullName:
+      (profile?.full_name as string | null) ??
+      (user.user_metadata?.full_name as string | undefined) ??
+      null,
     role: (profile?.role as SessionUser["role"]) ?? "player",
   };
 }

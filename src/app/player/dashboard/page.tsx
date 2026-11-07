@@ -5,6 +5,8 @@ import { requireAuth } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { CountUp } from "@/components/ui/count-up";
+import { AnimatedMeter } from "@/components/ui/animated-meter";
 import { calculateLevel } from "@/lib/scoring";
 import { Onboarding } from "@/components/layout/onboarding";
 import { DailyChallengeCard } from "@/components/game/daily-challenge-card";
@@ -33,7 +35,7 @@ export default async function PlayerDashboardPage() {
     const user = await requireAuth();
     const supabase = await createClient();
 
-    const [progressRes, achievementsRes, attemptsRes, assessmentsRes, dueReviewsRes] = await Promise.all([
+    const [progressRes, achievementsRes, attemptsRes, assessmentsRes, dueReviewsRes, missionsCountRes] = await Promise.all([
       supabase
         .from("player_progress")
         .select("total_xp, missions_completed, current_level")
@@ -60,6 +62,10 @@ export default async function PlayerDashboardPage() {
         .select("question_id", { count: "exact", head: true })
         .eq("profile_id", user.id)
         .lte("due_at", new Date().toISOString()),
+      supabase
+        .from("missions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "published"),
     ]);
 
     const progress = progressRes.data ?? {
@@ -146,7 +152,7 @@ export default async function PlayerDashboardPage() {
             Dasbor
           </h1>
           <p className="mt-2 text-muted-foreground">
-            {user.email ? `Halo, ${user.email.split("@")[0]}.` : "Selamat datang."}{" "}
+            {user.fullName ? `Halo, ${user.fullName}.` : "Selamat datang."}{" "}
             Inilah perjalanan belajarmu sejauh ini.
           </p>
         </header>
@@ -163,26 +169,23 @@ export default async function PlayerDashboardPage() {
               </div>
               <div className="py-6">
                 <p className="font-display text-5xl font-semibold tabular-nums">
-                  {totalXp.toLocaleString("id-ID")}
+                  <CountUp value={totalXp} duration={900} />
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   total XP terkumpul
                 </p>
               </div>
               <div>
-                <div
+                <AnimatedMeter
+                  value={(xpIntoLevel / XP_PER_LEVEL) * 100}
                   className="h-1.5 w-full overflow-hidden rounded-full bg-primary/15"
+                  barClassName="h-full rounded-full bg-primary"
                   role="progressbar"
                   aria-valuemin={0}
                   aria-valuemax={XP_PER_LEVEL}
                   aria-valuenow={xpIntoLevel}
                   aria-label={`Progres menuju level ${level + 1}`}
-                >
-                  <div
-                    className="h-full rounded-full bg-primary transition-[width] duration-300"
-                    style={{ width: `${(xpIntoLevel / XP_PER_LEVEL) * 100}%` }}
-                  />
-                </div>
+                />
                 <p className="mt-2 text-[13px] text-muted-foreground">
                   <span className="tabular-nums">{xpToNext}</span> XP lagi ke
                   level {level + 1}
@@ -203,7 +206,11 @@ export default async function PlayerDashboardPage() {
                 {progress.missions_completed}
               </p>
               <p className="mt-1 text-[13px] text-muted-foreground">
-                dari 3 misi yang tersedia
+                dari{" "}
+                <span className="tabular-nums">
+                  {missionsCountRes.count ?? 0}
+                </span>{" "}
+                misi yang tersedia
               </p>
             </div>
           </Card>

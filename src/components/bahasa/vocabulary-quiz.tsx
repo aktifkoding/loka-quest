@@ -147,7 +147,7 @@ export function VocabularyQuiz({
       </div>
       <div className="mt-2 h-1.5 w-full rounded-full bg-secondary">
         <div
-          className="h-full rounded-full bg-primary transition-all duration-300"
+          className="h-full rounded-full bg-primary transition-[width] duration-300"
           style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
         />
       </div>
@@ -188,7 +188,7 @@ export function VocabularyQuiz({
               key={idx}
               onClick={() => handleSelect(option)}
               disabled={isAnswered}
-              className={`flex items-center justify-between rounded-xl border p-4 text-left text-sm font-medium transition-all ${btnStyle}`}
+              className={`flex items-center justify-between rounded-xl border p-4 text-left text-sm font-medium transition-[background-color,border-color,color] ${btnStyle}`}
             >
               <span>{option}</span>
               {isAnswered && isRight && (

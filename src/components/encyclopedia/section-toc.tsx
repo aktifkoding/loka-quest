@@ -40,7 +40,7 @@ export function SectionToc({
           key={section.id}
           href={`#${section.id}`}
           aria-current={active === section.id ? "true" : undefined}
-          className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-all duration-200 ease-out-expo ${
+          className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-[background-color,border-color,color] duration-200 ease-out-expo ${
             active === section.id
               ? "border-primary/30 bg-primary/10 text-primary"
               : "border-border bg-card text-muted-foreground hover:-translate-y-0.5 hover:border-primary/20 hover:text-foreground hover:shadow-card"

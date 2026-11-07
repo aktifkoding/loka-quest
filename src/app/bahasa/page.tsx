@@ -83,7 +83,7 @@ export default function BahasaDaerahHubPage() {
             <Card
               key={lang.slug}
               interactive
-              className="flex flex-col justify-between p-6 transition-all hover:shadow-lg"
+              className="flex flex-col justify-between p-6 transition-[box-shadow] hover:shadow-lg"
             >
               <div>
                 <div className="flex items-start justify-between gap-3">

@@ -18,7 +18,7 @@ export function ConsentBanner() {
     <div
       role="dialog"
       aria-label="Persetujuan analitik"
-      className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-xl rounded-2xl border border-border bg-card p-4 shadow-xl md:left-auto md:right-6 md:mx-0"
+      className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-xl rounded-2xl border border-border bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-xl md:left-auto md:right-6 md:mx-0"
     >
       <p className="text-sm leading-relaxed">
         Kami ingin memahami fitur mana yang dipakai agar LokaQuest lebih baik.

@@ -8,6 +8,7 @@ import { Menu, X, Compass, LogIn, LogOut, Trophy, Gamepad2, Network, Users, Ligh
 import { createClient } from "@/lib/supabase/client";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { LanguageToggle } from "@/components/layout/language-toggle";
+import { UserMenu } from "@/components/layout/user-menu";
 import { dictionary, getLang, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -102,7 +103,7 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-3 z-50 px-3 md:px-6">
       <div
         className={cn(
-          "mx-auto flex h-14 max-w-6xl items-center justify-between rounded-2xl border border-border/80 bg-background/85 pl-4 pr-2 backdrop-blur-md transition-[box-shadow,border-color] duration-300 ease-out-expo",
+          "mx-auto flex h-14 max-w-7xl items-center justify-between rounded-2xl border border-border/80 bg-background/85 pl-4 pr-2 backdrop-blur-md transition-[box-shadow,border-color] duration-300 ease-out-expo",
           scrolled ? "border-border shadow-raised" : "shadow-card"
         )}
       >
@@ -127,7 +128,7 @@ export function Navbar() {
               href={link.href}
               aria-current={isActive(link.href) ? "page" : undefined}
               className={cn(
-                "relative flex min-h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors duration-200",
+                "relative flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-sm font-medium transition-colors duration-200",
                 "after:absolute after:inset-x-3.5 after:-bottom-px after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-gold after:transition-transform after:duration-200 after:ease-out-expo",
                 isActive(link.href)
                   ? "bg-primary/10 text-primary"
@@ -150,16 +151,7 @@ export function Navbar() {
             />
           ) : user ? (
             <>
-              <span
-                className="max-w-44 truncate rounded-full bg-secondary px-3 py-1.5 text-sm text-secondary-foreground"
-                title={user.email}
-              >
-                {user.fullName || user.email}
-              </span>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="size-4" aria-hidden="true" />
-                {dictionary[lang].logout}
-              </Button>
+              <UserMenu user={user} />
             </>
           ) : (
             <>
@@ -196,7 +188,7 @@ export function Navbar() {
       {isOpen && (
         <div
           id="mobile-nav"
-          className="animate-slide-up mx-auto mt-2 max-w-6xl origin-top rounded-2xl border border-border/80 bg-background/95 p-3 shadow-raised backdrop-blur-md md:hidden"
+          className="animate-slide-up mx-auto mt-2 max-w-7xl origin-top rounded-2xl border border-border/80 bg-background/95 p-3 shadow-raised backdrop-blur-md md:hidden"
         >
           <nav className="flex flex-col" aria-label="Utama mobile">
             {navLinks.map((link, index) => (

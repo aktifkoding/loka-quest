@@ -70,7 +70,7 @@ export function PronunciationButton({
       variant="outline"
       size={size}
       onClick={speak}
-      className={`inline-flex items-center gap-1.5 transition-all duration-200 ${
+      className={`inline-flex items-center gap-1.5 transition-[background-color,color,box-shadow] duration-200 ${
         isPlaying
           ? "border-primary bg-primary/10 text-primary shadow-sm"
           : "hover:border-primary/50"
