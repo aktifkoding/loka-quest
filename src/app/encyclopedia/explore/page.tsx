@@ -1,6 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
-import { wikimediaLoader } from "@/lib/wikimedia-loader";
+import { WikimediaImage } from "@/components/wikimedia-image";
 import { createClient } from "@/lib/supabase/server";
 import { BookOpen, MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -139,9 +138,8 @@ export default async function ExploreEncyclopediaPage({
               <Card interactive className="h-full overflow-hidden">
                 {article.featured_image_url ? (
                   <div className="relative aspect-[16/9] w-full">
-                    <Image
-                  loader={wikimediaLoader}
-                      src={article.featured_image_url}
+                    <WikimediaImage
+                                        src={article.featured_image_url}
                       alt=""
                       fill
                       sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"

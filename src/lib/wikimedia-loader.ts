@@ -19,12 +19,15 @@ function nextBucket(width: number): number {
 }
 
 export function wikimediaLoader({ src, width }: ImageLoaderProps): string {
+  // Buang query tracking (?utm_source=...) agar tidak merusak path thumbnail.
+  const clean = src.split("?")[0];
+
   // Sudah berupa URL thumbnail Wikimedia? Pakai apa adanya.
-  if (src.includes("thumb.wikimedia.org")) return src;
+  if (clean.includes("thumb.wikimedia.org")) return clean;
 
   // upload.wikimedia.org/wikipedia/commons/<a>/<b>/<File>
   //   -> thumb.wikimedia.org/wikipedia/commons/thumb/<a>/<b>/<File>/<W>px-<File>
-  const commonsFile = src.match(
+  const commonsFile = clean.match(
     /^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/([0-9a-f]\/[0-9a-f]{2}\/(.+))$/,
   );
   if (commonsFile) {
@@ -32,7 +35,7 @@ export function wikimediaLoader({ src, width }: ImageLoaderProps): string {
     return `https://thumb.wikimedia.org/wikipedia/commons/thumb/${path}/${nextBucket(width)}px-${filename}`;
   }
 
-  return src;
+  return clean;
 }
 
 // next.config `images.loaderFile` belum didukung Turbopack (Next 15.5),
