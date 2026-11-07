@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Reveal } from "@/components/ui/reveal";
@@ -106,17 +105,25 @@ export default function AiAssistantPage() {
       )}
 
       {loading && (
-        <Card className="mt-6 p-6">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="mt-3 h-4 w-5/6" />
-          <Skeleton className="mt-3 h-4 w-4/6" />
-        </Card>
+        <div className="animate-fade-in mt-6 flex items-center gap-3" aria-live="polite">
+          <Card className="flex items-center gap-1.5 px-5 py-4">
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className="animate-typing-dot size-2 rounded-full bg-primary/60"
+                style={{ animationDelay: `${i * 160}ms` }}
+                aria-hidden="true"
+              />
+            ))}
+            <span className="sr-only">Asisten sedang menyiapkan jawaban</span>
+          </Card>
+        </div>
       )}
 
       {!asked && !loading && (
-        <Card className="mt-8 p-6">
+        <Card className="animate-fade-up mt-8 p-6">
           <p className="text-sm font-medium">Coba pertanyaan:</p>
-          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+          <ul className="mt-3 flex flex-wrap gap-2">
             {[
               "Apa itu batik Parang Rusak?",
               "Ceritakan tentang wayang kulit Yogyakarta.",
@@ -126,7 +133,7 @@ export default function AiAssistantPage() {
                 <button
                   type="button"
                   onClick={() => setQuestion(q)}
-                  className="rounded-lg border border-border px-3 py-2 text-left hover:bg-secondary/60"
+                  className="cursor-pointer rounded-full border border-border bg-card px-3.5 py-2 text-left text-sm text-muted-foreground transition-all duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-primary/30 hover:text-foreground hover:shadow-card"
                 >
                   {q}
                 </button>
@@ -138,11 +145,14 @@ export default function AiAssistantPage() {
 
       <div className="mt-8 space-y-6">
         {history.map((item, index) => (
-          <div key={index} className="space-y-4">
-            <Card className="bg-secondary/40 p-5">
-              <p className="text-sm font-semibold text-primary">Pertanyaan</p>
-              <p className="mt-1 text-sm leading-relaxed">{item.q}</p>
-            </Card>
+          <div key={index} className="animate-fade-up space-y-4">
+            {/* Bubble pengguna: kanan, warna utama */}
+            <div className="flex justify-end">
+              <p className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-4 py-3 text-sm leading-relaxed text-primary-foreground shadow-card">
+                {item.q}
+              </p>
+            </div>
+            {/* Bubble asisten: kiri, kartu */}
             <Card className="p-5">
               <p className="text-sm font-semibold text-primary">Jawaban</p>
               <p className="mt-2 text-sm leading-relaxed">{item.a.answer}</p>
@@ -152,8 +162,8 @@ export default function AiAssistantPage() {
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Referensi</p>
                   <ul className="mt-2 space-y-2">
                     {item.a.citations.map((c, i) => (
-                      <li key={i} className="flex items-start gap-2 rounded-lg border border-border bg-secondary/40 px-3 py-2.5">
-                        <BookMarked className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+                      <li key={i} className="group flex items-start gap-2 rounded-lg border border-border bg-secondary/40 px-3 py-2.5 transition-colors duration-200 hover:border-primary/25">
+                        <BookMarked className="mt-0.5 size-4 shrink-0 text-primary transition-transform duration-200 group-hover:scale-110" aria-hidden="true" />
                         <div className="min-w-0">
                           <p className="text-sm font-medium">{c.title}</p>
                           <p className="text-xs text-muted-foreground">

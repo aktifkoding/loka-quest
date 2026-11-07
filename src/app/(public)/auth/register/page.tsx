@@ -77,7 +77,7 @@ export default function RegisterPage() {
   return (
     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 md:grid-cols-2 md:items-center md:gap-16 md:py-16">
       {/* Brand panel */}
-      <aside className="batik-grid hidden rounded-3xl border border-border/60 bg-secondary/70 p-8 md:block">
+      <aside className="batik-grid animate-fade-up hidden rounded-3xl border border-border/60 bg-secondary/70 p-8 md:block">
         <div className="flex items-center gap-2.5">
           <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Gamepad2 className="size-4" aria-hidden="true" />
@@ -115,7 +115,7 @@ export default function RegisterPage() {
       </aside>
 
       {/* Form */}
-      <div className="mx-auto w-full max-w-[400px]">
+      <div className="animate-fade-up mx-auto w-full max-w-[400px]" style={{ animationDelay: "120ms" }}>
         <h1 className="font-display text-3xl font-semibold tracking-tight">
           Buat akun LokaQuest
         </h1>

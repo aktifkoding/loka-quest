@@ -39,15 +39,31 @@ create table if not exists public.encyclopedia_articles (
   published_at timestamptz,
   seo_title text,
   seo_description text,
-  search_document tsvector generated always as (
-    setweight(to_tsvector('simple', coalesce(title, '')), 'A') ||
-    setweight(to_tsvector('indonesian', coalesce(summary, '')), 'B') ||
-    setweight(to_tsvector('indonesian', coalesce(body, '')), 'C') ||
-    setweight(to_tsvector('indonesian', coalesce(array_to_string(alternative_names, ' '), '')), 'B')
-  ) stored,
+  search_document tsvector not null default ''::tsvector,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Drop the generated expression if a previous SQL Editor attempt created the table.
+alter table public.encyclopedia_articles alter column search_document drop expression if exists;
+
+create or replace function public.update_encyclopedia_search_document()
+returns trigger language plpgsql as $$
+begin
+  new.search_document :=
+    setweight(to_tsvector('simple', coalesce(new.title, '')), 'A') ||
+    setweight(to_tsvector('simple', coalesce(new.summary, '')), 'B') ||
+    setweight(to_tsvector('simple', coalesce(new.body, '')), 'C') ||
+    setweight(to_tsvector('simple', coalesce(array_to_string(new.alternative_names, ' '), '')), 'B');
+  return new;
+end;
+$$;
+
+drop trigger if exists encyclopedia_articles_search_document on public.encyclopedia_articles;
+create trigger encyclopedia_articles_search_document
+before insert or update of title, summary, body, alternative_names
+on public.encyclopedia_articles
+for each row execute function public.update_encyclopedia_search_document();
 
 create table if not exists public.encyclopedia_article_categories (
   article_id uuid not null references public.encyclopedia_articles(id) on delete cascade,

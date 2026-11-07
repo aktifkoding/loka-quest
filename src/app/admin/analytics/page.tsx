@@ -4,6 +4,8 @@ import { createServiceClient } from "@/lib/supabase/service-role";
 import { requireRole } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Reveal } from "@/components/ui/reveal";
+import { CountUp } from "@/components/ui/count-up";
 import { ArrowLeft, Users, Gamepad2, MapPin, FileText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -51,20 +53,22 @@ export default async function AdminAnalyticsPage() {
         </header>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          {stats.map((stat) => (
-            <Card key={stat.label}>
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {stat.label}
+          {stats.map((stat, index) => (
+            <Reveal key={stat.label} delay={index * 70}>
+              <Card>
+                <div className="p-6">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {stat.label}
+                    </p>
+                    <stat.icon className="size-5 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                  <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
+                    <CountUp value={stat.value} />
                   </p>
-                  <stat.icon className="size-5 text-muted-foreground" aria-hidden="true" />
                 </div>
-                <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
-                  {stat.value.toLocaleString("id-ID")}
-                </p>
-              </div>
-            </Card>
+              </Card>
+            </Reveal>
           ))}
         </div>
       </div>

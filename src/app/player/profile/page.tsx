@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CountUp } from "@/components/ui/count-up";
 import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft, Loader2, Save, Zap, Trophy, ShieldCheck, Gem, BarChart3 } from "lucide-react";
 
@@ -82,8 +83,8 @@ export default function ProfilePage() {
         </Link>
       </Button>
 
-      <h1 className="font-display text-4xl font-semibold tracking-tight">Profil</h1>
-      <p className="mt-2 text-muted-foreground">
+      <h1 className="animate-fade-up font-display text-4xl font-semibold tracking-tight">Profil</h1>
+      <p className="animate-fade-up mt-2 text-muted-foreground" style={{ animationDelay: "60ms" }}>
         Kelola identitas tampilanmu di LokaQuest.
       </p>
 
@@ -94,24 +95,24 @@ export default function ProfilePage() {
         </div>
       ) : profile ? (
         <div className="mt-8 space-y-6">
-          <Card className="border-primary/25 bg-primary/5">
+          <Card className="animate-fade-up border-primary/25 bg-primary/5 transition-[box-shadow,border-color] duration-200 hover:border-gold/40" style={{ animationDelay: "100ms" }}>
             <div className="grid grid-cols-3 gap-4 p-6 text-center">
-              <div>
-                <Zap className="mx-auto size-5 text-gold" aria-hidden="true" />
+              <div className="group cursor-default">
+                <Zap className="mx-auto size-5 text-gold transition-transform duration-200 group-hover:scale-110" aria-hidden="true" />
                 <p className="mt-2 font-display text-2xl font-semibold tabular-nums">
-                  {profile.xp}
+                  <CountUp value={profile.xp} />
                 </p>
                 <p className="text-[12px] text-muted-foreground">Total XP</p>
               </div>
-              <div>
-                <Trophy className="mx-auto size-5 text-muted-foreground" aria-hidden="true" />
+              <div className="group cursor-default">
+                <Trophy className="mx-auto size-5 text-muted-foreground transition-transform duration-200 group-hover:scale-110" aria-hidden="true" />
                 <p className="mt-2 font-display text-2xl font-semibold tabular-nums">
-                  {profile.level}
+                  <CountUp value={profile.level} />
                 </p>
                 <p className="text-[12px] text-muted-foreground">Level</p>
               </div>
-              <div>
-                <ShieldCheck className="mx-auto size-5 text-muted-foreground" aria-hidden="true" />
+              <div className="group cursor-default">
+                <ShieldCheck className="mx-auto size-5 text-muted-foreground transition-transform duration-200 group-hover:scale-110" aria-hidden="true" />
                 <p className="mt-2 font-display text-2xl font-semibold">
                   {roleLabel[profile.role] ?? profile.role}
                 </p>

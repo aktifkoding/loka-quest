@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Code2, TrendingUp, BookMarked } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
+import { SiteFooter } from "@/components/layout/site-footer";
 
 export const metadata = {
   title: "Tentang Kami",
@@ -28,6 +29,7 @@ const ROLES = [
 
 export default function AboutPage() {
   return (
+    <>
     <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/">
@@ -74,5 +76,7 @@ export default function AboutPage() {
         untuk transparansi penuh atas rujukan dan lisensi.
       </p>
     </div>
+    <SiteFooter />
+    </>
   );
 }

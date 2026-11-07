@@ -103,7 +103,9 @@ export default function KnowledgeGraphPage() {
                     <div className="px-5 py-5">
                       <p className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">{node.type}</p>
                       <p className="mt-1 font-display text-lg font-semibold leading-snug">{node.label}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">ID: {node.id}</p>
+                      <p className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
+                        {graph.edges.filter((e) => e.source === node.id || e.target === node.id).length} hubungan
+                      </p>
                     </div>
                   </Card>
                 </Reveal>

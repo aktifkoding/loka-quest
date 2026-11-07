@@ -2,12 +2,15 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth/session";
+import { CountUp } from "@/components/ui/count-up";
+import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   Users,
   FileText,
   MapPin,
+  MessageSquare,
   Settings,
   ArrowUpRight,
 } from "lucide-react";
@@ -17,6 +20,7 @@ const contentLinks = [
   { href: "/admin/missions", label: "Misi & soal", icon: FileText },
   { href: "/admin/encyclopedia", label: "Ensiklopedia budaya", icon: FileText },
   { href: "/admin/contents", label: "Konten & sumber", icon: FileText },
+  { href: "/admin/submissions", label: "Moderasi komunitas", icon: MessageSquare },
 ];
 
 const systemLinks = [
@@ -55,56 +59,62 @@ export default async function AdminDashboardPage() {
 
         {/* Metric strip */}
         <div className="mt-10 grid gap-4 sm:grid-cols-3">
-          <Card className="border-primary/25 bg-primary/5">
-            <div className="p-6">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Pengguna
+          <Reveal delay={60}>
+            <Card className="border-primary/25 bg-primary/5">
+              <div className="p-6">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Pengguna
+                  </p>
+                  <Users className="size-5 text-muted-foreground" aria-hidden="true" />
+                </div>
+                <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
+                  <CountUp value={userCount ?? 0} />
                 </p>
-                <Users className="size-5 text-muted-foreground" aria-hidden="true" />
+                <p className="mt-1 text-[13px] text-muted-foreground">
+                  akun terdaftar
+                </p>
               </div>
-              <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
-                {userCount ?? 0}
-              </p>
-              <p className="mt-1 text-[13px] text-muted-foreground">
-                akun terdaftar
-              </p>
-            </div>
-          </Card>
+            </Card>
+          </Reveal>
 
-          <Card>
-            <div className="p-6">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Misi
+          <Reveal delay={120}>
+            <Card>
+              <div className="p-6">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Misi
+                  </p>
+                  <FileText className="size-5 text-muted-foreground" aria-hidden="true" />
+                </div>
+                <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
+                  <CountUp value={missionCount ?? 0} />
                 </p>
-                <FileText className="size-5 text-muted-foreground" aria-hidden="true" />
+                <p className="mt-1 text-[13px] text-muted-foreground">
+                  termasuk draf dan terbit
+                </p>
               </div>
-              <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
-                {missionCount ?? 0}
-              </p>
-              <p className="mt-1 text-[13px] text-muted-foreground">
-                termasuk draf dan terbit
-              </p>
-            </div>
-          </Card>
+            </Card>
+          </Reveal>
 
-          <Card>
-            <div className="p-6">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Wilayah
+          <Reveal delay={180}>
+            <Card>
+              <div className="p-6">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Wilayah
+                  </p>
+                  <MapPin className="size-5 text-muted-foreground" aria-hidden="true" />
+                </div>
+                <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
+                  <CountUp value={regionCount ?? 0} />
                 </p>
-                <MapPin className="size-5 text-muted-foreground" aria-hidden="true" />
+                <p className="mt-1 text-[13px] text-muted-foreground">
+                  wilayah budaya terdaftar
+                </p>
               </div>
-              <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
-                {regionCount ?? 0}
-              </p>
-              <p className="mt-1 text-[13px] text-muted-foreground">
-                wilayah budaya terdaftar
-              </p>
-            </div>
-          </Card>
+            </Card>
+          </Reveal>
         </div>
 
         {/* Management links */}

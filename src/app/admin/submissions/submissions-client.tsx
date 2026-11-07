@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Reveal } from "@/components/ui/reveal";
+import { useToast } from "@/components/ui/feedback";
 import { CheckCircle2, XCircle, Clock, MessageSquare } from "lucide-react";
 
 type Submission = {
@@ -23,6 +24,7 @@ export function AdminSubmissionsClient({ initial }: { initial: Submission[] }) {
   const [items, setItems] = useState<Submission[]>(initial);
   const [noteFor, setNoteFor] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
+  const { showToast, toastNode } = useToast();
 
   const updateStatus = async (id: string, status: "published" | "rejected", admin_note?: string) => {
     const res = await fetch(`/api/v1/admin/submissions/${id}`, {
@@ -32,12 +34,13 @@ export function AdminSubmissionsClient({ initial }: { initial: Submission[] }) {
     });
     if (!res.ok) {
       const json = await res.json();
-      alert(json.error || "Gagal memperbarui");
+      showToast("error", json.error || "Gagal memperbarui");
       return;
     }
     setItems((items) => items.map((i) => (i.id === id ? { ...i, status, admin_note: admin_note ?? noteText } : i)));
     setNoteFor(null);
     setNoteText("");
+    showToast("success", status === "published" ? "Usulan dipublikasikan." : "Usulan ditolak.");
   };
 
   const pending = items.filter((i) => i.status === "pending");
@@ -137,6 +140,7 @@ export function AdminSubmissionsClient({ initial }: { initial: Submission[] }) {
           </ul>
         )}
       </section>
+      {toastNode}
     </div>
   );
 }

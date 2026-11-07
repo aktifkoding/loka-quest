@@ -12,8 +12,9 @@ function Card({
       data-slot="card"
       className={cn(
         "bg-card text-card-foreground rounded-xl border border-border/70 shadow-card h-full",
-        "transition-[box-shadow,border-color] duration-200 ease-out",
-        interactive && "cursor-pointer hover:border-primary/30 hover:shadow-raised",
+        "transition-[box-shadow,border-color,transform] duration-200 ease-out",
+        interactive &&
+          "cursor-pointer hover:border-primary/30 hover:shadow-raised hover:-translate-y-0.5",
         className
       )}
       {...props}

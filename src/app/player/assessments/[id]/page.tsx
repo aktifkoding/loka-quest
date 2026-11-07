@@ -259,7 +259,8 @@ export default function TakeAssessmentPage() {
         </Card>
       ) : (
         <Card className="mt-8">
-          <div className="p-6 sm:p-8">
+          {/* key={current} memicu ulang animasi tiap ganti soal */}
+          <div key={current} className="animate-slide-up p-6 sm:p-8">
             <h1 className="font-display text-2xl font-semibold leading-snug">
               {question?.prompt}
             </h1>

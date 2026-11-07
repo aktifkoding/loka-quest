@@ -178,7 +178,7 @@ export default function CommunityPage() {
                   <Label htmlFor="body">Isi dokumentasi</Label>
                   <textarea
                     id="body"
-                    className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-[color,box-shadow] duration-200 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                     value={form.body}
                     onChange={(e) => setForm({ ...form, body: e.target.value })}
                     required

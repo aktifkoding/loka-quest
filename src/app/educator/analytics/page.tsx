@@ -6,6 +6,8 @@ import { requireRole } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Reveal } from "@/components/ui/reveal";
+import { CountUp } from "@/components/ui/count-up";
 import { ArrowLeft, BarChart3, Users, Target, TrendingUp, BookOpen } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -125,41 +127,46 @@ export default async function EducatorAnalyticsPage() {
         ) : (
           <>
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <Card className="border-primary/25 bg-primary/5">
-                <div className="p-6">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-muted-foreground">
-                      Siswa terpantau
+              <Reveal delay={60}>
+                <Card className="border-primary/25 bg-primary/5">
+                  <div className="p-6">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Siswa terpantau
+                      </p>
+                      <Users className="size-5 text-muted-foreground" aria-hidden="true" />
+                    </div>
+                    <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
+                      <CountUp value={memberIds.length} />
                     </p>
-                    <Users className="size-5 text-muted-foreground" aria-hidden="true" />
+                    <p className="mt-1 text-[13px] text-muted-foreground">
+                      di {groupList.length} kelompok
+                    </p>
                   </div>
-                  <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
-                    {memberIds.length}
-                  </p>
-                  <p className="mt-1 text-[13px] text-muted-foreground">
-                    di {groupList.length} kelompok
-                  </p>
-                </div>
-              </Card>
+                </Card>
+              </Reveal>
 
-              <Card>
-                <div className="p-6">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-muted-foreground">
-                      Rata-rata nilai misi
+              <Reveal delay={120}>
+                <Card>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Rata-rata nilai misi
+                      </p>
+                      <Target className="size-5 text-muted-foreground" aria-hidden="true" />
+                    </div>
+                    <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
+                      <CountUp value={attemptStats.avgScore} suffix="/100" />
                     </p>
-                    <Target className="size-5 text-muted-foreground" aria-hidden="true" />
+                    <p className="mt-1 text-[13px] text-muted-foreground">
+                      dari {attemptStats.total} percobaan
+                    </p>
                   </div>
-                  <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
-                    {attemptStats.avgScore}
-                  </p>
-                  <p className="mt-1 text-[13px] text-muted-foreground">
-                    dari {attemptStats.total} percobaan
-                  </p>
-                </div>
-              </Card>
+                </Card>
+              </Reveal>
             </div>
 
+            <Reveal delay={160}>
             <Card className="mt-6">
               <div className="p-6">
                 <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
@@ -172,24 +179,41 @@ export default async function EducatorAnalyticsPage() {
                     muncul di sini begitu keduanya tersedia.
                   </p>
                 ) : (
-                  <div className="mt-5 grid grid-cols-3 items-center gap-4 text-center">
-                    <div>
-                      <p className="text-[13px] text-muted-foreground">Pre-test</p>
-                      <p className="font-display text-3xl font-semibold tabular-nums">
-                        {assessmentStats.pre}
-                      </p>
+                  <div className="mt-5">
+                    <div className="grid grid-cols-3 items-center gap-4 text-center">
+                      <div>
+                        <p className="text-[13px] text-muted-foreground">Pre-test</p>
+                        <p className="font-display text-3xl font-semibold tabular-nums">
+                          {assessmentStats.pre}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="font-display text-3xl font-semibold tabular-nums text-primary">
+                          {delta! > 0 ? `+${delta}` : delta}
+                        </p>
+                        <p className="text-[13px] text-muted-foreground">perubahan</p>
+                      </div>
+                      <div>
+                        <p className="text-[13px] text-muted-foreground">Post-test</p>
+                        <p className="font-display text-3xl font-semibold tabular-nums">
+                          {assessmentStats.post}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-display text-3xl font-semibold tabular-nums text-primary">
-                        {delta! > 0 ? `+${delta}` : delta}
-                      </p>
-                      <p className="text-[13px] text-muted-foreground">perubahan</p>
-                    </div>
-                    <div>
-                      <p className="text-[13px] text-muted-foreground">Post-test</p>
-                      <p className="font-display text-3xl font-semibold tabular-nums">
-                        {assessmentStats.post}
-                      </p>
+                    {/* Bar pre vs post (skala 0–100) */}
+                    <div className="mt-6 space-y-2.5" aria-hidden="true">
+                      <div className="flex items-center gap-3">
+                        <span className="w-16 text-right text-xs text-muted-foreground">Pre</span>
+                        <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary">
+                          <div className="h-full rounded-full bg-muted-foreground/50" style={{ width: `${assessmentStats.pre}%` }} />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="w-16 text-right text-xs text-muted-foreground">Post</span>
+                        <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary">
+                          <div className="progress-live h-full rounded-full bg-gradient-to-r from-primary to-gold" style={{ width: `${assessmentStats.post}%` }} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -199,6 +223,7 @@ export default async function EducatorAnalyticsPage() {
                 </p>
               </div>
             </Card>
+            </Reveal>
           </>
         )}
       </div>

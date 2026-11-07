@@ -62,10 +62,29 @@ const config: Config = {
       },
       animation: {
         "fade-in": "fade-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "scale-in": "scale-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both",
+        pop: "pop-in 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both",
+        "slide-up": "slide-up 0.36s cubic-bezier(0.22, 1, 0.36, 1) both",
+      },
+      transitionTimingFunction: {
+        "out-expo": "cubic-bezier(0.22, 1, 0.36, 1)",
       },
       keyframes: {
         fadeUp: {
           "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        scaleIn: {
+          "0%": { opacity: "0", transform: "scale(0.955)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        popIn: {
+          "0%": { opacity: "0", transform: "scale(0.72)" },
+          "70%": { transform: "scale(1.05)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        slideUp: {
+          "0%": { opacity: "0", transform: "translateY(14px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
       },

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Reveal } from "@/components/ui/reveal";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { ArrowLeft, BookMarked, ExternalLink } from "lucide-react";
 import { createServiceClient } from "@/lib/supabase/service-role";
 
@@ -28,6 +29,7 @@ export default async function SourcesPage() {
   const rows = sources ?? [];
 
   return (
+    <>
     <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/">
@@ -90,5 +92,7 @@ export default async function SourcesPage() {
         memakai motif geometris generik — bukan reprodigsi karya berhak cipta.
       </p>
     </div>
+    <SiteFooter />
+    </>
   );
 }

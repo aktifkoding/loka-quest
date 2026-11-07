@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { CountUp } from "@/components/ui/count-up";
+import { SiteFooter } from "@/components/layout/site-footer";
 import {
   SwatchBook,
   Music4,
@@ -415,76 +416,8 @@ export default function HomePage() {
       </section>
       </Reveal>
 
-      {/* Footer — boring on purpose */}
-      {/* Footer — boring on purpose */}
-      <footer className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-4 py-10">
-          <div className="flex flex-col gap-8 sm:flex-row sm:justify-between">
-            <div>
-              <p className="font-display text-lg font-semibold">LokaQuest</p>
-              <p className="mt-1 max-w-xs text-sm leading-relaxed text-muted-foreground">
-                Jelajahi Nusantara, hidupkan warisan budaya.
-              </p>
-            </div>
-            <nav
-              className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm"
-              aria-label="Footer"
-            >
-              <Link
-                href="/jelajahi"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Grafik Budaya
-              </Link>
-              <Link
-                href="/komunitas"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Komunitas
-              </Link>
-              <Link
-                href="/asisten"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Asisten AI
-              </Link>
-              <Link
-                href="/explore"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Jelajahi
-              </Link>
-              <Link
-                href="/missions"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Misi
-              </Link>
-              <Link
-                href="/sumber"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Sumber budaya
-              </Link>
-              <Link
-                href="/leaderboard"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Leaderboard
-              </Link>
-              <Link
-                href="/tentang"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Tentang
-              </Link>
-            </nav>
-          </div>
-          <p className="mt-8 text-[13px] text-muted-foreground">
-            © 2026 LokaQuest. Konten budaya disertai sumber referensi.
-          </p>
-        </div>
-      </footer>
+      {/* Footer */}
+      <SiteFooter />
     </div>
   );
 }

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, MailCheck } from "lucide-react";
+import { Loader2, MailCheck, Gamepad2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ForgotPasswordPage() {
@@ -39,9 +39,15 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[400px] px-4 py-16 md:py-24">
+    <div className="animate-fade-up mx-auto w-full max-w-[400px] px-4 py-16 md:py-24">
+      <div className="mb-8 flex items-center justify-center gap-2.5">
+        <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <Gamepad2 className="size-5" aria-hidden="true" />
+        </span>
+        <span className="font-display text-lg font-semibold">LokaQuest</span>
+      </div>
       {success ? (
-        <div className="text-center">
+        <div className="animate-scale-in text-center">
           <div className="mx-auto mb-5 flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
             <MailCheck className="size-5" aria-hidden="true" />
           </div>

@@ -2,17 +2,35 @@
 
 import { useEffect, useRef, useState } from "react";
 
+type RevealDirection = "up" | "left" | "right" | "scale";
+
+const HIDDEN: Record<RevealDirection, string> = {
+  up: "translateY(18px)",
+  left: "translateX(-26px)",
+  right: "translateX(26px)",
+  scale: "scale(0.955)",
+};
+
+const SHOWN: Record<RevealDirection, string> = {
+  up: "translateY(0)",
+  left: "translateX(0)",
+  right: "translateX(0)",
+  scale: "scale(1)",
+};
+
 /**
- * Scroll-reveal wrapper: children fade up once when entering the viewport.
+ * Scroll-reveal wrapper: children animate into view once on first intersect.
  * Respects prefers-reduced-motion (content appears immediately).
  */
 export function Reveal({
   children,
   delay = 0,
+  direction = "up",
   className,
 }: {
   children: React.ReactNode;
   delay?: number;
+  direction?: RevealDirection;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -44,7 +62,7 @@ export function Reveal({
       className={className}
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(18px)",
+        transform: visible ? SHOWN[direction] : HIDDEN[direction],
         transition: `opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
         willChange: "opacity, transform",
       }}

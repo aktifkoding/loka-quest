@@ -7,14 +7,15 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ArrowLeft, Gem, Gamepad2 } from "lucide-react";
 
-const rarityStyle: Record<string, { label: string; ring: string; badge: string }> = {
-  common: { label: "Umum", ring: "border-border", badge: "bg-muted text-muted-foreground" },
-  uncommon: { label: "Tak Biasa", ring: "border-primary/40", badge: "bg-primary/10 text-primary" },
-  rare: { label: "Langka", ring: "border-gold/50", badge: "bg-gold/15 text-gold" },
+const rarityStyle: Record<string, { label: string; ring: string; badge: string; gem: string }> = {
+  common: { label: "Umum", ring: "border-border", badge: "bg-muted text-muted-foreground", gem: "bg-secondary text-muted-foreground" },
+  uncommon: { label: "Tak Biasa", ring: "border-primary/40", badge: "bg-primary/10 text-primary", gem: "bg-primary/10 text-primary" },
+  rare: { label: "Langka", ring: "border-gold/50", badge: "bg-gold/15 text-gold", gem: "bg-gold/12 text-gold" },
   legendary: {
     label: "Legendaris",
-    ring: "border-gold ring-2 ring-gold/40",
+    ring: "glow-gold border-gold",
     badge: "bg-gold text-black",
+    gem: "bg-gold/15 text-gold",
   },
 };
 
@@ -80,12 +81,13 @@ export default async function CollectionPage() {
                 return (
                   <Card
                     key={a.id}
-                    className={`animate-fade-up ${style.ring}`}
+                    interactive
+                    className={`animate-fade-up group ${style.ring}`}
                     style={{ animationDelay: `${i * 70}ms` }}
                   >
                     <div className="p-6">
                       <div className="flex items-start justify-between gap-3">
-                        <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <span className={`flex size-11 items-center justify-center rounded-xl ${style.gem} transition-transform duration-200 group-hover:scale-105`}>
                           <Gem className="size-5" aria-hidden="true" />
                         </span>
                         <span

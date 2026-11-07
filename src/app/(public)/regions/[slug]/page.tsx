@@ -354,7 +354,7 @@ export default function RegionDetailPage() {
       {/* Lightbox */}
       {lightbox && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
           onClick={() => setLightbox(null)}
           role="dialog"
           aria-modal="true"
@@ -362,7 +362,7 @@ export default function RegionDetailPage() {
         >
           <button
             onClick={() => setLightbox(null)}
-            className="absolute right-4 top-4 inline-flex size-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
+            className="animate-scale-in absolute right-4 top-4 inline-flex size-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
             aria-label="Tutup pratinjau"
           >
             <X className="size-5" aria-hidden="true" />
@@ -370,7 +370,7 @@ export default function RegionDetailPage() {
           <img
             src={lightbox}
             alt="Pratinjau"
-            className="max-h-[90vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl"
+            className="animate-scale-in max-h-[90vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
         </div>

@@ -82,9 +82,23 @@ export function Navbar() {
       ? pathname.startsWith("/player") || pathname.startsWith("/educator")
       : pathname.startsWith(href);
 
+  // Bayangan menguat saat halaman digulir — navbar terasa "terangkat"
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <header className="fixed inset-x-0 top-3 z-50 px-3 md:px-6">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between rounded-2xl border border-border/80 bg-background/85 pl-4 pr-2 shadow-card backdrop-blur-md">
+      <div
+        className={cn(
+          "mx-auto flex h-14 max-w-6xl items-center justify-between rounded-2xl border border-border/80 bg-background/85 pl-4 pr-2 backdrop-blur-md transition-[box-shadow,border-color] duration-300 ease-out-expo",
+          scrolled ? "border-border shadow-raised" : "shadow-card"
+        )}
+      >
         <Link
           href="/"
           className="flex items-center gap-2.5 rounded-md"
@@ -106,10 +120,11 @@ export function Navbar() {
               href={link.href}
               aria-current={isActive(link.href) ? "page" : undefined}
               className={cn(
-                "flex min-h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors duration-200",
+                "relative flex min-h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors duration-200",
+                "after:absolute after:inset-x-3.5 after:-bottom-px after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-gold after:transition-transform after:duration-200 after:ease-out-expo",
                 isActive(link.href)
                   ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  : "text-muted-foreground after:scale-x-0 hover:bg-accent hover:text-foreground hover:after:scale-x-100"
               )}
             >
               <link.icon className="size-4" aria-hidden="true" />
@@ -119,6 +134,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           {loading ? (
             <span
               className="h-9 w-40 animate-shimmer rounded-full"
@@ -168,20 +184,21 @@ export function Navbar() {
         </button>
       </div>
 
-      {/* Mobile panel */}
+      {/* Mobile panel — slide-down + stagger per tautan */}
       {isOpen && (
         <div
           id="mobile-nav"
-          className="mx-auto mt-2 max-w-6xl rounded-2xl border border-border/80 bg-background/95 p-3 shadow-raised backdrop-blur-md md:hidden"
+          className="animate-slide-up mx-auto mt-2 max-w-6xl origin-top rounded-2xl border border-border/80 bg-background/95 p-3 shadow-raised backdrop-blur-md md:hidden"
         >
           <nav className="flex flex-col" aria-label="Utama mobile">
-            {navLinks.map((link) => (
+            {navLinks.map((link, index) => (
               <Link
                 key={link.href}
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
+                style={{ animationDelay: `${index * 40}ms` }}
                 className={cn(
-                  "flex min-h-11 items-center gap-2.5 rounded-xl px-3.5 text-[15px] font-medium transition-colors",
+                  "animate-fade-in flex min-h-11 items-center gap-2.5 rounded-xl px-3.5 text-[15px] font-medium transition-colors",
                   isActive(link.href)
                     ? "bg-primary/10 text-primary"
                     : "text-foreground hover:bg-accent"
@@ -193,6 +210,10 @@ export function Navbar() {
               </Link>
             ))}
           </nav>
+          <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+            <p className="px-1 text-sm text-muted-foreground">Tampilan</p>
+            <ThemeToggle />
+          </div>
           <div className="mt-3 border-t border-border pt-3">
             {user ? (
               <div className="space-y-2">
