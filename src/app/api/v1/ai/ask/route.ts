@@ -1,47 +1,60 @@
+import { z } from "zod";
 import { withErrorHandling } from "@/lib/api/handler";
+import { parseJsonBody } from "@/lib/api/response";
 import { requireAuth } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import { durableRateLimit } from "@/lib/security/rate-limit-db";
+import { completeChat, isLlmConfigured } from "@/lib/llm";
 
-type ContentHit = {
+type ContentRow = {
   id: string;
   title: string;
   body: string | null;
   content_type: string;
-  region_name: string | null;
-  source_title: string | null;
-  source_license: string | null;
+  region: { name: string } | { name: string }[] | null;
+  source: { title: string; license: string | null } | { title: string; license: string | null }[] | null;
 };
+
+const askSchema = z.object({
+  question: z.string().trim().min(3).max(500),
+});
 
 function tokenize(text: string): string[] {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
-    .filter((w) => w.length > 2);
+    .filter((word) => word.length > 2);
 }
 
 function score(text: string, queryTokens: string[]): number {
   const lower = text.toLowerCase();
-  return queryTokens.reduce((acc, t) => (lower.includes(t) ? acc + 1 : acc), 0);
+  return queryTokens.reduce(
+    (total, token) => (lower.includes(token) ? total + 1 : total),
+    0
+  );
+}
+
+function one<T>(value: T | T[] | null): T | null {
+  return Array.isArray(value) ? (value[0] ?? null) : value;
 }
 
 export async function POST(request: Request) {
   return withErrorHandling(async () => {
-    const user = await requireAuth();
-    const { question } = await request.json();
-
-    const q = typeof question === "string" ? question.trim() : "";
-    if (!q || q.length < 3) {
+    const rl = await durableRateLimit(request, "ai-ask", 10, 60);
+    if (!rl.ok) {
       return Response.json(
-        { success: false, error: "Pertanyaan minimal 3 karakter" },
-        { status: 400 }
+        { success: false, error: "Terlalu banyak pertanyaan. Coba lagi sebentar." },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
       );
     }
 
-    const supabase = await createClient();
-    const queryTokens = tokenize(q);
+    const user = await requireAuth();
+    const { question } = await parseJsonBody(request, askSchema);
 
-    // Retrieve candidate contents with joined region + source
+    const supabase = await createClient();
+    const queryTokens = tokenize(question);
+
     const { data: contents } = await supabase
       .from("cultural_contents")
       .select(
@@ -50,49 +63,88 @@ export async function POST(request: Request) {
       .eq("status", "published")
       .limit(200);
 
-    const rows = (contents ?? []) as unknown as ContentHit[];
+    const rows = (contents ?? []) as unknown as ContentRow[];
     const scored = rows
-      .map((c) => {
-        const hay = [c.title, c.body ?? "", c.region_name ?? "", c.source_title ?? ""].join(" ");
-        return { ...c, _score: score(hay, queryTokens) };
+      .map((row) => {
+        const region = one(row.region);
+        const source = one(row.source);
+        const haystack = [
+          row.title,
+          row.body ?? "",
+          region?.name ?? "",
+          source?.title ?? "",
+        ].join(" ");
+        return { ...row, regionName: region?.name ?? null, source, score: score(haystack, queryTokens) };
       })
-      .filter((c) => c._score > 0)
-      .sort((a, b) => b._score - a._score)
+      .filter((row) => row.score > 0)
+      .sort((a, b) => b.score - a.score)
       .slice(0, 5);
 
-    const citations = scored.map((c) => ({
-      content_id: c.id,
-      title: c.title,
-      region: c.region_name,
-      source: c.source_title,
-      license: c.source_license,
-      score: c._score,
+    const citations = scored.map((row, index) => ({
+      index: index + 1,
+      content_id: row.id,
+      title: row.title,
+      region: row.regionName,
+      source: row.source?.title ?? null,
+      license: row.source?.license ?? null,
+      score: row.score,
     }));
 
-    let answer = "";
+    let answer: string;
+    let mode: "llm" | "extractive" = "extractive";
+
     if (scored.length === 0) {
       answer =
         "Saya belum menemukan jawaban yang sesuai di database budaya kami. Coba gunakan kata kunci lain seperti nama wilayah, motif, atau tradisi.";
+    } else if (isLlmConfigured()) {
+      const context = scored
+        .map(
+          (row, index) =>
+            `[${index + 1}] ${row.title}${row.regionName ? ` (${row.regionName})` : ""}\n${(row.body ?? "").slice(0, 900)}`
+        )
+        .join("\n\n");
+
+      const generated = await completeChat([
+        {
+          role: "system",
+          content:
+            "Kamu adalah asisten budaya Nusantara LokaQuest. Jawab HANYA berdasarkan catatan yang diberikan. " +
+            "Sertakan sitasi [n] untuk setiap klaim. Jika catatan tidak cukup, katakan bahwa informasinya belum tersedia. " +
+            "Jangan mengarang fakta, angka, atau nama. Gunakan bahasa Indonesia yang jelas dan hangat, maksimal 180 kata.",
+        },
+        {
+          role: "user",
+          content: `Catatan:\n${context}\n\nPertanyaan: ${question}`,
+        },
+      ]);
+
+      if (generated) {
+        answer = generated;
+        mode = "llm";
+      } else {
+        const top = scored[0];
+        answer = `Berdasarkan sumber budaya terverifikasi, ${top.title.toLowerCase()} merupakan bagian dari ${top.regionName ?? "warisan budaya Nusantara"}. ${(top.body ?? "").slice(0, 260)} Selalu teliti kembali dengan sumber asli untuk pembelajaran yang lebih mendalam.`;
+      }
     } else {
       const top = scored[0];
       const extra = scored.slice(1, 3);
-      answer = `Berdasarkan sumber budaya terverifikasi, ${top.title.toLowerCase()} merupakan bagian dari ${top.region_name ?? "warisan budaya Nusantara"}. ${top.body ? top.body.slice(0, 240) : ""}`;
+      answer = `Berdasarkan sumber budaya terverifikasi, ${top.title.toLowerCase()} merupakan bagian dari ${top.regionName ?? "warisan budaya Nusantara"}. ${(top.body ?? "").slice(0, 260)}`;
       if (extra.length > 0) {
-        answer += ` Topik terkait: ${extra.map((e) => e.title).join(", ")}.`;
+        answer += ` Topik terkait: ${extra.map((item) => item.title).join(", ")}.`;
       }
       answer += " Selalu teliti kembali dengan sumber asli untuk pembelajaran yang lebih mendalam.";
     }
 
-    // Persist log for quality review (best-effort)
+    // Best-effort quality log (RLS: users may only insert their own rows).
     try {
       await supabase.from("ai_qa_logs").insert({
         profile_id: user.id,
-        question: q,
+        question,
         answer,
         citations,
       });
     } catch {
-      // non-blocking
+      // logging must not break the answer
     }
 
     return Response.json({
@@ -100,6 +152,7 @@ export async function POST(request: Request) {
       data: {
         answer,
         citations,
+        mode,
         disclaimer:
           "Jawaban dihasilkan dari konten budaya terverifikasi di LokaQuest. Untuk keperluan akademis, selalu cek sumber asli yang tercantum.",
       },

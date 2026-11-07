@@ -1,47 +1,69 @@
-import { Reveal } from "@/components/ui/reveal";
 import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-/**
- * Header halaman yang konsisten: chip eyebrow + ikon, judul display,
- * deskripsi, dan entrance stagger bawaan. Server-safe (Reveal adalah
- * client component yang aman disarangkan).
- */
-export function PageHeader({
-  eyebrow,
-  icon: Icon,
-  title,
-  description,
-  actions,
-  className = "",
-}: {
-  eyebrow: string;
+interface PageHeaderProps {
   icon: LucideIcon;
   title: string;
   description?: string;
+  /** Tampilkan tautan kembali di atas judul (navigasi mundur yang konsisten). */
+  backHref?: string;
+  backLabel?: string;
+  /** Slot kanan header — tombol aksi, share, dsb. */
   actions?: React.ReactNode;
+  /** Sembunyikan garis tenun di bawah header (mis. saat card langsung menyambung). */
+  noDivider?: boolean;
   className?: string;
-}) {
+}
+
+/**
+ * Header halaman bersama: chip ikon, judul display serif, deskripsi,
+ * garis tenun — satu pola budaya untuk semua halaman.
+ */
+export function PageHeader({
+  icon: Icon,
+  title,
+  description,
+  backHref,
+  backLabel,
+  actions,
+  noDivider = false,
+  className,
+}: PageHeaderProps) {
   return (
-    <header className={className}>
-      <Reveal>
-        <p className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-card px-3 py-1 text-xs font-medium tracking-wide text-muted-foreground">
-          <Icon className="size-3.5 text-gold" aria-hidden="true" />
-          {eyebrow}
-        </p>
-      </Reveal>
-      <Reveal delay={80}>
-        <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-          <h1 className="font-display text-4xl font-semibold tracking-tight md:text-[2.75rem]">
-            {title}
-          </h1>
-          {actions}
-        </div>
-      </Reveal>
-      {description && (
-        <Reveal delay={140}>
-          <p className="mt-2 max-w-2xl text-muted-foreground">{description}</p>
-        </Reveal>
+    <div className={cn(className)}>
+      {backHref && (
+        <Link
+          href={backHref}
+          className="mb-4 inline-flex items-center gap-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          {backLabel ?? "Kembali"}
+        </Link>
       )}
-    </header>
+
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+        <div className="flex items-start gap-3.5">
+          <span className="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Icon className="size-5" aria-hidden="true" />
+          </span>
+          <div>
+            <h1 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
+              {title}
+            </h1>
+            {description && (
+              <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-[15px]">
+                {description}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {actions && <div className="flex items-center gap-2 pt-1">{actions}</div>}
+      </div>
+
+      {!noDivider && <div className="tenun mt-6" aria-hidden="true" />}
+    </div>
   );
 }

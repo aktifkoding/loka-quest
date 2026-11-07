@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import { Reveal } from "@/components/ui/reveal";
-import { Lightbulb, Send, BookMarked, ExternalLink } from "lucide-react";
+import { Lightbulb, Send, BookMarked, ArrowRight } from "lucide-react";
 
 type Citation = {
   content_id: string;
@@ -66,17 +67,11 @@ export default function AiAssistantPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
-      <header className="max-w-2xl">
-        <div className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Lightbulb className="size-5" aria-hidden="true" />
-          </span>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">Asisten Budaya AI</h1>
-        </div>
-        <p className="mt-3 leading-relaxed text-muted-foreground">
-          Tanyakan apa saja tentang budaya Indonesia. Jawaban disusun dari artikel dan sumber budaya terverifikasi di LokaQuest, dilengkapi referensi.
-        </p>
-      </header>
+      <PageHeader
+        icon={Lightbulb}
+        title="Asisten Budaya AI"
+        description="Tanyakan apa saja tentang budaya Indonesia. Jawaban disusun dari artikel dan sumber budaya terverifikasi di LokaQuest, dilengkapi referensi."
+      />
 
       <Reveal>
         <form onSubmit={handleAsk} className="mt-8">
@@ -99,31 +94,26 @@ export default function AiAssistantPage() {
       </Reveal>
 
       {error && (
-        <Card className="mt-6 border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+        <Card
+          className="mt-6 border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
+          role="alert"
+        >
           {error}
         </Card>
       )}
 
       {loading && (
-        <div className="animate-fade-in mt-6 flex items-center gap-3" aria-live="polite">
-          <Card className="flex items-center gap-1.5 px-5 py-4">
-            {[0, 1, 2].map((i) => (
-              <span
-                key={i}
-                className="animate-typing-dot size-2 rounded-full bg-primary/60"
-                style={{ animationDelay: `${i * 160}ms` }}
-                aria-hidden="true"
-              />
-            ))}
-            <span className="sr-only">Asisten sedang menyiapkan jawaban</span>
-          </Card>
-        </div>
+        <Card className="mt-6 p-6">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="mt-3 h-4 w-5/6" />
+          <Skeleton className="mt-3 h-4 w-4/6" />
+        </Card>
       )}
 
       {!asked && !loading && (
-        <Card className="animate-fade-up mt-8 p-6">
+        <Card className="mt-8 p-6">
           <p className="text-sm font-medium">Coba pertanyaan:</p>
-          <ul className="mt-3 flex flex-wrap gap-2">
+          <ul className="mt-3 space-y-2 text-sm">
             {[
               "Apa itu batik Parang Rusak?",
               "Ceritakan tentang wayang kulit Yogyakarta.",
@@ -133,9 +123,15 @@ export default function AiAssistantPage() {
                 <button
                   type="button"
                   onClick={() => setQuestion(q)}
-                  className="cursor-pointer rounded-full border border-border bg-card px-3.5 py-2 text-left text-sm text-muted-foreground transition-all duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-primary/30 hover:text-foreground hover:shadow-card"
+                  className="group flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-card px-3.5 py-2.5 text-left transition-colors duration-200 hover:border-primary/40 hover:bg-secondary/60"
                 >
-                  {q}
+                  <span className="text-muted-foreground transition-colors group-hover:text-foreground">
+                    {q}
+                  </span>
+                  <ArrowRight
+                    className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
+                    aria-hidden="true"
+                  />
                 </button>
               </li>
             ))}
@@ -145,14 +141,11 @@ export default function AiAssistantPage() {
 
       <div className="mt-8 space-y-6">
         {history.map((item, index) => (
-          <div key={index} className="animate-fade-up space-y-4">
-            {/* Bubble pengguna: kanan, warna utama */}
-            <div className="flex justify-end">
-              <p className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-4 py-3 text-sm leading-relaxed text-primary-foreground shadow-card">
-                {item.q}
-              </p>
-            </div>
-            {/* Bubble asisten: kiri, kartu */}
+          <div key={index} className="space-y-4">
+            <Card className="bg-secondary/40 p-5">
+              <p className="text-sm font-semibold text-primary">Pertanyaan</p>
+              <p className="mt-1 text-sm leading-relaxed">{item.q}</p>
+            </Card>
             <Card className="p-5">
               <p className="text-sm font-semibold text-primary">Jawaban</p>
               <p className="mt-2 text-sm leading-relaxed">{item.a.answer}</p>
@@ -162,8 +155,8 @@ export default function AiAssistantPage() {
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Referensi</p>
                   <ul className="mt-2 space-y-2">
                     {item.a.citations.map((c, i) => (
-                      <li key={i} className="group flex items-start gap-2 rounded-lg border border-border bg-secondary/40 px-3 py-2.5 transition-colors duration-200 hover:border-primary/25">
-                        <BookMarked className="mt-0.5 size-4 shrink-0 text-primary transition-transform duration-200 group-hover:scale-110" aria-hidden="true" />
+                      <li key={i} className="flex items-start gap-2 rounded-lg border border-border bg-secondary/40 px-3 py-2.5">
+                        <BookMarked className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
                         <div className="min-w-0">
                           <p className="text-sm font-medium">{c.title}</p>
                           <p className="text-xs text-muted-foreground">

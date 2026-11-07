@@ -27,14 +27,6 @@ export async function GET(request: Request) {
       query = query.in("id", ids);
     }
     if (region) {
-      const { data: row } = await supabase.from("encyclopedia_categories").select("id").eq("slug", category).eq("status", "published").maybeSingle();
-      if (!row) return Response.json({ success: true, data: [], pagination: { page, limit, total: 0, totalPages: 0 } });
-      const { data: links } = await supabase.from("encyclopedia_article_categories").select("article_id").eq("category_id", row.id);
-      const ids = (links ?? []).map((link) => link.article_id);
-      if (!ids.length) return Response.json({ success: true, data: [], pagination: { page, limit, total: 0, totalPages: 0 } });
-      query = query.in("id", ids);
-    }
-    if (region) {
       const { data: row } = await supabase.from("cultural_regions").select("id").eq("slug", region).eq("status", "published").maybeSingle();
       if (!row) return Response.json({ success: true, data: [], pagination: { page, limit, total: 0, totalPages: 0 } });
       const { data: links } = await supabase.from("encyclopedia_article_regions").select("article_id").eq("region_id", row.id);

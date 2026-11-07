@@ -9,7 +9,7 @@ const LINKS = [
   { href: "/admin", label: "Dasbor", icon: Home, exact: true },
   { href: "/admin/regions", label: "Wilayah", icon: MapPin },
   { href: "/admin/missions", label: "Misi & soal", icon: FileText },
-  { href: "/admin/encyclopedia", label: "Ensiklopedia", icon: BookOpen },
+  { href: "/editor/encyclopedia", label: "Ensiklopedia", icon: BookOpen },
   { href: "/admin/contents", label: "Konten & sumber", icon: ScrollText },
   { href: "/admin/submissions", label: "Moderasi", icon: MessageSquare },
   { href: "/admin/users", label: "Pengguna", icon: Users },

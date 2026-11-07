@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Reveal } from "@/components/ui/reveal";
@@ -54,23 +55,20 @@ export default function KnowledgeGraphPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-      <header className="max-w-2xl">
-        <div className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Network className="size-5" aria-hidden="true" />
-          </span>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">Grafik Budaya</h1>
-        </div>
-        <p className="mt-3 leading-relaxed text-muted-foreground">
-          Peta hubungan antar wilayah, tradisi, tokoh, dan artefak. Sentuh simpul untuk menjelajahi keterkaitannya.
-        </p>
-      </header>
+      <PageHeader
+        icon={Network}
+        title="Grafik Budaya"
+        description="Peta hubungan antar wilayah, tradisi, tokoh, dan artefak. Sentuh simpul untuk menjelajahi keterkaitannya."
+      />
 
       {loading ? (
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-28 w-full rounded-xl" />
-          ))}
+        <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_320px]" aria-busy="true">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-28 w-full rounded-xl" />
+            ))}
+          </div>
+          <Skeleton className="h-72 w-full rounded-xl" />
         </div>
       ) : error ? (
         <div className="mt-10">
@@ -91,7 +89,11 @@ export default function KnowledgeGraphPage() {
               <h2 className="font-display text-xl font-semibold">Simpul</h2>
             </Reveal>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {graph.nodes.map((node, index) => (
+              {graph.nodes.map((node, index) => {
+                const connections = graph.edges.filter(
+                  (e) => e.source === node.id || e.target === node.id
+                ).length;
+                return (
                 <Reveal key={node.id} delay={index * 60}>
                   <Card
                     interactive
@@ -103,13 +105,14 @@ export default function KnowledgeGraphPage() {
                     <div className="px-5 py-5">
                       <p className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">{node.type}</p>
                       <p className="mt-1 font-display text-lg font-semibold leading-snug">{node.label}</p>
-                      <p className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
-                        {graph.edges.filter((e) => e.source === node.id || e.target === node.id).length} hubungan
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {connections} koneksi terdaftar
                       </p>
                     </div>
                   </Card>
                 </Reveal>
-              ))}
+                );
+              })}
             </div>
           </section>
 

@@ -1,0 +1,78 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { CalendarCheck, Flame, Zap } from "lucide-react";
+
+type Daily = {
+  date: string;
+  bonusXp: number;
+  completed: boolean;
+  mission: {
+    id: string;
+    slug: string;
+    title: string;
+    description: string;
+    xp_reward: number;
+    difficulty: string;
+  } | null;
+  streak: {
+    current_streak: number;
+    longest_streak: number;
+    last_activity_date: string | null;
+  } | null;
+};
+
+export function DailyChallengeCard() {
+  const [daily, setDaily] = useState<Daily | null>(null);
+
+  useEffect(() => {
+    fetch("/api/v1/daily", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((json) => setDaily(json.data ?? null))
+      .catch(() => setDaily(null));
+  }, []);
+
+  if (!daily?.mission) return null;
+
+  return (
+    <Card className="mt-4 border-gold/30 bg-gold/5">
+      <div className="flex flex-wrap items-center gap-4 p-5">
+        <span className="flex size-11 items-center justify-center rounded-xl bg-gold/15 text-gold">
+          <CalendarCheck className="size-5" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Tantangan hari ini
+          </p>
+          <p className="truncate font-display text-lg font-semibold">
+            {daily.mission.title}
+          </p>
+          <p className="mt-0.5 text-[13px] text-muted-foreground">
+            Bonus <Zap className="inline size-3.5 text-gold" aria-hidden="true" />{" "}
+            {daily.bonusXp} XP · sekali per hari
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          {daily.streak && daily.streak.current_streak > 0 && (
+            <span className="flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-sm font-medium">
+              <Flame className="size-4 text-orange-500" aria-hidden="true" />
+              {daily.streak.current_streak} hari
+            </span>
+          )}
+          {daily.completed ? (
+            <span className="rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
+              Selesai
+            </span>
+          ) : (
+            <Button asChild size="sm">
+              <Link href={`/missions/${daily.mission.slug}`}>Mainkan</Link>
+            </Button>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}

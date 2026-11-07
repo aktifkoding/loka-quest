@@ -18,7 +18,7 @@ import {
 const contentLinks = [
   { href: "/admin/regions", label: "Wilayah budaya", icon: MapPin },
   { href: "/admin/missions", label: "Misi & soal", icon: FileText },
-  { href: "/admin/encyclopedia", label: "Ensiklopedia budaya", icon: FileText },
+  { href: "/editor/encyclopedia", label: "Ensiklopedia budaya", icon: FileText },
   { href: "/admin/contents", label: "Konten & sumber", icon: FileText },
   { href: "/admin/submissions", label: "Moderasi komunitas", icon: MessageSquare },
 ];

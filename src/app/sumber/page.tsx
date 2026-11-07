@@ -1,9 +1,7 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Reveal } from "@/components/ui/reveal";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { ArrowLeft, BookMarked, ExternalLink } from "lucide-react";
+import { BookMarked, ExternalLink } from "lucide-react";
 import { createServiceClient } from "@/lib/supabase/service-role";
 
 export const metadata = {
@@ -29,26 +27,14 @@ export default async function SourcesPage() {
   const rows = sources ?? [];
 
   return (
-    <>
     <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
-      <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
-        <Link href="/">
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          Beranda
-        </Link>
-      </Button>
-
-      <header>
-        <BookMarked className="size-9 text-primary" aria-hidden="true" />
-        <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight">
-          Sumber budaya
-        </h1>
-        <p className="mt-3 leading-relaxed text-muted-foreground">
-          LokaQuest menulis tradisi, artefak, dan cerita hanya dari referensi
-          yang tercatat dan berlisensi jelas. Daftar ini adalah register
-          terbuka atas semua rujukan yang kami pakai — bukan fakta karangan.
-        </p>
-      </header>
+      <PageHeader
+        icon={BookMarked}
+        title="Sumber budaya"
+        description="LokaQuest menulis tradisi, artefak, dan cerita hanya dari referensi yang tercatat dan berlisensi jelas. Daftar ini adalah register terbuka atas semua rujukan yang kami pakai — bukan fakta karangan."
+        backHref="/"
+        backLabel="Beranda"
+      />
 
       <div className="mt-10 space-y-4">
         {rows.map((source, i) => (
@@ -92,7 +78,5 @@ export default async function SourcesPage() {
         memakai motif geometris generik — bukan reprodigsi karya berhak cipta.
       </p>
     </div>
-    <SiteFooter />
-    </>
   );
 }

@@ -1,36 +1,90 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service-role";
 import { requireRole } from "@/lib/auth/session";
 import { withErrorHandling } from "@/lib/api/handler";
-import { missionUpdateSchema } from "@/lib/validation";
+import { parseJsonBody } from "@/lib/api/response";
+import { adminMissionSchema } from "@/lib/validation/admin";
 import { auditLog } from "@/lib/audit";
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return withErrorHandling(async () => {
+    await requireRole(["admin", "educator"]);
+    const { id } = await params;
+    const service = createServiceClient();
+
+    const { data: mission, error } = await service
+      .from("missions")
+      .select("*, cultural_regions (id, name, slug)")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) throw new Error(`Failed to load mission: ${error.code}`);
+    if (!mission) {
+      return Response.json(
+        { success: false, error: "Mission not found" },
+        { status: 404 }
+      );
+    }
+
+    const { data: questions } = await service
+      .from("mission_questions")
+      .select(
+        "id, question_type, prompt, options, correct_answer, explanation, sort_order"
+      )
+      .eq("mission_id", id)
+      .order("sort_order", { ascending: true });
+
+    return Response.json({
+      success: true,
+      data: { ...mission, questions: questions ?? [] },
+    });
+  });
+}
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
   return withErrorHandling(async () => {
-    const user = await requireRole(["admin"]);
-    const parsed = missionUpdateSchema.parse(await request.json());
+    const user = await requireRole(["admin", "educator"]);
+    const { id } = await params;
+    const input = await parseJsonBody(request, adminMissionSchema);
     const supabase = await createClient();
-
-    const allowed = { ...parsed, updated_at: new Date().toISOString() };
-    if (Object.keys(parsed).length === 0) {
-      return Response.json(
-        { success: false, error: "Tidak ada field yang bisa diperbarui" },
-        { status: 400 }
-      );
-    }
 
     const { data, error } = await supabase
       .from("missions")
-      .update(allowed)
+      .update({
+        region_id: input.regionId,
+        slug: input.slug,
+        title: input.title,
+        description: input.description,
+        difficulty: input.difficulty,
+        xp_reward: input.xpReward,
+        status: input.status,
+        sort_order: input.sortOrder,
+        learning_objectives: input.learningObjectives,
+      })
       .eq("id", id)
-      .select("id,slug,title,status")
-      .single();
+      .select("id, slug, title, status")
+      .maybeSingle();
 
     if (error) {
-      throw new Error("Failed to update mission");
+      if (error.code === "23505") {
+        return Response.json(
+          { success: false, error: "Slug misi sudah dipakai." },
+          { status: 409 }
+        );
+      }
+      throw new Error(`Failed to update mission: ${error.code}`);
+    }
+    if (!data) {
+      return Response.json(
+        { success: false, error: "Mission not found" },
+        { status: 404 }
+      );
     }
 
     await auditLog({
@@ -38,7 +92,7 @@ export async function PATCH(
       action: "mission.updated",
       resourceType: "mission",
       resourceId: id,
-      details: { fields: Object.keys(parsed) },
+      details: { status: data.status },
     });
 
     return Response.json({ success: true, data });
@@ -49,40 +103,31 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
   return withErrorHandling(async () => {
-    const user = await requireRole(["admin"]);
+    const user = await requireRole(["admin", "educator"]);
+    const { id } = await params;
     const supabase = await createClient();
-
-    const { count } = await supabase
-      .from("mission_attempts")
-      .select("*", { count: "exact", head: true })
-      .eq("mission_id", id);
-
-    if ((count ?? 0) > 0) {
-      return Response.json(
-        { success: false, error: "Misi sudah pernah dikerjakan pemain. Arsipkan saja alih-alih menghapus." },
-        { status: 409 }
-      );
-    }
 
     const { data, error } = await supabase
       .from("missions")
-      .delete()
+      .update({ status: "archived" })
       .eq("id", id)
-      .select("id,slug,title")
-      .single();
+      .select("id, status")
+      .maybeSingle();
 
-    if (error) {
-      throw new Error("Failed to delete mission");
+    if (error) throw new Error(`Failed to archive mission: ${error.code}`);
+    if (!data) {
+      return Response.json(
+        { success: false, error: "Mission not found" },
+        { status: 404 }
+      );
     }
 
     await auditLog({
       actorId: user.id,
-      action: "mission.deleted",
+      action: "mission.archived",
       resourceType: "mission",
       resourceId: id,
-      details: { slug: data.slug },
     });
 
     return Response.json({ success: true, data });

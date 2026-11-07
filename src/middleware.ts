@@ -1,62 +1,50 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
+/**
+ * Refresh the Supabase session cookie on navigation.
+ *
+ * Route handlers still verify the user with `supabase.auth.getUser()`; this
+ * middleware only keeps the short-lived access token fresh so server
+ * components do not silently fall back to a signed-out state.
+ */
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  let response = NextResponse.next({ request });
 
-  // Public paths that don't require auth
-  const publicPaths = [
-    "/",
-    "/explore",
-    "/regions",
-    "/missions",
-    "/encyclopedia",
-    "/jelajahi",
-    "/auth/register",
-    "/auth/forgot-password",
-    "/auth/callback",
-  ];
-
-  const isPublicPath = publicPaths.some(
-    (path) =>
-      pathname === path ||
-      pathname.startsWith("/_next") ||
-      pathname.endsWith(".ico") ||
-      pathname.endsWith(".png") ||
-      pathname.endsWith(".jpg") ||
-      pathname.endsWith(".svg")
-  );
-
-  if (isPublicPath) {
-    return NextResponse.next();
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) {
+    return response;
   }
 
-  // For API routes, let the route handlers handle auth
-  if (pathname.startsWith("/api")) {
-    return NextResponse.next();
+  try {
+    const supabase = createServerClient(url, key, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(
+          cookiesToSet: { name: string; value: string; options: CookieOptions }[]
+        ) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
+    });
+
+    await supabase.auth.getUser();
+  } catch (error) {
+    console.error("[middleware] session refresh failed:", error);
   }
 
-  // Protected paths require authentication
-  const protectedPaths = [
-    "/player",
-    "/educator",
-    "/admin",
-  ];
-
-  const isProtectedPath = protectedPaths.some((path) =>
-    pathname.startsWith(path)
-  );
-
-  if (isProtectedPath) {
-    // We can't do server-side auth check here efficiently without
-    // duplicating logic, so we'll let the page components handle it
-    // This middleware mainly serves as a basic routing layer
-    return NextResponse.next();
-  }
-
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
 };

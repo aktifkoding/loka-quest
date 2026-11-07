@@ -4,10 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Reveal } from "@/components/ui/reveal";
-import { CountUp } from "@/components/ui/count-up";
+import { EmptyState } from "@/components/ui/empty-state";
 import { calculateLevel } from "@/lib/scoring";
 import { Onboarding } from "@/components/layout/onboarding";
+import { DailyChallengeCard } from "@/components/game/daily-challenge-card";
+import { PersonalizedRecommendations } from "@/components/dashboard/personalized-recommendations";
+import { generatePersonalizedRecommendations } from "@/lib/recommendations";
 import {
   Zap,
   Target,
@@ -19,6 +21,9 @@ import {
   Gem,
   UserRound,
   BarChart3,
+  RotateCcw,
+  Users,
+  Languages,
 } from "lucide-react";
 
 const XP_PER_LEVEL = 500;
@@ -28,7 +33,7 @@ export default async function PlayerDashboardPage() {
     const user = await requireAuth();
     const supabase = await createClient();
 
-    const [progressRes, achievementsRes, attemptsRes, assessmentsRes] = await Promise.all([
+    const [progressRes, achievementsRes, attemptsRes, assessmentsRes, dueReviewsRes] = await Promise.all([
       supabase
         .from("player_progress")
         .select("total_xp, missions_completed, current_level")
@@ -41,7 +46,7 @@ export default async function PlayerDashboardPage() {
         .order("earned_at", { ascending: false }),
       supabase
         .from("mission_attempts")
-        .select("id, mission_id, score, xp_earned, completed, completed_at, missions (title)")
+        .select("id, mission_id, score, xp_earned, completed, completed_at, missions (title, slug)")
         .eq("profile_id", user.id)
         .order("completed_at", { ascending: false, nullsFirst: false })
         .limit(5),
@@ -50,6 +55,11 @@ export default async function PlayerDashboardPage() {
         .select("score, learning_assessments (assessment_type)")
         .eq("profile_id", user.id)
         .order("submitted_at", { ascending: false }),
+      supabase
+        .from("review_items")
+        .select("question_id", { count: "exact", head: true })
+        .eq("profile_id", user.id)
+        .lte("due_at", new Date().toISOString()),
     ]);
 
     const progress = progressRes.data ?? {
@@ -70,16 +80,21 @@ export default async function PlayerDashboardPage() {
       .filter((a): a is AchievementRow => Boolean(a));
     const recentAttempts = (attemptsRes.data ?? []).map(
       (a: {
+        id: string;
         mission_id: string;
         score: number;
         xp_earned: number;
-        missions: { title: string } | { title: string }[] | null;
-      }) => ({
-        ...a,
-        missionTitle: Array.isArray(a.missions)
-          ? a.missions[0]?.title
-          : a.missions?.title ?? null,
-      })
+        completed: boolean;
+        completed_at: string | null;
+        missions: { title: string; slug?: string } | { title: string; slug?: string }[] | null;
+      }) => {
+        const m = Array.isArray(a.missions) ? a.missions[0] : a.missions;
+        return {
+          ...a,
+          missionTitle: m?.title ?? null,
+          missionSlug: m?.slug ?? null,
+        };
+      }
     );
 
     // Pre/post assessment delta
@@ -106,10 +121,27 @@ export default async function PlayerDashboardPage() {
     const xpIntoLevel = totalXp % XP_PER_LEVEL;
     const xpToNext = XP_PER_LEVEL - xpIntoLevel;
 
+    const completedSlugs = recentAttempts
+      .filter((a) => a.completed)
+      .map((a) => a.missionSlug)
+      .filter((s): s is string => Boolean(s));
+
+    const recommendations = generatePersonalizedRecommendations({
+      userId: user.id,
+      totalXp,
+      currentLevel: level,
+      missionsCompleted: progress.missions_completed,
+      completedSlugs,
+      recentScores: recentAttempts.map((a) => a.score),
+      dueReviewCount: dueReviewsRes.count ?? 0,
+      dailyCompletedToday: false,
+    });
+
     return (
       <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
         <Onboarding />
-        <header className="max-w-2xl">
+        <DailyChallengeCard />
+        <header className="mt-10 max-w-2xl">
           <h1 className="font-display text-4xl font-semibold tracking-tight">
             Dasbor
           </h1>
@@ -121,83 +153,77 @@ export default async function PlayerDashboardPage() {
 
         {/* Metric tier: hero (XP to next level) + supports */}
         <div className="mt-10 grid gap-4 md:grid-cols-3">
-          <Reveal delay={60}>
-            <Card className="border-primary/25 bg-primary/5 md:row-span-2">
-              <div className="flex h-full flex-col justify-between p-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Level {level}
-                  </p>
-                  <Zap className="size-5 text-gold" aria-hidden="true" />
-                </div>
-                <div className="py-6">
-                  <p className="font-display text-5xl font-semibold tabular-nums">
-                    <CountUp value={totalXp} />
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    total XP terkumpul
-                  </p>
-                </div>
-                <div>
+          <Card className="border-primary/25 bg-primary/5 md:row-span-2">
+            <div className="flex h-full flex-col justify-between p-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Level {level}
+                </p>
+                <Zap className="size-5 text-gold" aria-hidden="true" />
+              </div>
+              <div className="py-6">
+                <p className="font-display text-5xl font-semibold tabular-nums">
+                  {totalXp.toLocaleString("id-ID")}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  total XP terkumpul
+                </p>
+              </div>
+              <div>
+                <div
+                  className="h-1.5 w-full overflow-hidden rounded-full bg-primary/15"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={XP_PER_LEVEL}
+                  aria-valuenow={xpIntoLevel}
+                  aria-label={`Progres menuju level ${level + 1}`}
+                >
                   <div
-                    className="h-1.5 w-full overflow-hidden rounded-full bg-primary/15"
-                    role="progressbar"
-                    aria-valuemin={0}
-                    aria-valuemax={XP_PER_LEVEL}
-                    aria-valuenow={xpIntoLevel}
-                    aria-label={`Progres menuju level ${level + 1}`}
-                  >
-                    <div
-                      className="progress-live h-full rounded-full bg-gradient-to-r from-primary to-gold transition-[width] duration-300"
-                      style={{ width: `${(xpIntoLevel / XP_PER_LEVEL) * 100}%` }}
-                    />
-                  </div>
-                  <p className="mt-2 text-[13px] text-muted-foreground">
-                    <span className="tabular-nums">{xpToNext}</span> XP lagi ke
-                    level {level + 1}
-                  </p>
+                    className="h-full rounded-full bg-primary transition-[width] duration-300"
+                    style={{ width: `${(xpIntoLevel / XP_PER_LEVEL) * 100}%` }}
+                  />
                 </div>
+                <p className="mt-2 text-[13px] text-muted-foreground">
+                  <span className="tabular-nums">{xpToNext}</span> XP lagi ke
+                  level {level + 1}
+                </p>
               </div>
-            </Card>
-          </Reveal>
+            </div>
+          </Card>
 
-          <Reveal delay={120}>
-            <Card>
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Misi selesai
-                  </p>
-                  <Target className="size-5 text-muted-foreground" aria-hidden="true" />
-                </div>
-                <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
-                  <CountUp value={progress.missions_completed} />
+          <Card>
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Misi selesai
                 </p>
-                <p className="mt-1 text-[13px] text-muted-foreground">
-                  dari 3 misi yang tersedia
-                </p>
+                <Target className="size-5 text-muted-foreground" aria-hidden="true" />
               </div>
-            </Card>
-          </Reveal>
+              <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
+                {progress.missions_completed}
+              </p>
+              <p className="mt-1 text-[13px] text-muted-foreground">
+                dari 3 misi yang tersedia
+              </p>
+            </div>
+          </Card>
 
-          <Reveal delay={180}>
-            <Card>
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Lencana
-                  </p>
-                  <Award className="size-5 text-muted-foreground" aria-hidden="true" />
-                </div>
-                <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
-                  <CountUp value={achievements.length} />
+          <Card>
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Lencana
                 </p>
-                <p className="mt-1 text-[13px] text-muted-foreground">
-                  penghargaan yang sudah diraih
-                </p>
+                <Award className="size-5 text-muted-foreground" aria-hidden="true" />
               </div>
-            </Card>
-          </Reveal>
+              <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
+                {achievements.length}
+              </p>
+              <p className="mt-1 text-[13px] text-muted-foreground">
+                penghargaan yang sudah diraih
+              </p>
+            </div>
+          </Card>
         </div>
 
         {/* Pre/post assessment progress */}
@@ -233,10 +259,16 @@ export default async function PlayerDashboardPage() {
           </Card>
         )}
 
+        {/* Personalized Content Recommendations */}
+        <PersonalizedRecommendations recommendations={recommendations} />
+
         {/* Quick links */}
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {[
-            { href: "/player/collection", label: "Koleksi artefak", icon: Gem, desc: "Artefak dari tiap wilayah" },
+            { href: "/player/classes", label: "Kelas saya", icon: Users, desc: "Tugas dari guru" },
+            { href: "/player/review", label: "Review pintar", icon: RotateCcw, desc: "Jalur belajar adaptif" },
+            { href: "/bahasa", label: "Bahasa daerah", icon: Languages, desc: "Kosakata & kuis" },
+            { href: "/player/collection", label: "Koleksi artefak", icon: Gem, desc: "Artefak tiap wilayah" },
             { href: "/player/profile", label: "Profil", icon: UserRound, desc: "Nama tampilan & akun" },
             { href: "/leaderboard", label: "Leaderboard", icon: BarChart3, desc: "Peringkat XP" },
           ].map((link) => (
@@ -272,11 +304,7 @@ export default async function PlayerDashboardPage() {
               {achievements.length > 0 ? (
                 <ul className="mt-5 space-y-3">
                   {achievements.slice(0, 4).map((badge, i) => (
-                    <li
-                      key={i}
-                      className="animate-pop flex items-center gap-3.5"
-                      style={{ animationDelay: `${i * 90}ms` }}
-                    >
+                    <li key={i} className="flex items-center gap-3.5">
                       <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gold/10">
                         <Trophy className="size-4 text-gold" aria-hidden="true" />
                       </span>
@@ -290,14 +318,13 @@ export default async function PlayerDashboardPage() {
                   ))}
                 </ul>
               ) : (
-                <div className="mt-5 rounded-xl border border-dashed border-border px-4 py-8 text-center">
-                  <p className="text-sm font-medium">Belum ada lencana</p>
-                  <p className="mt-1 text-[13px] text-muted-foreground">
-                    Selesaikan misi pertama untuk meraih lencana.
-                  </p>
-                  <Button asChild size="sm" className="mt-4">
-                    <Link href="/missions">Pilih misi</Link>
-                  </Button>
+                <div className="mt-5">
+                  <EmptyState
+                    icon={Award}
+                    title="Belum ada lencana"
+                    description="Selesaikan misi pertama untuk meraih lencana."
+                    action={{ label: "Pilih misi", href: "/missions" }}
+                  />
                 </div>
               )}
             </div>
@@ -346,17 +373,13 @@ export default async function PlayerDashboardPage() {
                   </tbody>
                 </table>
               ) : (
-                <div className="mt-5 rounded-xl border border-dashed border-border px-4 py-8 text-center">
-                  <p className="text-sm font-medium">Belum ada riwayat</p>
-                  <p className="mt-1 text-[13px] text-muted-foreground">
-                    Mainkan misi pertamamu — nilainya tercatat di sini.
-                  </p>
-                  <Button asChild size="sm" className="mt-4">
-                    <Link href="/missions">
-                      <Gamepad2 className="size-4" aria-hidden="true" />
-                      Mulai misi
-                    </Link>
-                  </Button>
+                <div className="mt-5">
+                  <EmptyState
+                    icon={Gamepad2}
+                    title="Belum ada riwayat"
+                    description="Mainkan misi pertamamu — nilainya tercatat di sini."
+                    action={{ label: "Mulai misi", href: "/missions" }}
+                  />
                 </div>
               )}
             </div>

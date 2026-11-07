@@ -1,7 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service-role";
 import { requireRole } from "@/lib/auth/session";
 import { withErrorHandling } from "@/lib/api/handler";
-import { rateLimit, clientKey } from "@/lib/security/rate-limit";
+import { durableRateLimit } from "@/lib/security/rate-limit-db";
 import { auditLog } from "@/lib/audit";
 import { z } from "zod";
 
@@ -14,7 +14,7 @@ export async function PATCH(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   return withErrorHandling(async () => {
-    const rl = rateLimit(clientKey(request, "admin-role"), 20, 60_000);
+    const rl = await durableRateLimit(request, "admin-role", 20, 60);
     if (!rl.ok) {
       return Response.json(
         { success: false, error: "Terlalu banyak permintaan." },

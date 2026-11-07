@@ -36,6 +36,8 @@ const config: Config = {
           foreground: "hsl(var(--accent-foreground))",
         },
         gold: "hsl(var(--gold))",
+        success: "hsl(var(--success))",
+        warning: "hsl(var(--warning))",
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",

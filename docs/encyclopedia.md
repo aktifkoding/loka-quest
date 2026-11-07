@@ -6,10 +6,10 @@ Modul ini menambahkan ensiklopedia ke aplikasi LokaQuest yang sudah ada. Migrati
 
 1. Pastikan CLI menunjuk ke Supabase lokal/development, bukan proyek produksi.
 2. Jalankan migration dengan alur lokal proyek (`npx supabase start` lalu `npx supabase migration up`). Jangan gunakan `supabase db reset` pada production.
-3. Kategori dasar di- seed secara repeatable dari `supabase/seed-encyclopedia.sql` setelah migration.
+3. Kategori dasar di-seed secara repeatable dari `supabase/seed-encyclopedia.sql`, lalu 18 artikel bersumber dari `supabase/seed-encyclopedia-articles.sql`.
 4. Akun aplikasi dengan role `admin` otomatis berwenang penuh. Untuk mengundang editor, masukkan `profile_id`, `editor_role`, dan `created_by` ke `encyclopedia_editor_roles` lewat SQL admin yang aman. Role yang tersedia: `content_administrator`, `cultural_editor`, `reviewer`, `contributor`.
 
-Migration **belum dijalankan** pada Supabase live. Skema production LokaQuest pernah memiliki kolom `image_source_id` di luar migration; fitur ensiklopedia tidak bergantung pada kolom tersebut.
+Jalankan migration ensiklopedia dan `20261104000000_security_hardening.sql` sebelum mengaktifkan fitur ini di production. Skema production LokaQuest pernah memiliki kolom `image_source_id` di luar migration; fitur ensiklopedia tidak bergantung pada kolom tersebut.
 
 ## Alur editorial
 
@@ -20,12 +20,15 @@ Artikel dibuat sebagai `draft`, contributor/editor dapat mengajukan `review`, re
 - Publik: `GET /api/v1/encyclopedia/articles`, `GET /api/v1/encyclopedia/articles/[slug]`, `GET /api/v1/encyclopedia/search`, `GET /api/v1/encyclopedia/categories`, `GET /api/v1/encyclopedia/regions`.
 - Akun: `GET/POST /api/v1/encyclopedia/bookmarks`, `DELETE /api/v1/encyclopedia/bookmarks/[id]`, `GET/POST/DELETE /api/v1/encyclopedia/collections` (riwayat baca privat).
 - Editor: `GET/POST /api/v1/admin/encyclopedia/articles`, `GET/PATCH/DELETE /api/v1/admin/encyclopedia/articles/[id]`, `POST /review`, `POST /publish`, `POST /sources`.
+- Peran editorial: `GET/POST /api/v1/admin/encyclopedia/roles`, `DELETE /api/v1/admin/encyclopedia/roles/[profileId]` (halaman `/admin/encyclopedia/roles`).
 
 List/search menggunakan filter database dan pagination. Data privat memakai `Cache-Control: private, no-store`; detail artikel publik menggunakan `s-maxage=300, stale-while-revalidate=600`. Perubahan status memicu revalidasi path.
 
 ## Media
 
 Metadata media mewajibkan status izin, creator/rights holder, lisensi, dan atribusi. Upload belum diaktifkan. Sebelum upload diaktifkan di production, buat bucket privat `encyclopedia-media` dan policies Storage untuk editor terdaftar, lalu sajikan media hanya setelah metadata berstatus published dan izin diverifikasi. Jangan mengunggah atau menerbitkan ulang materi berhak cipta tanpa izin.
+
+Artikel mendukung `audio_url` dan `audio_credit`; pemutar audio muncul otomatis di halaman artikel bila kolom diisi. Gunakan hanya rekaman yang lisensinya jelas.
 
 ## Konten dan validasi budaya
 

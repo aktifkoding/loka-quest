@@ -52,9 +52,7 @@ export async function GET(
 
     const { data: questions, error } = await supabase
       .from("mission_questions")
-      .select(
-        "id, mission_id, question_type, prompt, options, explanation, sort_order"
-      )
+      .select("id, mission_id, question_type, prompt, options, sort_order")
       .eq("mission_id", missionRowId)
       .order("sort_order", { ascending: true });
 
@@ -62,8 +60,18 @@ export async function GET(
       throw new Error(`Failed to fetch questions: ${error.code}`);
     }
 
-    // Strip correct answers — they must never reach the client.
-    // Validation happens server-side on submission.
-    return Response.json({ success: true, data: questions ?? [] });
+    // Strip answer keys and legacy matching maps before sending questions.
+    const safeQuestions = (questions ?? []).map((question) => {
+      const options = { ...(question.options as Record<string, unknown>) };
+      if (question.question_type === "matching" && options.pairs) {
+        const pairs = options.pairs as Record<string, string>;
+        delete options.pairs;
+        options.lefts = Object.keys(pairs);
+        options.rights = Object.values(pairs);
+      }
+      return { ...question, options };
+    });
+
+    return Response.json({ success: true, data: safeQuestions });
   });
 }

@@ -4,8 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Reveal } from "@/components/ui/reveal";
-import { CountUp } from "@/components/ui/count-up";
 import {
   Users,
   BookOpen,
@@ -47,80 +45,78 @@ export default async function EducatorDashboardPage() {
               Pantau progres kelompok siswa dan hasil asesmen pembelajaran.
             </p>
           </div>
-          <Button asChild variant="outline" title="Fitur dalam persiapan">
-            <span aria-disabled="true" className="cursor-not-allowed opacity-60">
-              <Plus className="size-4" aria-hidden="true" />
-              Buat kelompok · segera
-            </span>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild>
+              <Link href="/educator/groups">
+                <Plus className="size-4" aria-hidden="true" />
+                Kelola kelompok
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/educator/quiz">Kuis live</Link>
+            </Button>
+          </div>
         </header>
 
         {/* Metric strip */}
         <div className="mt-10 grid gap-4 sm:grid-cols-3">
-          <Reveal delay={60}>
-            <Card className="border-primary/25 bg-primary/5">
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Kelompok aktif
-                  </p>
-                  <Users className="size-5 text-muted-foreground" aria-hidden="true" />
-                </div>
-                <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
-                  <CountUp value={groups_.length} />
+          <Card className="border-primary/25 bg-primary/5">
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Kelompok aktif
                 </p>
-                <p className="mt-1 text-[13px] text-muted-foreground">
-                  kelompok yang Anda kelola
-                </p>
+                <Users className="size-5 text-muted-foreground" aria-hidden="true" />
               </div>
-            </Card>
-          </Reveal>
+              <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
+                {groups_.length}
+              </p>
+              <p className="mt-1 text-[13px] text-muted-foreground">
+                kelompok yang Anda kelola
+              </p>
+            </div>
+          </Card>
 
-          <Reveal delay={120}>
-            <Card>
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Total siswa
-                  </p>
-                  <GraduationCap
-                    className="size-5 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                </div>
-                <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
-                  <CountUp value={memberCount ?? 0} />
+          <Card>
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total siswa
                 </p>
-                <p className="mt-1 text-[13px] text-muted-foreground">
-                  tergabung di semua kelompok
-                </p>
+                <GraduationCap
+                  className="size-5 text-muted-foreground"
+                  aria-hidden="true"
+                />
               </div>
-            </Card>
-          </Reveal>
+              <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
+                {memberCount ?? 0}
+              </p>
+              <p className="mt-1 text-[13px] text-muted-foreground">
+                tergabung di semua kelompok
+              </p>
+            </div>
+          </Card>
 
-          <Reveal delay={180}>
-            <Card>
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Misi tersedia
-                  </p>
-                  <BookOpen className="size-5 text-muted-foreground" aria-hidden="true" />
-                </div>
-                <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
-                  <CountUp value={3} />
+          <Card>
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Misi tersedia
                 </p>
-                <p className="mt-1 text-[13px] text-muted-foreground">
-                  misi budaya yang bisa ditugaskan
-                </p>
+                <BookOpen className="size-5 text-muted-foreground" aria-hidden="true" />
               </div>
-            </Card>
-          </Reveal>
+              <p className="mt-4 font-display text-4xl font-semibold tabular-nums">
+                3
+              </p>
+              <p className="mt-1 text-[13px] text-muted-foreground">
+                misi budaya yang bisa ditugaskan
+              </p>
+            </div>
+          </Card>
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-5">
           {/* Groups — dominant column */}
-          <Reveal delay={80}>
           <Card className="lg:col-span-3">
             <div className="p-6">
               <h2 className="font-display text-xl font-semibold">Kelompok saya</h2>
@@ -129,13 +125,13 @@ export default async function EducatorDashboardPage() {
                   {groups_.map((group) => (
                     <li
                       key={group.id}
-                      className="group flex items-center gap-4 py-4 transition-colors duration-200 first:pt-0 last:pb-0 hover:bg-secondary/40"
+                      className="flex items-center gap-4 py-4 first:pt-0 last:pb-0"
                     >
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-200 group-hover:scale-105">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                         <Users className="size-4" aria-hidden="true" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium transition-colors group-hover:text-primary">{group.name}</p>
+                        <p className="text-sm font-medium">{group.name}</p>
                         {group.description && (
                           <p className="mt-0.5 truncate text-[13px] text-muted-foreground">
                             {group.description}
@@ -143,7 +139,7 @@ export default async function EducatorDashboardPage() {
                         )}
                       </div>
                       <ArrowRight
-                        className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
+                        className="size-4 shrink-0 text-muted-foreground"
                         aria-hidden="true"
                       />
                     </li>
@@ -160,10 +156,8 @@ export default async function EducatorDashboardPage() {
               )}
             </div>
           </Card>
-          </Reveal>
 
           {/* Analytics panel */}
-          <Reveal delay={160}>
           <Card className="lg:col-span-2">
             <div className="flex h-full flex-col p-6">
               <h2 className="font-display text-xl font-semibold">
@@ -184,7 +178,6 @@ export default async function EducatorDashboardPage() {
               </div>
             </div>
           </Card>
-          </Reveal>
         </div>
       </div>
     );

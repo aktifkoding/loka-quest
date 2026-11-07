@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service-role";
 import { withErrorHandling } from "@/lib/api/handler";
-import { rateLimit, clientKey } from "@/lib/security/rate-limit";
+import { durableRateLimit } from "@/lib/security/rate-limit-db";
 
 const NAMES = ["Penjelajah", "Sang Pemula", "Cendekiawan Muda", "Sang Penjelajah Budaya", "Calon Maestro"];
 
@@ -13,7 +13,7 @@ const NAMES = ["Penjelajah", "Sang Pemula", "Cendekiawan Muda", "Sang Penjelajah
  */
 export async function POST(request: Request) {
   return withErrorHandling(async () => {
-    const rl = rateLimit(clientKey(request, "demo"), 10, 3_600_000);
+    const rl = await durableRateLimit(request, "demo", 10, 3600);
     if (!rl.ok) {
       return Response.json(
         { success: false, error: "Terlalu banyak sesi demo dari jaringan ini. Coba lagi nanti." },

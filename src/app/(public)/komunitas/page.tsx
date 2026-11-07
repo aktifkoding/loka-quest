@@ -8,8 +8,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Reveal } from "@/components/ui/reveal";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/ui/page-header";
+import { Badge } from "@/components/ui/badge";
 import {
   Users,
   Send,
@@ -78,25 +80,22 @@ export default function CommunityPage() {
     }
   };
 
-  const statusMeta: Record<string, { label: string; icon: typeof Clock; className: string }> = {
-    pending: { label: "Menunggu verifikasi", icon: Clock, className: "text-amber-600 bg-amber-50" },
-    published: { label: "Dipublikasikan", icon: CheckCircle2, className: "text-emerald-600 bg-emerald-50" },
-    rejected: { label: "Ditolak", icon: XCircle, className: "text-rose-600 bg-rose-50" },
+  const statusMeta: Record<
+    string,
+    { label: string; icon: typeof Clock; variant: "warning" | "success" | "destructive" }
+  > = {
+    pending: { label: "Menunggu verifikasi", icon: Clock, variant: "warning" },
+    published: { label: "Dipublikasikan", icon: CheckCircle2, variant: "success" },
+    rejected: { label: "Ditolak", icon: XCircle, variant: "destructive" },
   };
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 md:py-14">
-      <header className="max-w-2xl">
-        <div className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Users className="size-5" aria-hidden="true" />
-          </span>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">Komunitas Budaya</h1>
-        </div>
-        <p className="mt-3 leading-relaxed text-muted-foreground">
-          Seniman, budayawan, dan komunitas dapat mengusulkan dokumentasi budaya untuk diverifikasi dan diterbitkan di LokaQuest.
-        </p>
-      </header>
+      <PageHeader
+        icon={Users}
+        title="Komunitas Budaya"
+        description="Seniman, budayawan, dan komunitas dapat mengusulkan dokumentasi budaya untuk diverifikasi dan diterbitkan di LokaQuest."
+      />
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_320px]">
         <section aria-label="Dokumentasi komunitas">
@@ -140,10 +139,10 @@ export default function CommunityPage() {
                               {item.region_slug ? ` · ${item.region_slug}` : ""}
                             </p>
                           </div>
-                          <span className={cn("flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium", meta.className)}>
-                            <meta.icon className="size-3.5" aria-hidden="true" />
+                          <Badge variant={meta.variant} className="shrink-0">
+                            <meta.icon aria-hidden="true" />
                             {meta.label}
-                          </span>
+                          </Badge>
                         </div>
                       </Card>
                     </Reveal>
@@ -176,9 +175,9 @@ export default function CommunityPage() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="body">Isi dokumentasi</Label>
-                  <textarea
+                  <Textarea
                     id="body"
-                    className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm transition-[color,box-shadow] duration-200 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    className="min-h-[120px]"
                     value={form.body}
                     onChange={(e) => setForm({ ...form, body: e.target.value })}
                     required

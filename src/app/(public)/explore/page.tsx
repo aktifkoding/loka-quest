@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { IndonesiaMap } from "@/components/maps/indonesia-map";
@@ -21,6 +23,7 @@ interface Region {
 type ViewMode = "map" | "cards";
 
 export default function ExplorePage() {
+  const router = useRouter();
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,43 +47,38 @@ export default function ExplorePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="max-w-2xl">
-          <h1 className="font-display text-4xl font-semibold tracking-tight">
-            Jelajahi wilayah budaya
-          </h1>
-          <p className="mt-3 leading-relaxed text-muted-foreground">
-            Pilih wilayah untuk memulai misi, membaca cerita, dan menemukan warisan
-            Nusantara yang bersumber.
-          </p>
-        </div>
-
-        {/* View toggle */}
-        <div className="flex items-center gap-1 rounded-xl border border-border/70 bg-secondary/30 p-1">
-          <button
-            onClick={() => setView("map")}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-              view === "map"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Globe2 className="size-4" aria-hidden="true" />
-            Peta
-          </button>
-          <button
-            onClick={() => setView("cards")}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-              view === "cards"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <LayoutGrid className="size-4" aria-hidden="true" />
-            Kartu
-          </button>
-        </div>
-      </header>
+      <PageHeader
+        icon={Compass}
+        title="Jelajahi wilayah budaya"
+        description="Pilih wilayah untuk memulai misi, membaca cerita, dan menemukan warisan Nusantara yang bersumber."
+        actions={
+          /* View toggle */
+          <div className="flex items-center gap-1 rounded-xl border border-border/70 bg-secondary/30 p-1">
+            <button
+              onClick={() => setView("map")}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                view === "map"
+                  ? "bg-background text-foreground shadow-card"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Globe2 className="size-4" aria-hidden="true" />
+              Peta
+            </button>
+            <button
+              onClick={() => setView("cards")}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                view === "cards"
+                  ? "bg-background text-foreground shadow-card"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <LayoutGrid className="size-4" aria-hidden="true" />
+              Kartu
+            </button>
+          </div>
+        }
+      />
 
       <div className="mt-10">
         {loading ? (
@@ -115,7 +113,7 @@ export default function ExplorePage() {
           <Reveal>
             <IndonesiaMap
               onRegionClick={(slug) => {
-                window.location.href = `/regions/${slug}`;
+                router.push(`/regions/${slug}`);
               }}
             />
           </Reveal>
