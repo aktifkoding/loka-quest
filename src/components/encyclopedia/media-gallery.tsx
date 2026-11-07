@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import { wikimediaLoader } from "@/lib/wikimedia-loader";
 import { Card } from "@/components/ui/card";
 import {
   Film,
@@ -222,11 +224,13 @@ export function MediaGallery({
             {/* Image render */}
             {item.mediaType === "image" && (
               <figure className="relative aspect-[4/3] w-full overflow-hidden bg-secondary">
-                <img
+                <Image
+                  loader={wikimediaLoader}
                   src={item.url}
                   alt={item.title}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                  fill
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  className="object-cover transition-transform duration-300 hover:scale-105"
                 />
               </figure>
             )}

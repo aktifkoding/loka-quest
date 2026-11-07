@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Reveal } from "@/components/ui/reveal";
-import { Network, Info, ArrowRight } from "lucide-react";
+import { Network, Info } from "lucide-react";
 
 type GraphNode = { id: string; type: string; label: string };
 type GraphEdge = { source: string; target: string; relation: string; description: string | null };

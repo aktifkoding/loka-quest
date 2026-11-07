@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
+import { wikimediaLoader } from "@/lib/wikimedia-loader";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -167,11 +169,15 @@ export default function RegionDetailPage() {
       {/* Hero image full-bleed */}
       {region.image_url && (
         <Reveal>
-          <figure className="relative -mx-4 mb-10 overflow-hidden rounded-none sm:mx-0 sm:rounded-2xl">
-            <img
+          <figure className="relative -mx-4 mb-10 h-64 overflow-hidden rounded-none sm:mx-0 sm:h-80 sm:rounded-2xl md:h-96">
+            <Image
+                  loader={wikimediaLoader}
               src={region.image_url}
               alt={`Suasana ${region.name}`}
-              className="h-64 w-full object-cover sm:h-80 md:h-96"
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
@@ -225,10 +231,13 @@ export default function RegionDetailPage() {
                       {content.media_url && (
                         <div className="relative border-b border-border bg-secondary/30">
                           <div className={`relative ${isWide ? "h-64 sm:h-80" : "h-56 sm:h-64"}`}>
-                            <img
+                            <Image
+                  loader={wikimediaLoader}
                               src={content.media_url}
                               alt={content.title}
-                              className="h-full w-full object-cover"
+                              fill
+                              sizes="(min-width: 1024px) 50vw, 100vw"
+                              className="object-cover"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                             <button
@@ -367,6 +376,7 @@ export default function RegionDetailPage() {
           >
             <X className="size-5" aria-hidden="true" />
           </button>
+          {/* eslint-disable-next-line @next/next/no-img-element -- lightbox perlu ukuran asli gambar */}
           <img
             src={lightbox}
             alt="Pratinjau"

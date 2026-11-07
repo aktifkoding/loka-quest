@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Reveal } from "@/components/ui/reveal";
 import { CountUp } from "@/components/ui/count-up";
-import { ArrowLeft, BarChart3, Users, Target, TrendingUp, BookOpen } from "lucide-react";
+import { ArrowLeft, Users, Target, TrendingUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +48,7 @@ export default async function EducatorAnalyticsPage() {
       // Authorized privileged read: only members of this educator's groups
       const service = createServiceClient();
 
-      const [{ data: attempts }, { data: responses }] = await Promise.all([
+      const [{ data: attempts }] = await Promise.all([
         service
           .from("mission_attempts")
           .select("profile_id, score")

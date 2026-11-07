@@ -43,3 +43,6 @@ supabase/.temp
 Thumbs.db
 ehthumbs.db
 .env*
+
+# Alat kerja AI lokal (rencana, cache sesi)
+.zcode/

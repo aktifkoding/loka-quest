@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+import { wikimediaLoader } from "@/lib/wikimedia-loader";
 import { createClient } from "@/lib/supabase/server";
 import { BookOpen, MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -136,12 +138,16 @@ export default async function ExploreEncyclopediaPage({
             <Link key={article.id} href={`/encyclopedia/${article.slug}`} className="group">
               <Card interactive className="h-full overflow-hidden">
                 {article.featured_image_url ? (
-                  <img
-                    src={article.featured_image_url}
-                    alt=""
-                    loading="lazy"
-                    className="aspect-[16/9] w-full object-cover"
-                  />
+                  <div className="relative aspect-[16/9] w-full">
+                    <Image
+                  loader={wikimediaLoader}
+                      src={article.featured_image_url}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover"
+                    />
+                  </div>
                 ) : (
                   <div className="batik-grid flex aspect-[16/9] items-center justify-center bg-secondary">
                     <BookOpen className="size-9 text-primary/60" aria-hidden="true" />

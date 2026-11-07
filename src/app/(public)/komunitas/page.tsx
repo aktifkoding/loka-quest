@@ -14,7 +14,6 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import {
   Users,
-  Send,
   ArrowRight,
   CheckCircle2,
   XCircle,
@@ -39,7 +38,6 @@ export default function CommunityPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ title: "", body: "", submitter_name: "", submitter_email: "", region_slug: "" });

@@ -3,10 +3,20 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
+    // Gambar Wikimedia memakai loader kustom per-komponen (loader={wikimediaLoader})
+    // karena `images.loaderFile` belum didukung Turbopack. Lihat src/lib/wikimedia-loader.ts
     remotePatterns: [
       {
         protocol: "https",
         hostname: "**.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
+      },
+      {
+        protocol: "https",
+        hostname: "thumb.wikimedia.org",
       },
     ],
   },

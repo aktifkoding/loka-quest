@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { wikimediaLoader } from "@/lib/wikimedia-loader";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
@@ -125,12 +127,14 @@ export default function ExplorePage() {
                   <Tilt3D max={8} className="h-full">
                     <Card interactive className="animate-fade-up h-full">
                       {region.image_url && (
-                        <div className="relative mx-6 mt-6 h-44 w-auto overflow-hidden rounded-xl border border-border/60">
-                          <img
+                        <div className="relative mx-6 mt-6 h-44 overflow-hidden rounded-xl border border-border/60">
+                          <Image
+                  loader={wikimediaLoader}
                             src={region.image_url}
                             alt={region.name}
-                            loading="lazy"
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            fill
+                            sizes="(min-width: 768px) 33vw, 100vw"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                         </div>
