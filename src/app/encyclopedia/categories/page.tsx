@@ -1,13 +1,20 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { BookOpen } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
+import { getServerI18n } from "@/lib/i18n/server";
+import { encyclopediaDict as d } from "@/lib/i18n/dict/encyclopedia";
 
-export const metadata = { title: "Kategori Budaya" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t(d.categoriesMetaTitle) };
+}
 
 export default async function EncyclopediaCategoriesPage() {
+  const { t } = await getServerI18n();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("encyclopedia_categories")
@@ -19,18 +26,18 @@ export default async function EncyclopediaCategoriesPage() {
     <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
       <PageHeader
         icon={BookOpen}
-        title="Kategori budaya"
-        description="Jelajahi warisan budaya melalui beragam bentuk pengetahuan."
+        title={t(d.categoriesPageTitle)}
+        description={t(d.categoriesPageDescription)}
         backHref="/encyclopedia"
-        backLabel="Ensiklopedia"
+        backLabel={t(d.backToEncyclopedia)}
       />
 
       {error || !data?.length ? (
         <div className="mt-10">
           <EmptyState
             icon={BookOpen}
-            title={error ? "Kategori belum dapat dimuat" : "Kategori sedang disiapkan"}
-            description="Kategori dan artikel akan tampil ketika sudah tersedia."
+            title={error ? t(d.categoriesErrorTitle) : t(d.categoriesPreparingTitle)}
+            description={t(d.categoriesEmptyDescription)}
           />
         </div>
       ) : (

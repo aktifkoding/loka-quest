@@ -7,13 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n";
+import { authDict as d } from "@/lib/i18n/dict/auth";
 import { Loader2, KeyRound, CheckCircle2 } from "lucide-react";
 
 const rules = [
-  { label: "Minimal 8 karakter", test: (v: string) => v.length >= 8 },
-  { label: "Mengandung huruf besar", test: (v: string) => /[A-Z]/.test(v) },
-  { label: "Mengandung huruf kecil", test: (v: string) => /[a-z]/.test(v) },
-  { label: "Mengandung angka", test: (v: string) => /[0-9]/.test(v) },
+  { label: d.ruleMinLength, test: (v: string) => v.length >= 8 },
+  { label: d.ruleHasUpper, test: (v: string) => /[A-Z]/.test(v) },
+  { label: d.ruleHasLower, test: (v: string) => /[a-z]/.test(v) },
+  { label: d.ruleHasDigit, test: (v: string) => /[0-9]/.test(v) },
 ];
 
 export default function UpdatePasswordPage() {
@@ -26,6 +28,7 @@ export default function UpdatePasswordPage() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useI18n();
 
   useEffect(() => {
     async function checkSession() {
@@ -61,11 +64,11 @@ export default function UpdatePasswordPage() {
     setError(null);
 
     if (!allPassed) {
-      setError("Kata sandi belum memenuhi semua syarat.");
+      setError(t(d.passwordNotAllMet));
       return;
     }
     if (password !== confirmation) {
-      setError("Konfirmasi kata sandi tidak sama.");
+      setError(t(d.passwordMismatch));
       return;
     }
 
@@ -79,7 +82,7 @@ export default function UpdatePasswordPage() {
       setDone(true);
       setTimeout(() => router.push("/player/dashboard"), 1800);
     } catch {
-      setError("Terjadi kesalahan. Coba lagi.");
+      setError(t(d.errorTryAgain));
     } finally {
       setLoading(false);
     }
@@ -89,7 +92,7 @@ export default function UpdatePasswordPage() {
     return (
       <div className="mx-auto flex w-full max-w-[400px] items-center justify-center px-4 py-24 text-muted-foreground">
         <Loader2 className="size-5 animate-spin" aria-hidden="true" />
-        <span className="ml-2 text-sm">Memeriksa tautan…</span>
+        <span className="ml-2 text-sm">{t(d.checkingLink)}</span>
       </div>
     );
   }
@@ -99,10 +102,10 @@ export default function UpdatePasswordPage() {
       <div className="mx-auto w-full max-w-[400px] px-4 py-16 text-center md:py-24">
         <CheckCircle2 className="mx-auto size-12 text-primary" aria-hidden="true" />
         <h1 className="mt-4 font-display text-2xl font-semibold">
-          Kata sandi diperbarui
+          {t(d.updateDoneHeading)}
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Mengalihkan ke dasbor…
+          {t(d.redirectingToDashboard)}
         </p>
       </div>
     );
@@ -113,13 +116,13 @@ export default function UpdatePasswordPage() {
       <div className="mx-auto w-full max-w-[400px] px-4 py-16 text-center md:py-24">
         <KeyRound className="mx-auto size-10 text-muted-foreground" aria-hidden="true" />
         <h1 className="mt-4 font-display text-2xl font-semibold">
-          Tautan tidak valid atau kedaluwarsa
+          {t(d.invalidLinkHeading)}
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Minta tautan baru untuk mengatur ulang kata sandi.
+          {t(d.invalidLinkDescription)}
         </p>
         <Button asChild className="mt-6">
-          <Link href="/auth/forgot-password">Minta tautan baru</Link>
+          <Link href="/auth/forgot-password">{t(d.requestNewLinkCta)}</Link>
         </Button>
       </div>
     );
@@ -128,10 +131,10 @@ export default function UpdatePasswordPage() {
   return (
     <div className="mx-auto w-full max-w-[400px] px-4 py-16 md:py-24">
       <h1 className="font-display text-3xl font-semibold tracking-tight">
-        Kata sandi baru
+        {t(d.newPassword)}
       </h1>
       <p className="mt-2 text-muted-foreground">
-        Masukkan kata sandi baru untuk akunmu.
+        {t(d.newPasswordSub)}
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -145,7 +148,7 @@ export default function UpdatePasswordPage() {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="password">Kata sandi baru</Label>
+          <Label htmlFor="password">{t(d.newPassword)}</Label>
           <Input
             id="password"
             type="password"
@@ -157,7 +160,7 @@ export default function UpdatePasswordPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmation">Ulangi kata sandi</Label>
+          <Label htmlFor="confirmation">{t(d.labelConfirmPassword)}</Label>
           <Input
             id="confirmation"
             type="password"
@@ -173,10 +176,10 @@ export default function UpdatePasswordPage() {
             const passed = rule.test(password);
             return (
               <li
-                key={rule.label}
+                key={rule.label.en}
                 className={passed ? "text-primary" : "text-muted-foreground"}
               >
-                {passed ? "✓" : "•"} {rule.label}
+                {passed ? "✓" : "•"} {t(rule.label)}
               </li>
             );
           })}
@@ -186,10 +189,10 @@ export default function UpdatePasswordPage() {
           {loading ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              Menyimpan…
+              {t(d.saving)}
             </>
           ) : (
-            "Simpan kata sandi"
+            t(d.savePasswordCta)
           )}
         </Button>
       </form>

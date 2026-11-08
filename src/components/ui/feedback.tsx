@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
+import { commonDict } from "@/lib/i18n/dict/common";
+import { shellDict as d } from "@/lib/i18n/dict/shell";
 
 type ToastKind = "success" | "error";
 
@@ -17,6 +20,7 @@ export type ToastState = { kind: ToastKind; message: string } | null;
 export function useToast(duration = 3200) {
   const [toast, setToast] = useState<ToastState>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(null);
+  const { t } = useI18n();
 
   const showToast = (kind: ToastKind, message: string) => {
     setToast({ kind, message });
@@ -48,7 +52,7 @@ export function useToast(duration = 3200) {
           <button
             type="button"
             onClick={() => setToast(null)}
-            aria-label="Tutup notifikasi"
+            aria-label={t(d.toastCloseAria)}
             className="ml-1 rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             <X className="size-4" aria-hidden="true" />
@@ -69,7 +73,7 @@ export function ConfirmDialog({
   open,
   title,
   description,
-  confirmLabel = "Hapus",
+  confirmLabel,
   pending = false,
   destructive = true,
   onConfirm,
@@ -84,6 +88,8 @@ export function ConfirmDialog({
   onConfirm: () => void;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
+
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
@@ -124,7 +130,7 @@ export function ConfirmDialog({
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="outline" size="sm" onClick={onClose}>
-            Batal
+            {t(commonDict.cancel)}
           </Button>
           <Button
             variant={destructive ? "destructive" : "default"}
@@ -133,7 +139,7 @@ export function ConfirmDialog({
             disabled={pending}
           >
             {pending && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
-            {confirmLabel}
+            {confirmLabel ?? t(commonDict.delete)}
           </Button>
         </div>
       </div>

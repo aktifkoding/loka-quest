@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useI18n, formatDate } from "@/lib/i18n";
+import { educatorDict as d } from "@/lib/i18n/dict/educator";
+import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,6 +33,7 @@ type Assignment = {
 type Mission = { id: string; title: string; slug: string; status: string };
 
 export default function EducatorGroupsPage() {
+  const { t, lang } = useI18n();
   const [groups, setGroups] = useState<Group[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
@@ -50,16 +54,16 @@ export default function EducatorGroupsPage() {
       ]);
       const groupJson = await groupRes.json();
       const missionJson = await missionRes.json();
-      if (!groupRes.ok) throw new Error(groupJson.error || "Gagal memuat kelompok");
+      if (!groupRes.ok) throw new Error(groupJson.error || t(d.groupsLoadFailed));
       setGroups(groupJson.data ?? []);
       setMissions(missionJson.data ?? []);
       setSelected((current) => current ?? groupJson.data?.[0]?.id ?? null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      setError(err instanceof Error ? err.message : t(commonDict.errorGeneric));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   const loadDetail = useCallback(async (groupId: string) => {
     const [detailRes, assignmentRes] = await Promise.all([
@@ -93,11 +97,11 @@ export default function EducatorGroupsPage() {
     });
     const json = await response.json();
     if (!response.ok) {
-      setError(json.error || "Gagal membuat kelompok");
+      setError(json.error || t(d.createGroupFailed));
       return;
     }
     setGroupName("");
-    setMessage("Kelompok dibuat. Bagikan kode join ke siswa.");
+    setMessage(t(d.groupCreatedToast));
     await loadGroups();
     setSelected(json.data.id);
   }
@@ -120,18 +124,18 @@ export default function EducatorGroupsPage() {
     );
     const json = await response.json();
     if (!response.ok) {
-      setError(json.error || "Gagal memberi tugas");
+      setError(json.error || t(d.assignFailed));
       return;
     }
     setMissionId("");
     setDueAt("");
-    setMessage("Tugas ditambahkan.");
+    setMessage(t(d.assignmentAddedToast));
     await loadDetail(selected);
   }
 
   async function copyCode(code: string) {
     await navigator.clipboard.writeText(code);
-    setMessage("Kode join disalin.");
+    setMessage(t(d.joinCodeCopiedToast));
   }
 
   const activeGroup = groups.find((group) => group.id === selected);
@@ -143,16 +147,16 @@ export default function EducatorGroupsPage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/educator/dashboard">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Dasbor pendidik
+          {t(d.backToDashboard)}
         </Link>
       </Button>
 
       <header>
         <h1 className="font-display text-4xl font-semibold tracking-tight">
-          Kelompok belajar
+          {t(d.groupsTitle)}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Buat kelas, bagikan kode join, dan beri tugas misi.
+          {t(d.groupsDescription)}
         </p>
       </header>
 
@@ -170,19 +174,19 @@ export default function EducatorGroupsPage() {
       <Card className="mt-6 p-6">
         <form onSubmit={createGroup} className="flex flex-wrap items-end gap-3">
           <label className="min-w-[240px] flex-1 text-sm font-medium">
-            Nama kelompok baru
+            {t(d.newGroupNameLabel)}
             <Input
               className="mt-1"
               required
               minLength={3}
               value={groupName}
               onChange={(event) => setGroupName(event.target.value)}
-              placeholder="Kelas 8A — Budaya Nusantara"
+              placeholder={t(d.newGroupNamePlaceholder)}
             />
           </label>
           <Button type="submit">
             <Plus className="size-4" aria-hidden="true" />
-            Buat kelompok
+            {t(d.createGroupCta)}
           </Button>
         </form>
       </Card>
@@ -190,10 +194,10 @@ export default function EducatorGroupsPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[280px_1fr]">
         <aside>
           {loading ? (
-            <p className="text-sm text-muted-foreground">Memuat…</p>
+            <p className="text-sm text-muted-foreground">{t(commonDict.loadingShort)}</p>
           ) : groups.length === 0 ? (
             <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-              Belum ada kelompok.
+              {t(d.emptyGroups)}
             </p>
           ) : (
             <Card className="divide-y divide-border">
@@ -212,7 +216,7 @@ export default function EducatorGroupsPage() {
                       {group.name}
                     </span>
                     <span className="block text-xs text-muted-foreground">
-                      {group.memberCount} siswa
+                      {t(d.studentsCount, { n: group.memberCount })}
                     </span>
                   </span>
                 </button>
@@ -224,7 +228,7 @@ export default function EducatorGroupsPage() {
         <section>
           {!activeGroup ? (
             <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-              Pilih kelompok untuk melihat detail.
+              {t(d.selectGroupHint)}
             </p>
           ) : (
             <div className="space-y-6">
@@ -235,7 +239,7 @@ export default function EducatorGroupsPage() {
                       {activeGroup.name}
                     </h2>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {activeGroup.memberCount} siswa bergabung
+                      {t(d.studentsJoined, { n: activeGroup.memberCount })}
                     </p>
                   </div>
                   {activeGroup.join_code && (
@@ -252,17 +256,17 @@ export default function EducatorGroupsPage() {
               </Card>
 
               <Card className="p-6">
-                <h3 className="font-display text-lg font-semibold">Beri tugas</h3>
+                <h3 className="font-display text-lg font-semibold">{t(d.assignHeading)}</h3>
                 <form onSubmit={assignMission} className="mt-4 grid gap-3 sm:grid-cols-[1fr_180px_auto]">
                   <label className="block text-sm font-medium">
-                    Misi
+                    {t(d.missionLabel)}
                     <select
                       className={inputClass}
                       required
                       value={missionId}
                       onChange={(event) => setMissionId(event.target.value)}
                     >
-                      <option value="">Pilih misi</option>
+                      <option value="">{t(d.missionPlaceholder)}</option>
                       {missions.map((mission) => (
                         <option key={mission.id} value={mission.id}>
                           {mission.title}
@@ -271,7 +275,7 @@ export default function EducatorGroupsPage() {
                     </select>
                   </label>
                   <label className="block text-sm font-medium">
-                    Tenggat (opsional)
+                    {t(d.dueDateLabel)}
                     <Input
                       className="mt-1"
                       type="date"
@@ -282,7 +286,7 @@ export default function EducatorGroupsPage() {
                   <div className="flex items-end">
                     <Button type="submit">
                       <ClipboardList className="size-4" aria-hidden="true" />
-                      Tugaskan
+                      {t(d.assignCta)}
                     </Button>
                   </div>
                 </form>
@@ -290,7 +294,7 @@ export default function EducatorGroupsPage() {
                 <ul className="mt-4 space-y-2">
                   {assignments.length === 0 ? (
                     <li className="text-sm text-muted-foreground">
-                      Belum ada tugas.
+                      {t(d.emptyAssignments)}
                     </li>
                   ) : (
                     assignments.map((assignment) => {
@@ -302,11 +306,11 @@ export default function EducatorGroupsPage() {
                           key={assignment.id}
                           className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-secondary/50 px-3 py-2 text-sm"
                         >
-                          <span>{mission?.title ?? "Misi"}</span>
+                          <span>{mission?.title ?? t(d.missionFallback)}</span>
                           <span className="text-xs text-muted-foreground">
                             {assignment.due_at
-                              ? `Tenggat ${new Date(assignment.due_at).toLocaleDateString("id-ID")}`
-                              : "Tanpa tenggat"}
+                              ? t(d.dueBy, { date: formatDate(assignment.due_at, lang) })
+                              : t(d.noDueDate)}
                           </span>
                         </li>
                       );
@@ -317,11 +321,11 @@ export default function EducatorGroupsPage() {
 
               <Card className="p-6">
                 <h3 className="font-display text-lg font-semibold">
-                  Siswa ({members.length})
+                  {t(d.studentsHeading, { n: members.length })}
                 </h3>
                 {members.length === 0 ? (
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Bagikan kode join agar siswa dapat bergabung.
+                    {t(d.shareJoinCodeHint)}
                   </p>
                 ) : (
                   <ul className="mt-3 divide-y divide-border">
@@ -335,10 +339,10 @@ export default function EducatorGroupsPage() {
                           className="flex items-center justify-between gap-3 py-2 text-sm"
                         >
                           <span>
-                            {profile?.full_name || profile?.email || "Siswa"}
+                            {profile?.full_name || profile?.email || t(d.studentFallback)}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            Level {profile?.level ?? 1} · {profile?.xp ?? 0} XP
+                            {t(d.levelXp, { level: profile?.level ?? 1, xp: profile?.xp ?? 0 })}
                           </span>
                         </li>
                       );

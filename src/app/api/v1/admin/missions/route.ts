@@ -5,6 +5,8 @@ import { parseJsonBody } from "@/lib/api/response";
 import { adminMissionSchema } from "@/lib/validation/admin";
 import { auditLog } from "@/lib/audit";
 import { paginationSchema } from "@/lib/validation";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 
 export async function GET(request: Request) {
   return withErrorHandling(async () => {
@@ -62,6 +64,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const user = await requireRole(["admin", "educator"]);
     const input = await parseJsonBody(request, adminMissionSchema);
     const supabase = await createClient();
@@ -85,7 +88,7 @@ export async function POST(request: Request) {
     if (error) {
       if (error.code === "23505") {
         return Response.json(
-          { success: false, error: "Slug misi sudah dipakai." },
+          { success: false, error: E.missionSlugTaken[lang] },
           { status: 409 }
         );
       }

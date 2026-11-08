@@ -6,6 +6,8 @@ import { withErrorHandling } from "@/lib/api/handler";
 import { parseJsonBody } from "@/lib/api/response";
 import { durableRateLimit } from "@/lib/security/rate-limit-db";
 import { getDailyMission } from "@/lib/daily";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 
 type AchievementRow = {
   id: string;
@@ -55,10 +57,11 @@ function evaluateAchievements(
 
 export async function POST(request: Request) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const rl = await durableRateLimit(request, "attempts", 30, 60);
     if (!rl.ok) {
       return Response.json(
-        { success: false, error: "Terlalu banyak percobaan. Coba lagi nanti." },
+        { success: false, error: E.rateLimitAttempts[lang] },
         { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
       );
     }

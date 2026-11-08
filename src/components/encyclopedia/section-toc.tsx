@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n";
+import { encyclopediaDict as d } from "@/lib/i18n/dict/encyclopedia";
 
 /**
  * Deretan chip navigasi seksi dengan scrollspy: seksi aktif disorot
@@ -11,6 +13,7 @@ export function SectionToc({
 }: {
   sections: { id: string; title: string }[];
 }) {
+  const { t } = useI18n();
   const [active, setActive] = useState(sections[0]?.id ?? "");
 
   useEffect(() => {
@@ -32,7 +35,7 @@ export function SectionToc({
 
   return (
     <nav
-      aria-label="Daftar isi"
+      aria-label={t(d.tocAria)}
       className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1"
     >
       {sections.map((section) => (

@@ -4,6 +4,8 @@ import { requireAuth } from "@/lib/auth/session";
 import { withErrorHandling } from "@/lib/api/handler";
 import { parseJsonBody } from "@/lib/api/response";
 import { durableRateLimit } from "@/lib/security/rate-limit-db";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 
 const joinSchema = z.object({
   code: z.string().trim().min(4).max(12),
@@ -11,10 +13,11 @@ const joinSchema = z.object({
 
 export async function POST(request: Request) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const rl = await durableRateLimit(request, "quiz-join", 20, 60);
     if (!rl.ok) {
       return Response.json(
-        { success: false, error: "Terlalu banyak percobaan." },
+        { success: false, error: E.rateLimitAttemptsShort[lang] },
         { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
       );
     }
@@ -31,7 +34,7 @@ export async function POST(request: Request) {
 
     if (!session || session.status === "finished") {
       return Response.json(
-        { success: false, error: "Sesi kuis tidak ditemukan atau sudah berakhir." },
+        { success: false, error: E.quizSessionOver[lang] },
         { status: 404 }
       );
     }
@@ -46,7 +49,7 @@ export async function POST(request: Request) {
       {
         session_id: session.id,
         profile_id: user.id,
-        display_name: profile?.full_name || profile?.email?.split("@")[0] || "Peserta",
+        display_name: profile?.full_name || profile?.email?.split("@")[0] || (lang === "en" ? "Player" : "Peserta"),
       },
       { onConflict: "session_id,profile_id", ignoreDuplicates: true }
     );

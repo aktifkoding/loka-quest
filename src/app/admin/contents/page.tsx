@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth/session";
+import { getServerI18n } from "@/lib/i18n/server";
+import { adminDict as d } from "@/lib/i18n/dict/admin";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -21,6 +23,7 @@ export default async function AdminContentsPage() {
   try {
     await requireRole(["admin"]);
     const supabase = await createClient();
+    const { t } = await getServerI18n();
 
     const [{ data: contents }, { data: sources }, { data: regions }] = await Promise.all([
       supabase
@@ -47,28 +50,28 @@ export default async function AdminContentsPage() {
         <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
           <Link href="/admin">
             <ArrowLeft className="size-4" aria-hidden="true" />
-            Dasbor admin
+            {t(d.backToAdmin)}
           </Link>
         </Button>
 
         <header>
           <h1 className="font-display text-4xl font-semibold tracking-tight">
-            Konten & sumber
+            {t(d.contentsTitle)}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Setiap konten wajib bersumber tercatat sebelum diterbitkan.
+            {t(d.contentsDescription)}
           </p>
         </header>
 
-        <section className="mt-10" aria-label="Konten budaya">
-          <h2 className="font-display text-xl font-semibold">Konten budaya</h2>
+        <section className="mt-10" aria-label={t(d.contentsSectionAria)}>
+          <h2 className="font-display text-xl font-semibold">{t(d.contentsHeading)}</h2>
           <ContentForm regions={regions ?? []} sources={sourceRows} />
           {contentRows.length === 0 ? (
             <div className="mt-4">
               <EmptyState
                 icon={FileText}
-                title="Belum ada konten"
-                description="Tambahkan konten budaya per wilayah melalui Supabase, lengkap dengan status editorialnya."
+                title={t(d.contentsEmptyTitle)}
+                description={t(d.contentsEmptyDescription)}
               />
             </div>
           ) : (
@@ -81,7 +84,7 @@ export default async function AdminContentsPage() {
                       <div className="min-w-0 flex-1">
                         <p className="font-medium">{c.title}</p>
                         <p className="text-[13px] text-muted-foreground">
-                          {c.region ?? "tanpa wilayah"} · {c.content_type}
+                          {c.region ?? t(d.noRegionSuffix)} · {c.content_type}
                         </p>
                       </div>
                       <span className="flex shrink-0 items-center gap-2 text-[13px] text-muted-foreground">
@@ -99,11 +102,11 @@ export default async function AdminContentsPage() {
           )}
         </section>
 
-        <section className="mt-10" aria-label="Register sumber">
-          <h2 className="font-display text-xl font-semibold">Register sumber</h2>
+        <section className="mt-10" aria-label={t(d.sourcesSectionAria)}>
+          <h2 className="font-display text-xl font-semibold">{t(d.sourcesHeading)}</h2>
           {sourceRows.length === 0 ? (
             <p className="mt-4 text-sm text-muted-foreground">
-              Belum ada sumber terdaftar.
+              {t(d.sourcesEmpty)}
             </p>
           ) : (
             <ul className="mt-4 space-y-3">
@@ -115,7 +118,7 @@ export default async function AdminContentsPage() {
                       <div className="min-w-0 flex-1">
                         <p className="font-medium">{s.title}</p>
                         <p className="text-[13px] text-muted-foreground">
-                          {s.publisher ?? "—"} · {s.license ?? "lisensi belum dicatat"}
+                          {s.publisher ?? "—"} · {s.license ?? t(d.licenseMissing)}
                         </p>
                       </div>
                     </div>

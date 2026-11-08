@@ -4,6 +4,8 @@ import { withErrorHandling } from "@/lib/api/handler";
 import { parseJsonBody } from "@/lib/api/response";
 import { adminRegionSchema } from "@/lib/validation/admin";
 import { auditLog } from "@/lib/audit";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 
 export async function GET() {
   return withErrorHandling(async () => {
@@ -25,6 +27,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const user = await requireRole(["admin"]);
     const input = await parseJsonBody(request, adminRegionSchema);
     const supabase = await createClient();
@@ -46,7 +49,7 @@ export async function POST(request: Request) {
     if (error) {
       if (error.code === "23505") {
         return Response.json(
-          { success: false, error: "Slug wilayah sudah dipakai." },
+          { success: false, error: E.regionSlugTaken[lang] },
           { status: 409 }
         );
       }

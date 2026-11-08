@@ -2,10 +2,13 @@ import { withErrorHandling } from "@/lib/api/handler";
 import { requireRole } from "@/lib/auth/session";
 import { createServiceClient } from "@/lib/supabase/service-role";
 import { sendEmail } from "@/lib/email";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     await requireRole(["admin", "educator"]);
     const supabase = createServiceClient();
     const body = await request.json();
@@ -20,7 +23,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     if (Object.keys(allowed).length === 0) {
       return Response.json(
-        { success: false, error: "Tidak ada field yang bisa diperbarui" },
+        { success: false, error: E.noUpdatableFields[lang] },
         { status: 400 }
       );
     }

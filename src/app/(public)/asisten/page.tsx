@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { Reveal } from "@/components/ui/reveal";
 import { Lightbulb, Send, BookMarked, ArrowRight } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+import { publicDict as d } from "@/lib/i18n/dict/public";
+import { commonDict } from "@/lib/i18n/dict/common";
 
 type Citation = {
   content_id: string;
@@ -25,6 +28,7 @@ type AskResponse = {
 };
 
 export default function AiAssistantPage() {
+  const { t } = useI18n();
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<AskResponse | null>(null);
@@ -54,12 +58,12 @@ export default function AiAssistantPage() {
         body: JSON.stringify({ question: q }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Gagal memproses pertanyaan");
+      if (!res.ok) throw new Error(json.error || t(d.errorAsk));
       const data = json.data as AskResponse;
       setResponse(data);
       setHistory((h) => [...h, { q, a: data }]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      setError(err instanceof Error ? err.message : t(commonDict.errorGeneric));
     } finally {
       setLoading(false);
     }
@@ -69,8 +73,8 @@ export default function AiAssistantPage() {
     <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
       <PageHeader
         icon={Lightbulb}
-        title="Asisten Budaya AI"
-        description="Tanyakan apa saja tentang budaya Indonesia. Jawaban disusun dari artikel dan sumber budaya terverifikasi di LokaQuest, dilengkapi referensi."
+        title={t(d.assistantTitle)}
+        description={t(d.assistantDescription)}
       />
 
       <Reveal>
@@ -80,13 +84,13 @@ export default function AiAssistantPage() {
               <Input
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder="Contoh: Apa itu batik Parang Rusak?"
+                placeholder={t(d.assistantPlaceholder)}
                 className="flex-1"
-                aria-label="Pertanyaan tentang budaya"
+                aria-label={t(d.assistantInputAria)}
               />
               <Button type="submit" disabled={loading || !question.trim()}>
                 <Send className="size-4" aria-hidden="true" />
-                Tanya
+                {t(d.askCta)}
               </Button>
             </div>
           </Card>
@@ -112,21 +116,21 @@ export default function AiAssistantPage() {
 
       {!asked && !loading && (
         <Card className="mt-8 p-6">
-          <p className="text-sm font-medium">Coba pertanyaan:</p>
+          <p className="text-sm font-medium">{t(d.tryHeading)}</p>
           <ul className="mt-3 space-y-2 text-sm">
             {[
-              "Apa itu batik Parang Rusak?",
-              "Ceritakan tentang wayang kulit Yogyakarta.",
-              "Apa perbedaan gamelan Jawa Barat dan Jawa Tengah?",
+              d.sampleQuestion1,
+              d.sampleQuestion2,
+              d.sampleQuestion3,
             ].map((q) => (
-              <li key={q}>
+              <li key={q.en}>
                 <button
                   type="button"
-                  onClick={() => setQuestion(q)}
+                  onClick={() => setQuestion(t(q))}
                   className="group flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-card px-3.5 py-2.5 text-left transition-colors duration-200 hover:border-primary/40 hover:bg-secondary/60"
                 >
                   <span className="text-muted-foreground transition-colors group-hover:text-foreground">
-                    {q}
+                    {t(q)}
                   </span>
                   <ArrowRight
                     className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
@@ -143,16 +147,16 @@ export default function AiAssistantPage() {
         {history.map((item, index) => (
           <div key={index} className="space-y-4">
             <Card className="bg-secondary/40 p-5">
-              <p className="text-sm font-semibold text-primary">Pertanyaan</p>
+              <p className="text-sm font-semibold text-primary">{t(d.questionLabel)}</p>
               <p className="mt-1 text-sm leading-relaxed">{item.q}</p>
             </Card>
             <Card className="p-5">
-              <p className="text-sm font-semibold text-primary">Jawaban</p>
+              <p className="text-sm font-semibold text-primary">{t(d.answerLabel)}</p>
               <p className="mt-2 text-sm leading-relaxed">{item.a.answer}</p>
 
               {item.a.citations.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Referensi</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t(d.citationsLabel)}</p>
                   <ul className="mt-2 space-y-2">
                     {item.a.citations.map((c, i) => (
                       <li key={i} className="flex items-start gap-2 rounded-lg border border-border bg-secondary/40 px-3 py-2.5">
@@ -160,8 +164,8 @@ export default function AiAssistantPage() {
                         <div className="min-w-0">
                           <p className="text-sm font-medium">{c.title}</p>
                           <p className="text-xs text-muted-foreground">
-                            {c.region ? `Wilayah: ${c.region}` : ""}
-                            {c.source ? ` · Sumber: ${c.source}` : ""}
+                            {c.region ? t(d.regionPrefix, { x: c.region }) : ""}
+                            {c.source ? ` · ${t(d.sourcePrefix, { x: c.source })}` : ""}
                             {c.license ? ` · ${c.license}` : ""}
                           </p>
                         </div>

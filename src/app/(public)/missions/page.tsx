@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useI18n, type Localized } from "@/lib/i18n";
+import { gameDict as d } from "@/lib/i18n/dict/game";
+import { commonDict } from "@/lib/i18n/dict/common";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,13 +20,14 @@ interface Mission {
   xp_reward: number;
 }
 
-const difficultyLabel: Record<string, string> = {
-  beginner: "Pemula",
-  intermediate: "Menengah",
-  advanced: "Lanjutan",
+const difficultyLabel: Record<string, Localized> = {
+  beginner: d.difficultyBeginner,
+  intermediate: d.difficultyIntermediate,
+  advanced: d.difficultyAdvanced,
 };
 
 export default function MissionsPage() {
+  const { t } = useI18n();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [recommendedDiff, setRecommendedDiff] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,7 +43,7 @@ export default function MissionsPage() {
         const result = await missionsRes.json();
 
         if (!missionsRes.ok) {
-          throw new Error(result.error || "Gagal memuat misi");
+          throw new Error(result.error || t(d.errorLoadMissions));
         }
 
         setMissions(result.data || []);
@@ -51,7 +55,7 @@ export default function MissionsPage() {
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+        setError(err instanceof Error ? err.message : t(commonDict.errorGeneric));
       } finally {
         setLoading(false);
       }
@@ -64,8 +68,8 @@ export default function MissionsPage() {
     <div className="mx-auto max-w-4xl px-4 py-10 md:py-14">
       <PageHeader
         icon={Gamepad2}
-        title="Misi budaya"
-        description="Jawaban dinilai di server setelah misi selesai. Masuk dulu supaya XP dan lencanamu tersimpan."
+        title={t(d.missionsTitle)}
+        description={t(d.missionsIntro)}
       />
 
       <div className="mt-10">
@@ -73,7 +77,7 @@ export default function MissionsPage() {
           <div
             className="space-y-3"
             aria-busy="true"
-            aria-label="Memuat daftar misi"
+            aria-label={t(d.loadingMissionsAria)}
           >
             {[0, 1, 2].map((i) => (
               <div
@@ -92,15 +96,15 @@ export default function MissionsPage() {
         ) : error ? (
           <EmptyState
             icon={Gamepad2}
-            title="Misi tidak bisa dimuat"
+            title={t(d.missionsLoadFailedTitle)}
             description={error}
           />
         ) : missions.length === 0 ? (
           <EmptyState
             icon={Gamepad2}
-            title="Belum ada misi terbuka"
-            description="Misi muncul di sini setelah tim konten mempublikasikannya."
-            action={{ label: "Jelajahi wilayah budaya", href: "/explore" }}
+            title={t(d.emptyMissionsTitle)}
+            description={t(d.emptyMissionsDesc)}
+            action={{ label: t(d.exploreRegionsCta), href: "/explore" }}
           />
         ) : (
           <ul className="space-y-3">
@@ -122,7 +126,7 @@ export default function MissionsPage() {
                           {recommendedDiff && mission.difficulty === recommendedDiff && (
                             <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
                               <Sparkles className="size-3 text-gold" aria-hidden="true" />
-                              Rekomendasi Adaptif
+                              {t(d.adaptiveBadge)}
                             </span>
                           )}
                         </div>
@@ -131,7 +135,9 @@ export default function MissionsPage() {
                         </p>
                         <p className="mt-1.5 flex items-center gap-2 text-[13px] text-muted-foreground">
                           <span>
-                            {difficultyLabel[mission.difficulty] ?? mission.difficulty}
+                            {difficultyLabel[mission.difficulty]
+                              ? t(difficultyLabel[mission.difficulty])
+                              : mission.difficulty}
                           </span>
                           <span aria-hidden="true">·</span>
                           <span className="inline-flex items-center gap-1 font-semibold tabular-nums text-gold">

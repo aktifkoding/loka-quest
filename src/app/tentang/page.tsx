@@ -1,41 +1,46 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Code2, TrendingUp, BookMarked, Landmark } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
+import { getServerI18n } from "@/lib/i18n/server";
+import { staticDict as d } from "@/lib/i18n/dict/static";
 
-export const metadata = {
-  title: "Tentang Kami",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t(d.aboutMetaTitle) };
+}
 
-const ROLES = [
-  {
-    icon: Code2,
-    role: "Pengembang Produk",
-    body: "Merancang dan membangun LokaQuest: Next.js, Phaser 3, dan Supabase — dengan nilai jawaban dinilai di server dan data dilindungi keamanan tingkat baris.",
-  },
-  {
-    icon: TrendingUp,
-    role: "Pengampu Ekonomi & Bisnis",
-    body: "Menjaga agar produk berjalan pada kuota layanan gratis, merancang jalur keberlanjutan, dan menyiapkan model pertumbuhan pasca-kompetisi.",
-  },
-  {
-    icon: BookMarked,
-    role: "Pengampu Substansi Kebudayaan",
-    body: "Memverifikasi setiap tradisi yang ditulis, menjaga register sumber dan lisensi, serta memastikan penyajian yang hormat pada masyarakat pemilik budaya.",
-  },
-];
+export default async function AboutPage() {
+  const { t } = await getServerI18n();
+  const ROLES = [
+    {
+      icon: Code2,
+      role: t(d.aboutRoleDeveloper),
+      body: t(d.aboutRoleDeveloperBody),
+    },
+    {
+      icon: TrendingUp,
+      role: t(d.aboutRoleEconomics),
+      body: t(d.aboutRoleEconomicsBody),
+    },
+    {
+      icon: BookMarked,
+      role: t(d.aboutRoleCulture),
+      body: t(d.aboutRoleCultureBody),
+    },
+  ];
 
-export default function AboutPage() {
   return (
     <>
     <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
       <PageHeader
         icon={Landmark}
-        title="Tentang LokaQuest"
-        description="LokaQuest lahir dari satu keyakinan: warisan budaya paling hidup ketika generasi muda menyentuhnya lewat cara mereka paling suka — bermain. Tiga misi kami (batik, gamelan, wayang) dibangun di atas konten bersumber dan teknologi yang menghormati privasi pemain."
+        title={t(d.aboutTitle)}
+        description={t(d.aboutDescription)}
         backHref="/"
-        backLabel="Beranda"
+        backLabel={t(d.backHomeLabel)}
       />
 
       <div className="mt-10 space-y-4">
@@ -59,11 +64,11 @@ export default function AboutPage() {
       </div>
 
       <p className="mt-10 text-sm leading-relaxed text-muted-foreground">
-        Ingin berkolaborasi atau memakai LokaQuest di kelas Anda?{" "}
+        {t(d.aboutCollaborateQuestion)}{" "}
         <Link href="/sumber" className="font-medium text-primary hover:underline">
-          Lihat register sumber budaya kami
+          {t(d.aboutSourceRegisterLink)}
         </Link>{" "}
-        untuk transparansi penuh atas rujukan dan lisensi.
+        {t(d.aboutTransparencySuffix)}
       </p>
     </div>
     </>

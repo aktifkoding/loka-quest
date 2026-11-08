@@ -1,14 +1,16 @@
+import type { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Reveal } from "@/components/ui/reveal";
 import { BookMarked, ExternalLink } from "lucide-react";
 import { createServiceClient } from "@/lib/supabase/service-role";
+import { getServerI18n } from "@/lib/i18n/server";
+import { staticDict as d } from "@/lib/i18n/dict/static";
 
-export const metadata = {
-  title: "Sumber Budaya",
-  description:
-    "Register sumber rujukan budaya yang digunakan LokaQuest — transparansi akar budaya dan hak karya.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t(d.sourcesMetaTitle), description: t(d.sourcesMetaDescription) };
+}
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +20,7 @@ export const dynamic = "force-dynamic";
  * licensed source.
  */
 export default async function SourcesPage() {
+  const { t } = await getServerI18n();
   const service = createServiceClient();
   const { data: sources } = await service
     .from("cultural_sources")
@@ -30,10 +33,10 @@ export default async function SourcesPage() {
     <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
       <PageHeader
         icon={BookMarked}
-        title="Sumber budaya"
-        description="LokaQuest menulis tradisi, artefak, dan cerita hanya dari referensi yang tercatat dan berlisensi jelas. Daftar ini adalah register terbuka atas semua rujukan yang kami pakai — bukan fakta karangan."
+        title={t(d.sourcesPageTitle)}
+        description={t(d.sourcesPageDescription)}
         backHref="/"
-        backLabel="Beranda"
+        backLabel={t(d.backHomeLabel)}
       />
 
       <div className="mt-10 space-y-4">
@@ -52,7 +55,7 @@ export default async function SourcesPage() {
                 </p>
                 <div className="mt-3 flex items-center gap-4 text-[13px]">
                   <span className="rounded-full bg-primary/10 px-2.5 py-1 font-medium text-primary">
-                    {source.license ?? "lisensi dicatat"}
+                    {source.license ?? t(d.licenseOnRecord)}
                   </span>
                   {source.url && source.url.startsWith("http") && (
                     <a
@@ -61,7 +64,7 @@ export default async function SourcesPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-muted-foreground hover:text-primary"
                     >
-                      Katalog
+                      {t(d.catalogCta)}
                       <ExternalLink className="size-3.5" aria-hidden="true" />
                     </a>
                   )}
@@ -73,9 +76,7 @@ export default async function SourcesPage() {
       </div>
 
       <p className="mt-10 text-[13px] leading-relaxed text-muted-foreground">
-        Memperhatikan lisensi budaya? Kami juga: setiap elemen permainan
-        (termasuk bunyi gamelan) dibangkitkan secara sintetis dan ilustrasi
-        memakai motif geometris generik — bukan reprodigsi karya berhak cipta.
+        {t(d.sourcesLicenseNote)}
       </p>
     </div>
   );

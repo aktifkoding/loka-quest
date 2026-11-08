@@ -5,6 +5,62 @@ import { requireAuth } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { durableRateLimit } from "@/lib/security/rate-limit-db";
 import { completeChat, isLlmConfigured } from "@/lib/llm";
+import { type Lang } from "@/lib/i18n";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
+
+/** Persona asisten mengikuti bahasa UI yang dipilih pengunjung. */
+const SYSTEM_PROMPTS: Record<Lang, string> = {
+  id:
+    "Kamu adalah asisten budaya Nusantara LokaQuest. Jawab HANYA berdasarkan catatan yang diberikan. " +
+    "Sertakan sitasi [n] untuk setiap klaim. Jika catatan tidak cukup, katakan bahwa informasinya belum tersedia. " +
+    "Jangan mengarang fakta, angka, atau nama. Gunakan bahasa Indonesia yang jelas dan hangat, maksimal 180 kata.",
+  en:
+    "You are LokaQuest's Nusantara (Indonesian) culture assistant. Answer ONLY based on the provided notes. " +
+    "Include a [n] citation for every claim. If the notes are insufficient, say the information is not available yet. " +
+    "Do not invent facts, numbers, or names. Answer in clear, warm English, at most 180 words.",
+};
+
+const COPY: Record<Lang, {
+  noResults: string;
+  extractive: (top: { title: string; regionName: string | null; body: string }, extra: { title: string }[]) => string;
+  disclaimer: string;
+  notesLabel: string;
+  questionLabel: string;
+}> = {
+  id: {
+    noResults:
+      "Saya belum menemukan jawaban yang sesuai di database budaya kami. Coba gunakan kata kunci lain seperti nama wilayah, motif, atau tradisi.",
+    extractive: (top, extra) => {
+      let text = `Berdasarkan sumber budaya terverifikasi, ${top.title.toLowerCase()} merupakan bagian dari ${top.regionName ?? "warisan budaya Nusantara"}. ${(top.body ?? "").slice(0, 260)}`;
+      if (extra.length > 0) {
+        text += ` Topik terkait: ${extra.map((item) => item.title).join(", ")}.`;
+      }
+      text += " Selalu teliti kembali dengan sumber asli untuk pembelajaran yang lebih mendalam.";
+      return text;
+    },
+    disclaimer:
+      "Jawaban dihasilkan dari konten budaya terverifikasi di LokaQuest. Untuk keperluan akademis, selalu cek sumber asli yang tercantum.",
+    notesLabel: "Catatan:",
+    questionLabel: "Pertanyaan:",
+  },
+  en: {
+    noResults:
+      "I could not find a matching answer in our culture database yet. Try other keywords such as a region name, a motif, or a tradition.",
+    extractive: (top, extra) => {
+      let text = `Based on verified cultural sources, ${top.title.toLowerCase()} is part of ${top.regionName ?? "the Nusantara heritage"}. ${(top.body ?? "").slice(0, 260)}`;
+      if (extra.length > 0) {
+        text += ` Related topics: ${extra.map((item) => item.title).join(", ")}.`;
+      }
+      text += " Always double-check the original sources for deeper learning.";
+      return text;
+    },
+    disclaimer:
+      "Answers are generated from verified cultural content on LokaQuest. For academic purposes, always check the original sources listed.",
+    notesLabel: "Notes:",
+    questionLabel: "Question:",
+  },
+};
 
 type ContentRow = {
   id: string;
@@ -41,10 +97,12 @@ function one<T>(value: T | T[] | null): T | null {
 
 export async function POST(request: Request) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
+    const copy = COPY[lang];
     const rl = await durableRateLimit(request, "ai-ask", 10, 60);
     if (!rl.ok) {
       return Response.json(
-        { success: false, error: "Terlalu banyak pertanyaan. Coba lagi sebentar." },
+        { success: false, error: E.rateLimitQuestions[lang] },
         { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
       );
     }
@@ -94,8 +152,7 @@ export async function POST(request: Request) {
     let mode: "llm" | "extractive" = "extractive";
 
     if (scored.length === 0) {
-      answer =
-        "Saya belum menemukan jawaban yang sesuai di database budaya kami. Coba gunakan kata kunci lain seperti nama wilayah, motif, atau tradisi.";
+      answer = copy.noResults;
     } else if (isLlmConfigured()) {
       const context = scored
         .map(
@@ -107,14 +164,11 @@ export async function POST(request: Request) {
       const generated = await completeChat([
         {
           role: "system",
-          content:
-            "Kamu adalah asisten budaya Nusantara LokaQuest. Jawab HANYA berdasarkan catatan yang diberikan. " +
-            "Sertakan sitasi [n] untuk setiap klaim. Jika catatan tidak cukup, katakan bahwa informasinya belum tersedia. " +
-            "Jangan mengarang fakta, angka, atau nama. Gunakan bahasa Indonesia yang jelas dan hangat, maksimal 180 kata.",
+          content: SYSTEM_PROMPTS[lang],
         },
         {
           role: "user",
-          content: `Catatan:\n${context}\n\nPertanyaan: ${question}`,
+          content: `${copy.notesLabel}\n${context}\n\n${copy.questionLabel} ${question}`,
         },
       ]);
 
@@ -123,16 +177,18 @@ export async function POST(request: Request) {
         mode = "llm";
       } else {
         const top = scored[0];
-        answer = `Berdasarkan sumber budaya terverifikasi, ${top.title.toLowerCase()} merupakan bagian dari ${top.regionName ?? "warisan budaya Nusantara"}. ${(top.body ?? "").slice(0, 260)} Selalu teliti kembali dengan sumber asli untuk pembelajaran yang lebih mendalam.`;
+        answer = copy.extractive(
+          { title: top.title, regionName: top.regionName, body: `${(top.body ?? "").slice(0, 260)} ` },
+          []
+        );
       }
     } else {
       const top = scored[0];
       const extra = scored.slice(1, 3);
-      answer = `Berdasarkan sumber budaya terverifikasi, ${top.title.toLowerCase()} merupakan bagian dari ${top.regionName ?? "warisan budaya Nusantara"}. ${(top.body ?? "").slice(0, 260)}`;
-      if (extra.length > 0) {
-        answer += ` Topik terkait: ${extra.map((item) => item.title).join(", ")}.`;
-      }
-      answer += " Selalu teliti kembali dengan sumber asli untuk pembelajaran yang lebih mendalam.";
+      answer = copy.extractive(
+        { title: top.title, regionName: top.regionName, body: top.body ?? "" },
+        extra
+      );
     }
 
     // Best-effort quality log (RLS: users may only insert their own rows).
@@ -153,8 +209,7 @@ export async function POST(request: Request) {
         answer,
         citations,
         mode,
-        disclaimer:
-          "Jawaban dihasilkan dari konten budaya terverifikasi di LokaQuest. Untuk keperluan akademis, selalu cek sumber asli yang tercantum.",
+        disclaimer: copy.disclaimer,
       },
     });
   });

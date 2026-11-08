@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { createServiceClient } from "@/lib/supabase/service-role";
 import { requireRole } from "@/lib/auth/session";
+import { getServerI18n } from "@/lib/i18n/server";
+import { adminDict as d } from "@/lib/i18n/dict/admin";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Reveal } from "@/components/ui/reveal";
@@ -10,10 +13,16 @@ import { ArrowLeft, Users, Gamepad2, MapPin, FileText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t(d.appAnalyticsMetaTitle) };
+}
+
 export default async function AdminAnalyticsPage() {
   try {
     await requireRole(["admin"]);
     const service = createServiceClient();
+    const { t } = await getServerI18n();
 
     const [
       { count: userCount },
@@ -28,10 +37,10 @@ export default async function AdminAnalyticsPage() {
     ]);
 
     const stats = [
-      { label: "Pengguna terdaftar", value: userCount ?? 0, icon: Users },
-      { label: "Percobaan misi", value: attemptCount ?? 0, icon: Gamepad2 },
-      { label: "Wilayah budaya", value: regionCount ?? 0, icon: MapPin },
-      { label: "Konten terdaftar", value: contentCount ?? 0, icon: FileText },
+      { label: t(d.statRegisteredUsers), value: userCount ?? 0, icon: Users },
+      { label: t(d.statMissionAttempts), value: attemptCount ?? 0, icon: Gamepad2 },
+      { label: t(d.statCulturalRegions), value: regionCount ?? 0, icon: MapPin },
+      { label: t(d.statRegisteredContents), value: contentCount ?? 0, icon: FileText },
     ];
 
     return (
@@ -39,16 +48,16 @@ export default async function AdminAnalyticsPage() {
         <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
           <Link href="/admin">
             <ArrowLeft className="size-4" aria-hidden="true" />
-            Dasbor admin
+            {t(d.backToAdmin)}
           </Link>
         </Button>
 
         <header>
           <h1 className="font-display text-4xl font-semibold tracking-tight">
-            Analitik aplikasi
+            {t(d.appAnalyticsTitle)}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Ringkasan penggunaan agregat.
+            {t(d.appAnalyticsDescription)}
           </p>
         </header>
 

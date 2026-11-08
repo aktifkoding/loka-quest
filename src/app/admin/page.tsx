@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth/session";
+import { getServerI18n } from "@/lib/i18n/server";
+import { adminDict as d } from "@/lib/i18n/dict/admin";
 import { CountUp } from "@/components/ui/count-up";
 import { Reveal } from "@/components/ui/reveal";
 import { Card } from "@/components/ui/card";
@@ -14,24 +17,30 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-const contentLinks = [
-  { href: "/admin/regions", label: "Wilayah budaya", icon: MapPin },
-  { href: "/admin/missions", label: "Misi & soal", icon: FileText },
-  { href: "/editor/encyclopedia", label: "Ensiklopedia budaya", icon: FileText },
-  { href: "/admin/contents", label: "Konten & sumber", icon: FileText },
-  { href: "/admin/submissions", label: "Moderasi komunitas", icon: MessageSquare },
-];
-
-const systemLinks = [
-  { href: "/admin/users", label: "Pengguna & peran", icon: Users },
-  { href: "/admin/audit-logs", label: "Log audit", icon: Settings },
-  { href: "/admin/analytics", label: "Analitik aplikasi", icon: Settings },
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t(d.adminMetaTitle) };
+}
 
 export default async function AdminDashboardPage() {
   try {
     await requireRole(["admin"]);
     const supabase = await createClient();
+    const { t } = await getServerI18n();
+
+    const contentLinks = [
+      { href: "/admin/regions", label: t(d.linkRegions), icon: MapPin },
+      { href: "/admin/missions", label: t(d.linkMissions), icon: FileText },
+      { href: "/editor/encyclopedia", label: t(d.linkEncyclopedia), icon: FileText },
+      { href: "/admin/contents", label: t(d.linkContents), icon: FileText },
+      { href: "/admin/submissions", label: t(d.linkSubmissions), icon: MessageSquare },
+    ];
+
+    const systemLinks = [
+      { href: "/admin/users", label: t(d.linkUsersRoles), icon: Users },
+      { href: "/admin/audit-logs", label: t(d.linkAuditLogs), icon: Settings },
+      { href: "/admin/analytics", label: t(d.linkAppAnalytics), icon: Settings },
+    ];
 
     const [
       { count: userCount },
@@ -49,10 +58,10 @@ export default async function AdminDashboardPage() {
       <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
         <header className="max-w-2xl">
           <h1 className="font-display text-4xl font-semibold tracking-tight">
-            Dasbor admin
+            {t(d.adminTitle)}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Kelola konten budaya, pengguna, dan pengaturan aplikasi.
+            {t(d.adminDescription)}
           </p>
         </header>
 
@@ -63,7 +72,7 @@ export default async function AdminDashboardPage() {
               <div className="p-6">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-muted-foreground">
-                    Pengguna
+                    {t(d.metricUsers)}
                   </p>
                   <Users className="size-5 text-muted-foreground" aria-hidden="true" />
                 </div>
@@ -71,7 +80,7 @@ export default async function AdminDashboardPage() {
                   <CountUp value={userCount ?? 0} />
                 </p>
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                  akun terdaftar
+                  {t(d.metricUsersNote)}
                 </p>
               </div>
             </Card>
@@ -82,7 +91,7 @@ export default async function AdminDashboardPage() {
               <div className="p-6">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-muted-foreground">
-                    Misi
+                    {t(d.metricMissions)}
                   </p>
                   <FileText className="size-5 text-muted-foreground" aria-hidden="true" />
                 </div>
@@ -90,7 +99,7 @@ export default async function AdminDashboardPage() {
                   <CountUp value={missionCount ?? 0} />
                 </p>
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                  termasuk draf dan terbit
+                  {t(d.metricMissionsNote)}
                 </p>
               </div>
             </Card>
@@ -101,7 +110,7 @@ export default async function AdminDashboardPage() {
               <div className="p-6">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-muted-foreground">
-                    Wilayah
+                    {t(d.metricRegions)}
                   </p>
                   <MapPin className="size-5 text-muted-foreground" aria-hidden="true" />
                 </div>
@@ -109,7 +118,7 @@ export default async function AdminDashboardPage() {
                   <CountUp value={regionCount ?? 0} />
                 </p>
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                  wilayah budaya terdaftar
+                  {t(d.metricRegionsNote)}
                 </p>
               </div>
             </Card>
@@ -121,7 +130,7 @@ export default async function AdminDashboardPage() {
           <Card>
             <div className="p-6">
               <h2 className="font-display text-xl font-semibold">
-                Manajemen konten
+                {t(d.contentManagementHeading)}
               </h2>
               <ul className="mt-4 divide-y divide-border">
                 {contentLinks.map((link) => (
@@ -150,7 +159,7 @@ export default async function AdminDashboardPage() {
           <Card>
             <div className="p-6">
               <h2 className="font-display text-xl font-semibold">
-                Manajemen sistem
+                {t(d.systemManagementHeading)}
               </h2>
               <ul className="mt-4 divide-y divide-border">
                 {systemLinks.map((link) => (

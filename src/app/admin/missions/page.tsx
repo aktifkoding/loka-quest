@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
+import { adminDict as d } from "@/lib/i18n/dict/admin";
+import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -29,6 +32,7 @@ const statusStyle: Record<string, string> = {
 };
 
 export default function AdminMissionsPage() {
+  const { t } = useI18n();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +57,7 @@ export default function AdminMissionsPage() {
       ]);
       const missionJson = await missionRes.json();
       const regionJson = await regionRes.json();
-      if (!missionRes.ok) throw new Error(missionJson.error || "Gagal memuat misi");
+      if (!missionRes.ok) throw new Error(missionJson.error || t(d.loadMissionsFailed));
       setMissions(missionJson.data ?? []);
       setRegions(regionJson.data ?? []);
       setForm((current) => ({
@@ -61,11 +65,11 @@ export default function AdminMissionsPage() {
         regionId: current.regionId || regionJson.data?.[0]?.id || "",
       }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      setError(err instanceof Error ? err.message : t(commonDict.errorGeneric));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -87,7 +91,7 @@ export default function AdminMissionsPage() {
         }),
       });
       const json = await response.json();
-      if (!response.ok) throw new Error(json.error || "Gagal membuat misi");
+      if (!response.ok) throw new Error(json.error || t(d.createMissionFailed));
       setShowForm(false);
       setForm({
         title: "",
@@ -100,7 +104,7 @@ export default function AdminMissionsPage() {
       });
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal membuat misi");
+      setError(err instanceof Error ? err.message : t(d.createMissionFailed));
     } finally {
       setBusy(false);
     }
@@ -114,22 +118,22 @@ export default function AdminMissionsPage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/admin">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Dasbor admin
+          {t(d.backToAdmin)}
         </Link>
       </Button>
 
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-4xl font-semibold tracking-tight">
-            Misi & soal
+            {t(d.missionsTitle)}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Buat misi, susun soal, lalu terbitkan setelah siap.
+            {t(d.missionsDescription)}
           </p>
         </div>
         <Button onClick={() => setShowForm((value) => !value)}>
           <Plus className="size-4" aria-hidden="true" />
-          Misi baru
+          {t(d.newMissionCta)}
         </Button>
       </header>
 
@@ -143,7 +147,7 @@ export default function AdminMissionsPage() {
         <Card className="mt-6 p-6">
           <form onSubmit={createMission} className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm font-medium">
-              Judul
+              {t(d.titleLabel)}
               <Input
                 className={inputClass}
                 required
@@ -153,7 +157,7 @@ export default function AdminMissionsPage() {
               />
             </label>
             <label className="block text-sm font-medium">
-              Slug
+              {t(d.slugLabel)}
               <Input
                 className={inputClass}
                 required
@@ -164,7 +168,7 @@ export default function AdminMissionsPage() {
               />
             </label>
             <label className="block text-sm font-medium sm:col-span-2">
-              Deskripsi
+              {t(d.descriptionLabel)}
               <textarea
                 className={inputClass}
                 rows={3}
@@ -177,14 +181,14 @@ export default function AdminMissionsPage() {
               />
             </label>
             <label className="block text-sm font-medium">
-              Wilayah
+              {t(d.regionLabel)}
               <select
                 className={inputClass}
                 required
                 value={form.regionId}
                 onChange={(event) => setForm({ ...form, regionId: event.target.value })}
               >
-                <option value="">Pilih wilayah</option>
+                <option value="">{t(d.regionPlaceholder)}</option>
                 {regions.map((region) => (
                   <option key={region.id} value={region.id}>
                     {region.name}
@@ -193,7 +197,7 @@ export default function AdminMissionsPage() {
               </select>
             </label>
             <label className="block text-sm font-medium">
-              Kesulitan
+              {t(d.difficultyLabel)}
               <select
                 className={inputClass}
                 value={form.difficulty}
@@ -201,9 +205,9 @@ export default function AdminMissionsPage() {
                   setForm({ ...form, difficulty: event.target.value })
                 }
               >
-                <option value="beginner">Pemula</option>
-                <option value="intermediate">Menengah</option>
-                <option value="advanced">Mahir</option>
+                <option value="beginner">{t(d.difficultyBeginner)}</option>
+                <option value="intermediate">{t(d.difficultyIntermediate)}</option>
+                <option value="advanced">{t(d.difficultyAdvanced)}</option>
               </select>
             </label>
             <label className="block text-sm font-medium">
@@ -220,23 +224,23 @@ export default function AdminMissionsPage() {
               />
             </label>
             <label className="block text-sm font-medium">
-              Status
+              {t(d.statusLabel)}
               <select
                 className={inputClass}
                 value={form.status}
                 onChange={(event) => setForm({ ...form, status: event.target.value })}
               >
-                <option value="draft">Draf</option>
-                <option value="review">Review</option>
-                <option value="published">Terbit</option>
+                <option value="draft">{t(d.statusDraft)}</option>
+                <option value="review">{t(d.statusReview)}</option>
+                <option value="published">{t(d.statusPublished)}</option>
               </select>
             </label>
             <div className="flex gap-3 sm:col-span-2">
               <Button type="submit" disabled={busy || !form.regionId}>
-                {busy ? "Menyimpan…" : "Simpan misi"}
+                {busy ? t(d.saving) : t(d.saveMissionCta)}
               </Button>
               <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-                Batal
+                {t(commonDict.cancel)}
               </Button>
             </div>
           </form>
@@ -253,8 +257,8 @@ export default function AdminMissionsPage() {
         ) : missions.length === 0 ? (
           <EmptyState
             icon={Gamepad2}
-            title="Belum ada misi"
-            description="Buat misi pertama, lalu tambahkan soal sebelum menerbitkannya."
+            title={t(d.missionsEmptyTitle)}
+            description={t(d.missionsEmptyDescription)}
           />
         ) : (
           <Card className="divide-y divide-border">
@@ -271,8 +275,8 @@ export default function AdminMissionsPage() {
                   <div className="min-w-0 flex-1">
                     <p className="font-medium">{mission.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      /{mission.slug} · {region ?? "Tanpa wilayah"} ·{" "}
-                      {mission.questionCount} soal · {mission.xp_reward} XP
+                      /{mission.slug} · {region ?? t(d.noRegion)} ·{" "}
+                      {t(d.questionCount, { n: mission.questionCount })} · {mission.xp_reward} XP
                     </p>
                   </div>
                   <span
@@ -283,7 +287,7 @@ export default function AdminMissionsPage() {
                     {mission.status}
                   </span>
                   <Button asChild size="sm" variant="outline">
-                    <Link href={`/admin/missions/${mission.id}`}>Kelola soal</Link>
+                    <Link href={`/admin/missions/${mission.id}`}>{t(d.manageQuestionsCta)}</Link>
                   </Button>
                 </div>
               );

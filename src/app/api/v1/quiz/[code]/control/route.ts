@@ -3,6 +3,8 @@ import { createServiceClient } from "@/lib/supabase/service-role";
 import { requireAuth } from "@/lib/auth/session";
 import { withErrorHandling } from "@/lib/api/handler";
 import { parseJsonBody } from "@/lib/api/response";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 
 const controlSchema = z.object({
   action: z.enum(["start", "next", "finish"]),
@@ -13,6 +15,7 @@ export async function POST(
   { params }: { params: Promise<{ code: string }> }
 ) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const user = await requireAuth();
     const { code } = await params;
     const input = await parseJsonBody(request, controlSchema);
@@ -26,7 +29,7 @@ export async function POST(
 
     if (!session || session.host_id !== user.id) {
       return Response.json(
-        { success: false, error: "Hanya host yang dapat mengontrol kuis." },
+        { success: false, error: E.hostOnly[lang] },
         { status: 403 }
       );
     }

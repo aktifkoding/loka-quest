@@ -9,7 +9,8 @@ import { createClient } from "@/lib/supabase/client";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { LanguageToggle } from "@/components/layout/language-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
-import { dictionary, getLang, type Lang } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
+import { navDict as d } from "@/lib/i18n/dict/nav";
 import { cn } from "@/lib/utils";
 
 type NavUser = {
@@ -32,14 +33,10 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<NavUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [lang, setCurrentLang] = useState<Lang>("id");
+  const { lang, t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
-
-  useEffect(() => {
-    setCurrentLang(getLang());
-  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -110,7 +107,7 @@ export function Navbar() {
         <Link
           href="/"
           className="flex items-center gap-2.5 rounded-md"
-          aria-label="LokaQuest, ke beranda"
+          aria-label={t(d.toHomeAria)}
         >
           <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Gamepad2 className="size-5" aria-hidden="true" />
@@ -121,7 +118,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Utama">
+        <nav className="hidden items-center gap-1 md:flex" aria-label={t(d.primaryNavAria)}>
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -136,7 +133,7 @@ export function Navbar() {
               )}
             >
               <link.icon className="size-4" aria-hidden="true" />
-              {dictionary[lang][link.key]}
+              {t(d[link.key])}
             </Link>
           ))}
         </nav>
@@ -158,11 +155,11 @@ export function Navbar() {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/auth/login">
                   <LogIn className="size-4" aria-hidden="true" />
-                  {dictionary[lang].login}
+                  {t(d.login)}
                 </Link>
               </Button>
               <Button size="sm" asChild>
-                <Link href="/auth/register">{dictionary[lang].register}</Link>
+                <Link href="/auth/register">{t(d.register)}</Link>
               </Button>
             </>
           )}
@@ -174,7 +171,9 @@ export function Navbar() {
           onClick={() => setIsOpen(!isOpen)}
           aria-expanded={isOpen}
           aria-controls="mobile-nav"
-          aria-label={isOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+          aria-label={
+            isOpen ? t(d.closeMenuAria) : t(d.openMenuAria)
+          }
         >
           {isOpen ? (
             <X className="size-5" aria-hidden="true" />
@@ -190,7 +189,7 @@ export function Navbar() {
           id="mobile-nav"
           className="animate-slide-up mx-auto mt-2 max-w-7xl origin-top rounded-2xl border border-border/80 bg-background/95 p-3 shadow-raised backdrop-blur-md md:hidden"
         >
-          <nav className="flex flex-col" aria-label="Utama mobile">
+          <nav className="flex flex-col" aria-label={t(d.primaryNavMobileAria)}>
             {navLinks.map((link, index) => (
               <Link
                 key={link.href}
@@ -206,12 +205,12 @@ export function Navbar() {
                 onClick={() => setIsOpen(false)}
               >
                 <link.icon className="size-5" aria-hidden="true" />
-                {dictionary[lang][link.key]}
+                {t(d[link.key])}
               </Link>
             ))}
           </nav>
           <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-            <p className="px-1 text-sm text-muted-foreground">Tampilan</p>
+            <p className="px-1 text-sm text-muted-foreground">{t(d.appearance)}</p>
             <ThemeToggle />
           </div>
           <div className="mt-3 border-t border-border pt-3">
@@ -229,16 +228,16 @@ export function Navbar() {
                   onClick={handleLogout}
                 >
                   <LogOut className="size-4" aria-hidden="true" />
-                  {dictionary[lang].logout}
+                  {t(d.logout)}
                 </Button>
               </div>
             ) : (
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" asChild>
-                  <Link href="/auth/login">{dictionary[lang].login}</Link>
+                  <Link href="/auth/login">{t(d.login)}</Link>
                 </Button>
                 <Button className="flex-1" asChild>
-                  <Link href="/auth/register">{dictionary[lang].register}</Link>
+                  <Link href="/auth/register">{t(d.register)}</Link>
                 </Button>
               </div>
             )}

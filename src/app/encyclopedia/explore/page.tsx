@@ -1,12 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { WikimediaImage } from "@/components/wikimedia-image";
 import { createClient } from "@/lib/supabase/server";
 import { BookOpen, MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
+import { getServerI18n } from "@/lib/i18n/server";
+import { commonDict } from "@/lib/i18n/dict/common";
+import { encyclopediaDict as d } from "@/lib/i18n/dict/encyclopedia";
 
-export const metadata = { title: "Jelajahi Ensiklopedia" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t(d.exploreMetaTitle) };
+}
 
 type ArticleCard = {
   id: string;
@@ -24,6 +31,7 @@ export default async function ExploreEncyclopediaPage({
   searchParams: Promise<{ region?: string; category?: string }>;
 }) {
   const { region, category } = await searchParams;
+  const { t } = await getServerI18n();
   const supabase = await createClient();
 
   let filterIds: string[] | null = null;
@@ -94,10 +102,10 @@ export default async function ExploreEncyclopediaPage({
     <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
       <PageHeader
         icon={BookOpen}
-        title="Jelajahi pengetahuan budaya"
-        description="Artikel yang telah dipublikasikan melalui proses tinjauan editorial."
+        title={t(d.explorePageTitle)}
+        description={t(d.explorePageDescription)}
         backHref="/encyclopedia"
-        backLabel="Ensiklopedia"
+        backLabel={t(d.backToEncyclopedia)}
       />
 
       {filterLabel && (
@@ -109,7 +117,7 @@ export default async function ExploreEncyclopediaPage({
             href="/encyclopedia/explore"
             className="text-muted-foreground underline-offset-4 hover:underline"
           >
-            Hapus filter
+            {t(commonDict.clearFilters)}
           </Link>
         </div>
       )}
@@ -118,17 +126,17 @@ export default async function ExploreEncyclopediaPage({
         <div className="mt-10">
           <EmptyState
             icon={BookOpen}
-            title="Artikel belum dapat dimuat"
-            description="Silakan coba kembali nanti."
+            title={t(d.articlesErrorTitle)}
+            description={t(d.articlesErrorDescription)}
           />
         </div>
       ) : !articles.length ? (
         <div className="mt-10">
           <EmptyState
             icon={BookOpen}
-            title={filterLabel ? "Belum ada artikel untuk filter ini" : "Koleksi sedang disiapkan"}
-            description="Artikel ensiklopedia akan muncul setelah ditinjau dan diterbitkan. Konten lama tetap tersedia di Jelajahi Nusantara."
-            action={{ label: "Jelajahi wilayah", href: "/explore" }}
+            title={filterLabel ? t(d.emptyFilteredTitle) : t(d.emptyCollectionTitle)}
+            description={t(d.emptyCollectionDescription)}
+            action={{ label: t(d.exploreRegionsCta), href: "/explore" }}
           />
         </div>
       ) : (
@@ -170,7 +178,7 @@ export default async function ExploreEncyclopediaPage({
                     {article.encyclopedia_article_regions
                       .map((row) => row.region?.name)
                       .filter(Boolean)
-                      .join(", ") || "Wilayah belum ditentukan"}
+                      .join(", ") || t(d.regionFallback)}
                   </p>
                 </div>
               </Card>

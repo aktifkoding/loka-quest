@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CountUp } from "@/components/ui/count-up";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n, type Localized } from "@/lib/i18n";
+import { playerDict } from "@/lib/i18n/dict/player";
 import { ArrowLeft, Loader2, Save, Zap, Trophy, ShieldCheck, Gem, BarChart3 } from "lucide-react";
 
 interface Profile {
@@ -20,13 +22,14 @@ interface Profile {
   level: number;
 }
 
-const roleLabel: Record<string, string> = {
-  player: "Pemain",
-  educator: "Pendidik",
-  admin: "Admin",
+const roleLabels: Record<string, Localized> = {
+  player: playerDict.rolePlayer,
+  educator: playerDict.roleEducator,
+  admin: playerDict.roleAdmin,
 };
 
 export default function ProfilePage() {
+  const { t } = useI18n();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(true);
@@ -41,7 +44,7 @@ export default function ProfilePage() {
         setProfile(json.data);
         setName(json.data.full_name ?? "");
       })
-      .catch(() => setMessage({ type: "error", text: "Gagal memuat profil." }))
+      .catch(() => setMessage({ type: "error", text: t(playerDict.loadProfileError) }))
       .finally(() => setLoading(false));
   }, []);
 
@@ -55,13 +58,13 @@ export default function ProfilePage() {
         body: JSON.stringify({ full_name: name }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Gagal menyimpan");
+      if (!res.ok) throw new Error(json.error || t(playerDict.saveError));
       setProfile((p) => (p ? { ...p, full_name: json.data.full_name } : p));
-      setMessage({ type: "ok", text: "Nama tampilan diperbarui." });
+      setMessage({ type: "ok", text: t(playerDict.profileSaved) });
     } catch (err) {
       setMessage({
         type: "error",
-        text: err instanceof Error ? err.message : "Gagal menyimpan",
+        text: err instanceof Error ? err.message : t(playerDict.saveError),
       });
     } finally {
       setSaving(false);
@@ -79,13 +82,15 @@ export default function ProfilePage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/player/dashboard">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Dasbor
+          {t(playerDict.dashboard)}
         </Link>
       </Button>
 
-      <h1 className="animate-fade-up font-display text-4xl font-semibold tracking-tight">Profil</h1>
+      <h1 className="animate-fade-up font-display text-4xl font-semibold tracking-tight">
+        {t(playerDict.profileTitle)}
+      </h1>
       <p className="animate-fade-up mt-2 text-muted-foreground" style={{ animationDelay: "60ms" }}>
-        Kelola identitas tampilanmu di LokaQuest.
+        {t(playerDict.profileIntro)}
       </p>
 
       {loading ? (
@@ -102,21 +107,21 @@ export default function ProfilePage() {
                 <p className="mt-2 font-display text-2xl font-semibold tabular-nums">
                   <CountUp value={profile.xp} />
                 </p>
-                <p className="text-[12px] text-muted-foreground">Total XP</p>
+                <p className="text-[12px] text-muted-foreground">{t(playerDict.statsTotalXp)}</p>
               </div>
               <div className="group cursor-default">
                 <Trophy className="mx-auto size-5 text-muted-foreground transition-transform duration-200 group-hover:scale-110" aria-hidden="true" />
                 <p className="mt-2 font-display text-2xl font-semibold tabular-nums">
                   <CountUp value={profile.level} />
                 </p>
-                <p className="text-[12px] text-muted-foreground">Level</p>
+                <p className="text-[12px] text-muted-foreground">{t(playerDict.statsLevel)}</p>
               </div>
               <div className="group cursor-default">
                 <ShieldCheck className="mx-auto size-5 text-muted-foreground transition-transform duration-200 group-hover:scale-110" aria-hidden="true" />
                 <p className="mt-2 font-display text-2xl font-semibold">
-                  {roleLabel[profile.role] ?? profile.role}
+                  {roleLabels[profile.role] ? t(roleLabels[profile.role]) : profile.role}
                 </p>
-                <p className="text-[12px] text-muted-foreground">Peran</p>
+                <p className="text-[12px] text-muted-foreground">{t(playerDict.statsRole)}</p>
               </div>
             </div>
           </Card>
@@ -136,16 +141,16 @@ export default function ProfilePage() {
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="fullName">Nama tampilan</Label>
+                <Label htmlFor="fullName">{t(playerDict.displayNameLabel)}</Label>
                 <Input
                   id="fullName"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Nama yang terlihat di leaderboard"
+                  placeholder={t(playerDict.displayNamePlaceholder)}
                   maxLength={120}
                 />
                 <p className="text-[12px] text-muted-foreground">
-                  Email ({profile.email}) tidak bisa diubah.
+                  {t(playerDict.emailLockedNote, { email: profile.email })}
                 </p>
               </div>
               <Button onClick={save} disabled={saving || name.trim().length < 2}>
@@ -154,29 +159,29 @@ export default function ProfilePage() {
                 ) : (
                   <Save className="size-4" aria-hidden="true" />
                 )}
-                Simpan perubahan
+                {t(playerDict.saveChanges)}
               </Button>
             </div>
           </Card>
 
           <Card>
             <div className="p-6">
-              <h2 className="font-display text-lg font-semibold">Pintasan</h2>
+              <h2 className="font-display text-lg font-semibold">{t(playerDict.shortcutsTitle)}</h2>
               <div className="mt-4 grid gap-2 sm:grid-cols-3">
                 <Button variant="outline" asChild>
                   <Link href="/player/collection">
                     <Gem className="size-4" aria-hidden="true" />
-                    Koleksi
+                    {t(playerDict.shortcutCollection)}
                   </Link>
                 </Button>
                 <Button variant="outline" asChild>
                   <Link href="/leaderboard">
                     <BarChart3 className="size-4" aria-hidden="true" />
-                    Leaderboard
+                    {t(playerDict.quickLeaderboard)}
                   </Link>
                 </Button>
                 <Button variant="destructive" onClick={signOut}>
-                  Keluar
+                  {t(playerDict.signOut)}
                 </Button>
               </div>
             </div>

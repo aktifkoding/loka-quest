@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n";
+import { adminDict as d } from "@/lib/i18n/dict/admin";
 import { Loader2 } from "lucide-react";
 
 const ROLES = ["player", "educator", "admin"] as const;
@@ -13,6 +15,7 @@ export function RoleSelect({
   userId: string;
   currentRole: string;
 }) {
+  const { t } = useI18n();
   const [role, setRole] = useState(currentRole);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
@@ -44,7 +47,7 @@ export function RoleSelect({
         value={role}
         onChange={(e) => void change(e.target.value)}
         disabled={saving}
-        aria-label="Ubah peran pengguna"
+        aria-label={t(d.changeRoleAria)}
         className="h-8 rounded-md border border-input bg-card px-2 text-[13px] capitalize outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/50"
       >
         {ROLES.map((r) => (

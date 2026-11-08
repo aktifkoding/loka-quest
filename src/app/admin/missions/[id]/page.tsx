@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useI18n } from "@/lib/i18n";
+import { adminDict as d } from "@/lib/i18n/dict/admin";
+import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -142,6 +145,7 @@ function formToPayload(form: typeof emptyQuestion) {
 export default function AdminMissionDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
+  const { t } = useI18n();
   const [mission, setMission] = useState<Mission | null>(null);
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
@@ -158,15 +162,15 @@ export default function AdminMissionDetailPage() {
       ]);
       const missionJson = await missionRes.json();
       const regionJson = await regionRes.json();
-      if (!missionRes.ok) throw new Error(missionJson.error || "Gagal memuat misi");
+      if (!missionRes.ok) throw new Error(missionJson.error || t(d.loadMissionsFailed));
       setMission(missionJson.data);
       setRegions(regionJson.data ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      setError(err instanceof Error ? err.message : t(commonDict.errorGeneric));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     void load();
@@ -194,10 +198,10 @@ export default function AdminMissionDetailPage() {
     });
     const json = await response.json();
     if (!response.ok) {
-      setError(json.error || "Gagal menyimpan misi");
+      setError(json.error || t(d.saveMissionFailed));
       return;
     }
-    setMessage("Misi tersimpan.");
+    setMessage(t(d.missionSavedToast));
     await load();
   }
 
@@ -216,27 +220,27 @@ export default function AdminMissionDetailPage() {
     });
     const json = await response.json();
     if (!response.ok) {
-      setError(json.error || "Gagal menyimpan soal");
+      setError(json.error || t(d.saveQuestionFailed));
       return;
     }
     setQuestion({ ...emptyQuestion });
     setShowQuestion(false);
-    setMessage(editing ? "Soal diperbarui." : "Soal ditambahkan.");
+    setMessage(editing ? t(d.questionUpdatedToast) : t(d.questionAddedToast));
     await load();
   }
 
   async function deleteQuestion(questionId: string) {
-    if (!confirm("Hapus soal ini?")) return;
+    if (!confirm(t(d.questionDeleteConfirm))) return;
     const response = await fetch(
       `/api/v1/admin/missions/${id}/questions/${questionId}`,
       { method: "DELETE" }
     );
     if (!response.ok) {
       const json = await response.json();
-      setError(json.error || "Gagal menghapus soal");
+      setError(json.error || t(d.deleteQuestionFailed));
       return;
     }
-    setMessage("Soal dihapus.");
+    setMessage(t(d.questionDeletedToast));
     await load();
   }
 
@@ -244,15 +248,15 @@ export default function AdminMissionDetailPage() {
     "mt-1 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   if (loading) {
-    return <p className="p-10 text-center text-sm text-muted-foreground">Memuat…</p>;
+    return <p className="p-10 text-center text-sm text-muted-foreground">{t(commonDict.loadingShort)}</p>;
   }
 
   if (!mission) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <p className="font-medium">Misi tidak ditemukan.</p>
+        <p className="font-medium">{t(d.missionNotFound)}</p>
         <Button asChild variant="outline" className="mt-4">
-          <Link href="/admin/missions">Kembali</Link>
+          <Link href="/admin/missions">{t(commonDict.back)}</Link>
         </Button>
       </div>
     );
@@ -263,7 +267,7 @@ export default function AdminMissionDetailPage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/admin/missions">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Daftar misi
+          {t(d.backToMissions)}
         </Link>
       </Button>
 
@@ -288,7 +292,7 @@ export default function AdminMissionDetailPage() {
       <Card className="mt-6 p-6">
         <form onSubmit={saveMission} className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-medium">
-            Judul
+            {t(d.titleLabel)}
             <Input
               className={inputClass}
               value={mission.title}
@@ -296,7 +300,7 @@ export default function AdminMissionDetailPage() {
             />
           </label>
           <label className="block text-sm font-medium">
-            Slug
+            {t(d.slugLabel)}
             <Input
               className={inputClass}
               value={mission.slug}
@@ -304,7 +308,7 @@ export default function AdminMissionDetailPage() {
             />
           </label>
           <label className="block text-sm font-medium sm:col-span-2">
-            Deskripsi
+            {t(d.descriptionLabel)}
             <textarea
               className={inputClass}
               rows={3}
@@ -315,7 +319,7 @@ export default function AdminMissionDetailPage() {
             />
           </label>
           <label className="block text-sm font-medium">
-            Wilayah
+            {t(d.regionLabel)}
             <select
               className={inputClass}
               value={mission.region_id}
@@ -331,20 +335,20 @@ export default function AdminMissionDetailPage() {
             </select>
           </label>
           <label className="block text-sm font-medium">
-            Status
+            {t(d.statusLabel)}
             <select
               className={inputClass}
               value={mission.status}
               onChange={(event) => setMission({ ...mission, status: event.target.value })}
             >
-              <option value="draft">Draf</option>
-              <option value="review">Review</option>
-              <option value="published">Terbit</option>
-              <option value="archived">Arsip</option>
+              <option value="draft">{t(d.statusDraft)}</option>
+              <option value="review">{t(d.statusReview)}</option>
+              <option value="published">{t(d.statusPublished)}</option>
+              <option value="archived">{t(d.statusArchived)}</option>
             </select>
           </label>
           <label className="block text-sm font-medium">
-            Kesulitan
+            {t(d.difficultyLabel)}
             <select
               className={inputClass}
               value={mission.difficulty}
@@ -352,9 +356,9 @@ export default function AdminMissionDetailPage() {
                 setMission({ ...mission, difficulty: event.target.value })
               }
             >
-              <option value="beginner">Pemula</option>
-              <option value="intermediate">Menengah</option>
-              <option value="advanced">Mahir</option>
+              <option value="beginner">{t(d.difficultyBeginner)}</option>
+              <option value="intermediate">{t(d.difficultyIntermediate)}</option>
+              <option value="advanced">{t(d.difficultyAdvanced)}</option>
             </select>
           </label>
           <label className="block text-sm font-medium">
@@ -373,7 +377,7 @@ export default function AdminMissionDetailPage() {
           <div className="sm:col-span-2">
             <Button type="submit">
               <Save className="size-4" aria-hidden="true" />
-              Simpan misi
+              {t(d.saveMissionCta)}
             </Button>
           </div>
         </form>
@@ -383,10 +387,10 @@ export default function AdminMissionDetailPage() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="font-display text-2xl font-semibold">
-              Soal ({mission.questions.length})
+              {t(d.questionsHeading, { n: mission.questions.length })}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Soal hanya dapat dimainkan setelah misi berstatus terbit.
+              {t(d.questionsNote)}
             </p>
           </div>
           <Button
@@ -396,7 +400,7 @@ export default function AdminMissionDetailPage() {
             }}
           >
             <Plus className="size-4" aria-hidden="true" />
-            Soal baru
+            {t(d.newQuestionCta)}
           </Button>
         </div>
 
@@ -404,7 +408,7 @@ export default function AdminMissionDetailPage() {
           <Card className="mt-4 p-6">
             <form onSubmit={saveQuestion} className="grid gap-4">
               <label className="block text-sm font-medium">
-                Tipe soal
+                {t(d.questionTypeLabel)}
                 <select
                   className={inputClass}
                   value={question.questionType}
@@ -412,14 +416,14 @@ export default function AdminMissionDetailPage() {
                     setQuestion({ ...question, questionType: event.target.value })
                   }
                 >
-                  <option value="multiple_choice">Pilihan ganda</option>
-                  <option value="matching">Mencocokkan</option>
-                  <option value="sequencing">Urutan</option>
-                  <option value="identification">Identifikasi</option>
+                  <option value="multiple_choice">{t(d.typeMultipleChoice)}</option>
+                  <option value="matching">{t(d.typeMatching)}</option>
+                  <option value="sequencing">{t(d.typeSequencing)}</option>
+                  <option value="identification">{t(d.typeIdentification)}</option>
                 </select>
               </label>
               <label className="block text-sm font-medium">
-                Pertanyaan
+                {t(d.promptLabel)}
                 <textarea
                   className={inputClass}
                   rows={2}
@@ -432,12 +436,12 @@ export default function AdminMissionDetailPage() {
               </label>
               <label className="block text-sm font-medium">
                 {question.questionType === "matching"
-                  ? "Pasangan (satu per baris, kiri=kanan)"
+                  ? t(d.optionsMatching)
                   : question.questionType === "sequencing"
-                    ? "Peristiwa (satu per baris)"
+                    ? t(d.optionsSequencing)
                     : question.questionType === "identification"
-                      ? "Pilihan instrumen (satu per baris)"
-                      : "Pilihan jawaban (satu per baris)"}
+                      ? t(d.optionsIdentification)
+                      : t(d.optionsChoices)}
                 <textarea
                   className={inputClass}
                   rows={4}
@@ -450,10 +454,10 @@ export default function AdminMissionDetailPage() {
               </label>
               <label className="block text-sm font-medium">
                 {question.questionType === "sequencing"
-                  ? "Urutan benar (satu per baris)"
+                  ? t(d.correctSequencing)
                   : question.questionType === "matching"
-                    ? "Kunci pasangan (satu per baris, kiri=kanan)"
-                    : "Jawaban benar"}
+                    ? t(d.correctMatching)
+                    : t(d.correctDefault)}
                 <textarea
                   className={inputClass}
                   rows={question.questionType === "sequencing" || question.questionType === "matching" ? 4 : 1}
@@ -465,7 +469,7 @@ export default function AdminMissionDetailPage() {
                 />
               </label>
               <label className="block text-sm font-medium">
-                Pembahasan (opsional)
+                {t(d.explanationLabel)}
                 <textarea
                   className={inputClass}
                   rows={2}
@@ -476,7 +480,7 @@ export default function AdminMissionDetailPage() {
                 />
               </label>
               <label className="block max-w-[160px] text-sm font-medium">
-                Urutan
+                {t(d.orderLabel)}
                 <Input
                   className={inputClass}
                   type="number"
@@ -488,7 +492,7 @@ export default function AdminMissionDetailPage() {
                 />
               </label>
               <div className="flex gap-3">
-                <Button type="submit">Simpan soal</Button>
+                <Button type="submit">{t(d.saveQuestionCta)}</Button>
                 <Button
                   type="button"
                   variant="outline"
@@ -497,7 +501,7 @@ export default function AdminMissionDetailPage() {
                     setQuestion({ ...emptyQuestion });
                   }}
                 >
-                  Batal
+                  {t(commonDict.cancel)}
                 </Button>
               </div>
             </form>
@@ -507,7 +511,7 @@ export default function AdminMissionDetailPage() {
         <div className="mt-4 space-y-3">
           {mission.questions.length === 0 ? (
             <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-              Belum ada soal. Tambahkan minimal satu soal sebelum menerbitkan misi.
+              {t(d.emptyQuestions)}
             </p>
           ) : (
             mission.questions.map((item, index) => (
@@ -518,7 +522,7 @@ export default function AdminMissionDetailPage() {
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{item.prompt}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {item.question_type} · urutan {item.sort_order}
+                    {item.question_type} · {t(d.orderSuffix, { n: item.sort_order })}
                   </p>
                 </div>
                 <Button
@@ -529,13 +533,13 @@ export default function AdminMissionDetailPage() {
                     setShowQuestion(true);
                   }}
                 >
-                  Sunting
+                  {t(d.editCta)}
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={() => deleteQuestion(item.id)}
-                  aria-label="Hapus soal"
+                  aria-label={t(d.deleteQuestionAria)}
                 >
                   <Trash2 className="size-4" aria-hidden="true" />
                 </Button>

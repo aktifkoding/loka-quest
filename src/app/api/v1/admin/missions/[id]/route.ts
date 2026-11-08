@@ -5,6 +5,8 @@ import { withErrorHandling } from "@/lib/api/handler";
 import { parseJsonBody } from "@/lib/api/response";
 import { adminMissionSchema } from "@/lib/validation/admin";
 import { auditLog } from "@/lib/audit";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 
 export async function GET(
   _request: Request,
@@ -49,6 +51,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const user = await requireRole(["admin", "educator"]);
     const { id } = await params;
     const input = await parseJsonBody(request, adminMissionSchema);
@@ -74,7 +77,7 @@ export async function PATCH(
     if (error) {
       if (error.code === "23505") {
         return Response.json(
-          { success: false, error: "Slug misi sudah dipakai." },
+          { success: false, error: E.missionSlugTaken[lang] },
           { status: 409 }
         );
       }

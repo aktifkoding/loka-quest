@@ -5,8 +5,8 @@ import Link from "next/link";
 import { ChevronDown, LogOut, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { dictionary, getLang, type Lang } from "@/lib/i18n";
-import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n";
+import { navDict as d } from "@/lib/i18n/dict/nav";
 import { cn } from "@/lib/utils";
 
 type NavUser = {
@@ -24,8 +24,7 @@ const itemClass =
  */
 export function UserMenu({ user }: { user: NavUser }) {
   const router = useRouter();
-  const [lang, setLang] = useState<Lang>("id");
-  useEffect(() => setLang(getLang()), []);
+  const { t } = useI18n();
 
   const supabase = createClient();
   const initial = (user.fullName || user.email).trim().charAt(0).toUpperCase();
@@ -66,7 +65,7 @@ export function UserMenu({ user }: { user: NavUser }) {
         >
           <div className="border-b border-border/70 px-3 pb-2.5 pt-2">
             <p className="truncate text-sm font-semibold">
-              {user.fullName || "Pengguna"}
+              {user.fullName || t(d.userFallback)}
             </p>
             <p className="truncate text-xs text-muted-foreground">{user.email}</p>
           </div>
@@ -74,7 +73,7 @@ export function UserMenu({ user }: { user: NavUser }) {
             <DropdownMenu.Item asChild>
               <Link href="/player/dashboard" className={itemClass}>
                 <Trophy className="size-4 text-muted-foreground" aria-hidden="true" />
-                {dictionary[lang].dashboard}
+                {t(d.dashboard)}
               </Link>
             </DropdownMenu.Item>
             <DropdownMenu.Separator className="my-1.5 h-px bg-border/70" />
@@ -83,7 +82,7 @@ export function UserMenu({ user }: { user: NavUser }) {
               onSelect={handleLogout}
             >
               <LogOut className="size-4" aria-hidden="true" />
-              {dictionary[lang].logout}
+              {t(d.logout)}
             </DropdownMenu.Item>
           </div>
         </DropdownMenu.Content>

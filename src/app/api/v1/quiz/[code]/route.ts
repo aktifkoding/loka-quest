@@ -1,12 +1,15 @@
 import { createServiceClient } from "@/lib/supabase/service-role";
 import { requireAuth } from "@/lib/auth/session";
 import { withErrorHandling } from "@/lib/api/handler";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ code: string }> }
 ) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const user = await requireAuth();
     const { code } = await params;
     const service = createServiceClient();
@@ -21,7 +24,7 @@ export async function GET(
 
     if (!session) {
       return Response.json(
-        { success: false, error: "Sesi kuis tidak ditemukan." },
+        { success: false, error: E.quizSessionNotFound[lang] },
         { status: 404 }
       );
     }
@@ -46,7 +49,7 @@ export async function GET(
 
     if (!isHost && !isParticipant) {
       return Response.json(
-        { success: false, error: "Anda belum bergabung ke sesi ini." },
+        { success: false, error: E.notJoined[lang] },
         { status: 403 }
       );
     }

@@ -1,8 +1,10 @@
 "use client";
 
 // Fallback terakhir saat layout root itu sendiri gagal — membawa html/body
-// sendiri karena tidak dirender di dalam layout manapun.
-import { useEffect } from "react";
+// sendiri karena tidak dirender di dalam layout manapun (di luar I18nProvider).
+import { useEffect, useState } from "react";
+import { getClientLang, type Lang } from "@/lib/i18n";
+import { shellDict as d } from "@/lib/i18n/dict/shell";
 
 export default function GlobalError({
   error,
@@ -11,12 +13,20 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const [lang, setLang] = useState<Lang>("id");
+
+  useEffect(() => {
+    setLang(getClientLang());
+  }, []);
+
   useEffect(() => {
     console.error(error);
   }, [error]);
 
+  const t = (value: { id: string; en: string }) => value[lang];
+
   return (
-    <html lang="id">
+    <html lang={lang} suppressHydrationWarning>
       <body
         style={{
           margin: 0,
@@ -33,11 +43,10 @@ export default function GlobalError({
       >
         <main style={{ maxWidth: 480 }}>
           <h1 style={{ fontSize: 28, fontWeight: 600, margin: "0 0 12px" }}>
-            Terjadi gangguan
+            {t(d.globalErrorTitle)}
           </h1>
           <p style={{ color: "#5a5f76", lineHeight: 1.6, margin: "0 0 24px" }}>
-            LokaQuest tidak dapat dimuat sekarang. Muat ulang halaman untuk
-            mencoba lagi — progres belajarmu tersimpan aman.
+            {t(d.globalErrorBody)}
           </p>
           <button
             onClick={reset}
@@ -52,7 +61,7 @@ export default function GlobalError({
               cursor: "pointer",
             }}
           >
-            Muat ulang
+            {t(d.globalErrorReload)}
           </button>
         </main>
       </body>

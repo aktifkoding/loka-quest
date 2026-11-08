@@ -2,25 +2,35 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/session";
+import { formatDate, type Localized } from "@/lib/i18n";
+import { getServerI18n } from "@/lib/i18n/server";
+import { playerDict } from "@/lib/i18n/dict/player";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ArrowLeft, Gem, Gamepad2 } from "lucide-react";
 
-const rarityStyle: Record<string, { label: string; ring: string; badge: string; gem: string }> = {
-  common: { label: "Umum", ring: "border-border", badge: "bg-muted text-muted-foreground", gem: "bg-secondary text-muted-foreground" },
-  uncommon: { label: "Tak Biasa", ring: "border-primary/40", badge: "bg-primary/10 text-primary", gem: "bg-primary/10 text-primary" },
-  rare: { label: "Langka", ring: "border-gold/50", badge: "bg-gold/15 text-gold", gem: "bg-gold/12 text-gold" },
+const rarityStyle: Record<string, { ring: string; badge: string; gem: string }> = {
+  common: { ring: "border-border", badge: "bg-muted text-muted-foreground", gem: "bg-secondary text-muted-foreground" },
+  uncommon: { ring: "border-primary/40", badge: "bg-primary/10 text-primary", gem: "bg-primary/10 text-primary" },
+  rare: { ring: "border-gold/50", badge: "bg-gold/15 text-gold", gem: "bg-gold/12 text-gold" },
   legendary: {
-    label: "Legendaris",
     ring: "glow-gold border-gold",
     badge: "bg-gold text-black",
     gem: "bg-gold/15 text-gold",
   },
 };
 
+const rarityLabels: Record<string, Localized> = {
+  common: playerDict.rarityCommon,
+  uncommon: playerDict.rarityUncommon,
+  rare: playerDict.rarityRare,
+  legendary: playerDict.rarityLegendary,
+};
+
 export default async function CollectionPage() {
   try {
+    const { lang, t } = await getServerI18n();
     const user = await requireAuth();
     const supabase = await createClient();
 
@@ -52,17 +62,17 @@ export default async function CollectionPage() {
         <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
           <Link href="/player/dashboard">
             <ArrowLeft className="size-4" aria-hidden="true" />
-            Dasbor
+            {t(playerDict.dashboard)}
           </Link>
         </Button>
 
         <header>
           <h1 className="font-display text-4xl font-semibold tracking-tight">
-            Koleksi artefak
+            {t(playerDict.collectionTitle)}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            <span className="tabular-nums">{artifacts.length}</span> artefak budaya
-            dimiliki. Selesaikan misi per wilayah untuk melengkapinya.
+            <span className="tabular-nums">{artifacts.length}</span>{" "}
+            {t(playerDict.collectionIntroSuffix)}
           </p>
         </header>
 
@@ -70,14 +80,15 @@ export default async function CollectionPage() {
           {artifacts.length === 0 ? (
             <EmptyState
               icon={Gem}
-              title="Lemari masih kosong"
-              description="Setiap wilayah menyimpan satu artefak budaya. Selesaikan misi pertamamu untuk memperolehnya."
-              action={{ label: "Pilih misi", href: "/missions" }}
+              title={t(playerDict.emptyCollectionTitle)}
+              description={t(playerDict.emptyCollectionDesc)}
+              action={{ label: t(playerDict.pickMission), href: "/missions" }}
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {artifacts.map((a, i) => {
                 const style = rarityStyle[a?.rarity ?? ""] ?? rarityStyle.common;
+                const rarityLabel = rarityLabels[a?.rarity ?? ""] ?? playerDict.rarityCommon;
                 return (
                   <Card
                     key={a.id}
@@ -93,7 +104,7 @@ export default async function CollectionPage() {
                         <span
                           className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${style.badge}`}
                         >
-                          {style.label}
+                          {t(rarityLabel)}
                         </span>
                       </div>
                       <h2 className="mt-4 font-display text-lg font-semibold">{a.name}</h2>
@@ -101,11 +112,13 @@ export default async function CollectionPage() {
                         {a.description}
                       </p>
                       <p className="mt-3 border-t border-border pt-3 text-[12px] text-muted-foreground">
-                        {a.region?.name ?? "—"} · diperoleh{" "}
-                        {new Date(a.acquiredAt).toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
+                        {a.region?.name ?? "—"} ·{" "}
+                        {t(playerDict.acquiredOn, {
+                          date: formatDate(a.acquiredAt, lang, {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          }),
                         })}
                       </p>
                     </div>
@@ -122,10 +135,10 @@ export default async function CollectionPage() {
               <Gamepad2 className="size-5" aria-hidden="true" />
             </span>
             <p className="flex-1 text-sm text-muted-foreground">
-              3 artefak menanti di tiga wilayah budaya.
+              {t(playerDict.waitingArtifacts)}
             </p>
             <Button asChild size="sm">
-              <Link href="/missions">Main misi lain</Link>
+              <Link href="/missions">{t(playerDict.playAnotherCta)}</Link>
             </Button>
           </div>
         </Card>

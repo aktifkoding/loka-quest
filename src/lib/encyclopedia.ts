@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/session";
 import { ApiError } from "@/lib/api/response";
+import { getServerLang } from "@/lib/i18n/server";
+import { errorsDict } from "@/lib/i18n/dict/errors";
 
 export type EncyclopediaRole = "content_administrator" | "cultural_editor" | "reviewer" | "contributor";
 
@@ -9,7 +11,10 @@ export async function requireEncyclopediaRole(allowed: EncyclopediaRole[]) {
   if (user.role === "admin") return { ...user, editorRole: "content_administrator" as const };
   const supabase = await createClient();
   const { data, error } = await supabase.from("encyclopedia_editor_roles").select("editor_role").eq("profile_id", user.id).maybeSingle();
-  if (error || !data || !allowed.includes(data.editor_role as EncyclopediaRole)) throw new ApiError(403, "Anda tidak memiliki izin untuk tindakan ensiklopedia ini");
+  if (error || !data || !allowed.includes(data.editor_role as EncyclopediaRole)) {
+    const lang = await getServerLang();
+    throw new ApiError(403, errorsDict.encyclopediaForbidden[lang]);
+  }
   return { ...user, editorRole: data.editor_role as EncyclopediaRole };
 }
 

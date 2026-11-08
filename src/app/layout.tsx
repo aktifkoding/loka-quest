@@ -3,6 +3,9 @@ import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { ConsentBanner } from "@/components/layout/consent-banner";
+import { I18nProvider } from "@/lib/i18n";
+import { getServerI18n, getServerLang } from "@/lib/i18n/server";
+import { appMetaDict as meta, metaKeywords } from "@/lib/i18n/dict/common";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,31 +23,25 @@ const fraunces = Fraunces({
   weight: ["500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "LokaQuest — Jelajahi Nusantara, Hidupkan Warisan Budaya",
-    template: "%s · LokaQuest",
-  },
-  description:
-    "Aplikasi pembelajaran budaya Indonesia yang interaktif. Kenali batik, gamelan, dan wayang lewat misi permainan yang dinilai otomatis.",
-  keywords: [
-    "budaya Indonesia",
-    "edukasi",
-    "game edukatif",
-    "batik",
-    "gamelan",
-    "wayang",
-  ],
-  authors: [{ name: "LokaQuest Team" }],
-  openGraph: {
-    title: "LokaQuest — Jelajahi Nusantara",
-    description:
-      "Hidupkan warisan budaya Indonesia melalui permainan edukatif yang interaktif.",
-    type: "website",
-    locale: "id_ID",
-    siteName: "LokaQuest",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { lang, t } = await getServerI18n();
+  return {
+    title: {
+      default: t(meta.title),
+      template: "%s · LokaQuest",
+    },
+    description: t(meta.description),
+    keywords: metaKeywords[lang],
+    authors: [{ name: "LokaQuest Team" }],
+    openGraph: {
+      title: t(meta.ogTitle),
+      description: t(meta.ogDescription),
+      type: "website",
+      locale: lang === "en" ? "en_US" : "id_ID",
+      siteName: "LokaQuest",
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#faf7f0",
@@ -52,13 +49,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const lang = await getServerLang();
+
   return (
-    <html lang="id" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <head>
         {/* Terapkan tema tersimpan sebelum paint agar tidak ada kedipan terang/gelap */}
         <script
@@ -70,9 +69,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} font-sans antialiased`}
       >
-        <Navbar />
-        <main className="min-h-screen pt-24">{children}</main>
-        <ConsentBanner />
+        <I18nProvider lang={lang}>
+          <Navbar />
+          <main className="min-h-screen pt-24">{children}</main>
+          <ConsentBanner />
+        </I18nProvider>
       </body>
     </html>
   );

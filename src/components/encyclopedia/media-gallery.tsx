@@ -12,6 +12,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { getCulturalMediaForArticle } from "@/lib/cultural-media";
+import { useI18n } from "@/lib/i18n";
+import { encyclopediaDict as d } from "@/lib/i18n/dict/encyclopedia";
 
 interface DbMediaItem {
   id: string;
@@ -37,6 +39,7 @@ export function MediaGallery({
   articleTitle,
   dbMedia = [],
 }: MediaGalleryProps) {
+  const { t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<"all" | "video" | "audio" | "image">("all");
 
   const curatedMedia = getCulturalMediaForArticle(articleSlug);
@@ -99,13 +102,13 @@ export function MediaGallery({
         <div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <Sparkles className="size-3.5 text-gold" aria-hidden="true" />
-            Media & Dokumentasi Budaya
+            {t(d.mediaBadge)}
           </span>
           <h2 className="mt-2 font-display text-2xl font-bold md:text-3xl">
-            Galeri Audio, Video, dan Visual
+            {t(d.mediaHeading)}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Saksikan pertunjukan tari, dengarkan melodi instrumen, dan pelajari narasi budaya seputar {articleTitle}.
+            {t(d.mediaIntro, { title: articleTitle })}
           </p>
         </div>
 
@@ -119,7 +122,7 @@ export function MediaGallery({
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Semua ({allItems.length})
+            {t(d.mediaFilterAll, { x: allItems.length })}
           </button>
           {videoCount > 0 && (
             <button
@@ -157,7 +160,7 @@ export function MediaGallery({
               }`}
             >
               <ImageIcon className="size-3.5" aria-hidden="true" />
-              Gambar ({imageCount})
+              {t(d.mediaFilterImages)} ({imageCount})
             </button>
           )}
         </div>
@@ -185,7 +188,7 @@ export function MediaGallery({
                     src={item.url}
                     className="h-full w-full object-cover"
                   >
-                    Browser Anda tidak mendukung tag video.
+                    {t(d.videoUnsupported)}
                   </video>
                 )}
               </div>
@@ -200,7 +203,7 @@ export function MediaGallery({
                   </div>
                   <div>
                     <span className="rounded-md bg-primary/20 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-primary">
-                      {item.category === "musik" ? "Musik Tradisional" : "Narasi Budaya"}
+                      {item.category === "musik" ? t(d.mediaBadgeMusic) : t(d.mediaBadgeNarrative)}
                     </span>
                     <h3 className="mt-1 font-display text-lg font-bold leading-tight">
                       {item.title}
@@ -215,7 +218,7 @@ export function MediaGallery({
                     src={item.url}
                     className="w-full h-10"
                   >
-                    Browser Anda tidak mendukung pemutar audio.
+                    {t(d.audioUnsupported)}
                   </audio>
                 </div>
               </div>
@@ -240,7 +243,7 @@ export function MediaGallery({
               {item.mediaType !== "audio" && (
                 <div className="flex items-center gap-2">
                   <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    {item.mediaType === "video" ? "Dokumenter / Tari" : "Visual"}
+                    {item.mediaType === "video" ? t(d.mediaBadgeVideo) : t(d.mediaBadgeVisual)}
                   </span>
                   <h3 className="font-display text-base font-semibold text-foreground">
                     {item.title}

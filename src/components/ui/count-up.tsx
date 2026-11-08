@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useI18n, formatNumber } from "@/lib/i18n";
 
 /**
  * Animated number that counts up when scrolled into view.
@@ -20,6 +21,7 @@ export function CountUp({
   const ref = useRef<HTMLSpanElement>(null);
   const [display, setDisplay] = useState(0);
   const started = useRef(false);
+  const { lang } = useI18n();
 
   useEffect(() => {
     const node = ref.current;
@@ -53,7 +55,7 @@ export function CountUp({
 
   return (
     <span ref={ref} className={className}>
-      {display.toLocaleString("id-ID")}
+      {formatNumber(display, lang)}
       {suffix}
     </span>
   );

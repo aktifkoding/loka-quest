@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
+import { shellDict as d } from "@/lib/i18n/dict/shell";
 
 interface PronunciationButtonProps {
   word: string;
@@ -24,6 +26,7 @@ export function PronunciationButton({
   label,
 }: PronunciationButtonProps) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const { t } = useI18n();
 
   const speak = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -75,8 +78,8 @@ export function PronunciationButton({
           ? "border-primary bg-primary/10 text-primary shadow-sm"
           : "hover:border-primary/50"
       } ${className ?? ""}`}
-      title={`Dengarkan pelafalan "${word}"`}
-      aria-label={`Dengarkan pelafalan ${word}`}
+      title={t(d.pronounceTitle, { word })}
+      aria-label={t(d.pronounceAria, { word })}
     >
       <Volume2
         className={`size-4 transition-transform ${
@@ -89,7 +92,7 @@ export function PronunciationButton({
       ) : phonetic ? (
         <span className="font-mono text-xs text-muted-foreground">{phonetic}</span>
       ) : (
-        <span className="text-xs">Dengarkan</span>
+        <span className="text-xs">{t(d.pronounceListen)}</span>
       )}
     </Button>
   );

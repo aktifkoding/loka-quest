@@ -4,6 +4,8 @@ import { requireAuth } from "@/lib/auth/session";
 import { withErrorHandling } from "@/lib/api/handler";
 import { parseJsonBody } from "@/lib/api/response";
 import { isAnswerCorrect } from "@/lib/scoring";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 
 const answerSchema = z.object({
   questionId: z.string().uuid(),
@@ -15,6 +17,7 @@ export async function POST(
   { params }: { params: Promise<{ code: string }> }
 ) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const user = await requireAuth();
     const { code } = await params;
     const input = await parseJsonBody(request, answerSchema);
@@ -28,7 +31,7 @@ export async function POST(
 
     if (!session || session.status !== "active") {
       return Response.json(
-        { success: false, error: "Kuis belum berjalan." },
+        { success: false, error: E.quizNotRunning[lang] },
         { status: 409 }
       );
     }
@@ -42,7 +45,7 @@ export async function POST(
     const current = questions?.[session.current_index];
     if (!current || current.id !== input.questionId) {
       return Response.json(
-        { success: false, error: "Soal ini bukan soal yang sedang aktif." },
+        { success: false, error: E.notActiveQuestion[lang] },
         { status: 409 }
       );
     }
@@ -56,7 +59,7 @@ export async function POST(
 
     if (!participant) {
       return Response.json(
-        { success: false, error: "Anda belum bergabung ke sesi ini." },
+        { success: false, error: E.notJoined[lang] },
         { status: 403 }
       );
     }
@@ -71,7 +74,7 @@ export async function POST(
 
     if (existing) {
       return Response.json(
-        { success: false, error: "Jawaban sudah dikirim." },
+        { success: false, error: E.answerAlreadySent[lang] },
         { status: 409 }
       );
     }

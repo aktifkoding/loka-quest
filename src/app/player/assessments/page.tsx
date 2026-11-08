@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useI18n } from "@/lib/i18n";
+import { playerDict } from "@/lib/i18n/dict/player";
 import { BookOpen, CheckCircle2, ArrowRight, CircleDot } from "lucide-react";
 
 interface Assessment {
@@ -23,6 +25,7 @@ interface OwnResponse {
 }
 
 export default function AssessmentsPage() {
+  const { t } = useI18n();
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [responses, setResponses] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -36,7 +39,7 @@ export default function AssessmentsPage() {
           fetch("/api/v1/assessments/responses"),
         ]);
         const aData = await aRes.json();
-        if (!aRes.ok) throw new Error(aData.error || "Gagal memuat asesmen");
+        if (!aRes.ok) throw new Error(aData.error || t(playerDict.errorLoadAssessments));
         setAssessments(aData.data || []);
 
         if (rRes.ok) {
@@ -48,7 +51,7 @@ export default function AssessmentsPage() {
           setResponses(map);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+        setError(err instanceof Error ? err.message : t(playerDict.fallbackError));
       } finally {
         setLoading(false);
       }
@@ -60,17 +63,16 @@ export default function AssessmentsPage() {
     <div className="mx-auto max-w-4xl px-4 py-10 md:py-14">
       <header className="max-w-2xl">
         <h1 className="font-display text-4xl font-semibold tracking-tight">
-          Asesmen pembelajaran
+          {t(playerDict.assessmentsTitle)}
         </h1>
         <p className="mt-3 leading-relaxed text-muted-foreground">
-          Kerjakan pre-test sebelum bermain dan post-test setelahnya. Keduanya
-          dinilai di server untuk melihat perkembangan pemahamanmu.
+          {t(playerDict.assessmentsIntro)}
         </p>
       </header>
 
       <div className="mt-10">
         {loading ? (
-          <div className="space-y-4" aria-busy="true" aria-label="Memuat asesmen">
+          <div className="space-y-4" aria-busy="true" aria-label={t(playerDict.loadingAssessmentsAria)}>
             {[0, 1].map((i) => (
               <div key={i} className="rounded-xl border border-border/70 p-6">
                 <Skeleton className="h-6 w-2/3" />
@@ -81,12 +83,12 @@ export default function AssessmentsPage() {
             ))}
           </div>
         ) : error ? (
-          <EmptyState icon={BookOpen} title="Asesmen tidak bisa dimuat" description={error} />
+          <EmptyState icon={BookOpen} title={t(playerDict.assessmentsLoadFailedTitle)} description={error} />
         ) : assessments.length === 0 ? (
           <EmptyState
             icon={BookOpen}
-            title="Belum ada asesmen"
-            description="Asesmen pre-test dan post-test akan muncul di sini."
+            title={t(playerDict.emptyAssessmentsTitle)}
+            description={t(playerDict.emptyAssessmentsDesc)}
           />
         ) : (
           <div className="space-y-4">
@@ -111,24 +113,24 @@ export default function AssessmentsPage() {
                       {doneScore !== undefined ? (
                         <p className="flex shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-[13px] font-semibold text-primary tabular-nums">
                           <CheckCircle2 className="size-4" aria-hidden="true" />
-                          Selesai · {doneScore}/100
+                          {t(playerDict.doneBadge, { score: doneScore })}
                         </p>
                       ) : (
                         <p className="flex shrink-0 items-center gap-1.5 text-[13px] text-muted-foreground">
                           <CircleDot className="size-4" aria-hidden="true" />
-                          {assessment.questions.length} soal · belum dikerjakan
+                          {t(playerDict.notStartedBadge, { n: assessment.questions.length })}
                         </p>
                       )}
                     </div>
                     <div className="mt-5 flex items-center justify-between border-t border-border pt-5">
                       <p className="text-[13px] text-muted-foreground">
                         {assessment.assessment_type === "pre"
-                          ? "Kerjakan sebelum memainkan misi"
-                          : "Kerjakan setelah menyelesaikan misi"}
+                          ? t(playerDict.preHint)
+                          : t(playerDict.postHint)}
                       </p>
                       <Button asChild>
                         <Link href={`/player/assessments/${assessment.id}`}>
-                          {doneScore !== undefined ? "Kerjakan ulang" : "Mulai"}
+                          {doneScore !== undefined ? t(playerDict.retakeCta) : t(playerDict.startCta)}
                           <ArrowRight className="ml-1.5 size-4" aria-hidden="true" />
                         </Link>
                       </Button>

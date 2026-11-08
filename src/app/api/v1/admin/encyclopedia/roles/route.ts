@@ -4,6 +4,8 @@ import { requireRole } from "@/lib/auth/session";
 import { withErrorHandling } from "@/lib/api/handler";
 import { parseJsonBody } from "@/lib/api/response";
 import { auditLog } from "@/lib/audit";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 
 const roleSchema = z.object({
   email: z.string().trim().email(),
@@ -38,6 +40,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const admin = await requireRole(["admin"]);
     const input = await parseJsonBody(request, roleSchema);
     const service = createServiceClient();
@@ -50,7 +53,7 @@ export async function POST(request: Request) {
 
     if (!profile) {
       return Response.json(
-        { success: false, error: "Pengguna dengan email tersebut tidak ditemukan." },
+        { success: false, error: E.userEmailNotFound[lang] },
         { status: 404 }
       );
     }

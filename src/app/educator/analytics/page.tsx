@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service-role";
 import { requireRole } from "@/lib/auth/session";
+import { getServerI18n } from "@/lib/i18n/server";
+import { educatorDict as d } from "@/lib/i18n/dict/educator";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -11,6 +14,11 @@ import { CountUp } from "@/components/ui/count-up";
 import { ArrowLeft, Users, Target, TrendingUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t(d.analyticsMetaTitle) };
+}
 
 /**
  * Aggregate learning analytics for the educator's own groups.
@@ -21,6 +29,7 @@ export default async function EducatorAnalyticsPage() {
   try {
     const educator = await requireRole(["educator", "admin"]);
     const supabase = await createClient();
+    const { t } = await getServerI18n();
 
     const { data: groups } = await supabase
       .from("educator_groups")
@@ -102,17 +111,16 @@ export default async function EducatorAnalyticsPage() {
         <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
           <Link href="/educator/dashboard">
             <ArrowLeft className="size-4" aria-hidden="true" />
-            Dasbor pendidik
+            {t(d.backToDashboard)}
           </Link>
         </Button>
 
         <header>
           <h1 className="font-display text-4xl font-semibold tracking-tight">
-            Analisis pembelajaran
+            {t(d.analyticsTitle)}
           </h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            Agregat atas siswa di kelompok Anda. Angka individu tidak
-            ditampilkan — laporan ini untuk memantau tren kelompok.
+            {t(d.analyticsDescription)}
           </p>
         </header>
 
@@ -120,8 +128,8 @@ export default async function EducatorAnalyticsPage() {
           <div className="mt-10">
             <EmptyState
               icon={Users}
-              title="Belum ada data siswa"
-              description="Buat kelompok dan tambahkan siswa terlebih dahulu. Analisis muncul begitu siswa mulai bermain."
+              title={t(d.analyticsEmptyTitle)}
+              description={t(d.analyticsEmptyDescription)}
             />
           </div>
         ) : (
@@ -132,7 +140,7 @@ export default async function EducatorAnalyticsPage() {
                   <div className="p-6">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium text-muted-foreground">
-                        Siswa terpantau
+                        {t(d.monitoredStudents)}
                       </p>
                       <Users className="size-5 text-muted-foreground" aria-hidden="true" />
                     </div>
@@ -140,7 +148,7 @@ export default async function EducatorAnalyticsPage() {
                       <CountUp value={memberIds.length} />
                     </p>
                     <p className="mt-1 text-[13px] text-muted-foreground">
-                      di {groupList.length} kelompok
+                      {t(d.inGroups, { n: groupList.length })}
                     </p>
                   </div>
                 </Card>
@@ -151,7 +159,7 @@ export default async function EducatorAnalyticsPage() {
                   <div className="p-6">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium text-muted-foreground">
-                        Rata-rata nilai misi
+                        {t(d.avgMissionScore)}
                       </p>
                       <Target className="size-5 text-muted-foreground" aria-hidden="true" />
                     </div>
@@ -159,7 +167,7 @@ export default async function EducatorAnalyticsPage() {
                       <CountUp value={attemptStats.avgScore} suffix="/100" />
                     </p>
                     <p className="mt-1 text-[13px] text-muted-foreground">
-                      dari {attemptStats.total} percobaan
+                      {t(d.fromAttempts, { n: attemptStats.total })}
                     </p>
                   </div>
                 </Card>
@@ -171,18 +179,17 @@ export default async function EducatorAnalyticsPage() {
               <div className="p-6">
                 <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
                   <TrendingUp className="size-5 text-primary" aria-hidden="true" />
-                  Perkembangan pre → post test
+                  {t(d.prePostHeading)}
                 </h2>
                 {assessmentStats.pre === null || assessmentStats.post === null ? (
                   <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                    Menunggu siswa menyelesaikan pre-test dan post-test. Delta
-                    muncul di sini begitu keduanya tersedia.
+                    {t(d.waitingAssessments)}
                   </p>
                 ) : (
                   <div className="mt-5">
                     <div className="grid grid-cols-3 items-center gap-4 text-center">
                       <div>
-                        <p className="text-[13px] text-muted-foreground">Pre-test</p>
+                        <p className="text-[13px] text-muted-foreground">{t(d.preTest)}</p>
                         <p className="font-display text-3xl font-semibold tabular-nums">
                           {assessmentStats.pre}
                         </p>
@@ -191,10 +198,10 @@ export default async function EducatorAnalyticsPage() {
                         <p className="font-display text-3xl font-semibold tabular-nums text-primary">
                           {delta! > 0 ? `+${delta}` : delta}
                         </p>
-                        <p className="text-[13px] text-muted-foreground">perubahan</p>
+                        <p className="text-[13px] text-muted-foreground">{t(d.change)}</p>
                       </div>
                       <div>
-                        <p className="text-[13px] text-muted-foreground">Post-test</p>
+                        <p className="text-[13px] text-muted-foreground">{t(d.postTest)}</p>
                         <p className="font-display text-3xl font-semibold tabular-nums">
                           {assessmentStats.post}
                         </p>
@@ -218,8 +225,7 @@ export default async function EducatorAnalyticsPage() {
                   </div>
                 )}
                 <p className="mt-5 border-t border-border pt-4 text-[12px] leading-relaxed text-muted-foreground">
-                  Angka ini indikasi awal berdasarkan sampel kecil, bukan bukti
-                  efektivitas pembelajaran.
+                  {t(d.privacyNote)}
                 </p>
               </div>
             </Card>

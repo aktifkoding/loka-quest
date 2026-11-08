@@ -3,24 +3,27 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n";
+import { adminDict as d } from "@/lib/i18n/dict/admin";
 import { LogOut, MapPin, BarChart3, BookOpen, FileText, Home, MessageSquare, ScrollText, Users } from "lucide-react";
-
-const LINKS = [
-  { href: "/admin", label: "Dasbor", icon: Home, exact: true },
-  { href: "/admin/regions", label: "Wilayah", icon: MapPin },
-  { href: "/admin/missions", label: "Misi & soal", icon: FileText },
-  { href: "/editor/encyclopedia", label: "Ensiklopedia", icon: BookOpen },
-  { href: "/admin/contents", label: "Konten & sumber", icon: ScrollText },
-  { href: "/admin/submissions", label: "Moderasi", icon: MessageSquare },
-  { href: "/admin/users", label: "Pengguna", icon: Users },
-  { href: "/admin/audit-logs", label: "Log audit", icon: ScrollText },
-  { href: "/admin/analytics", label: "Analitik", icon: BarChart3 },
-];
 
 export function AdminNav({ email }: { email: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const { t } = useI18n();
+
+  const LINKS = [
+    { href: "/admin", label: t(d.navDashboard), icon: Home, exact: true },
+    { href: "/admin/regions", label: t(d.navRegions), icon: MapPin },
+    { href: "/admin/missions", label: t(d.navMissions), icon: FileText },
+    { href: "/editor/encyclopedia", label: t(d.navEncyclopedia), icon: BookOpen },
+    { href: "/admin/contents", label: t(d.navContents), icon: ScrollText },
+    { href: "/admin/submissions", label: t(d.navSubmissions), icon: MessageSquare },
+    { href: "/admin/users", label: t(d.navUsers), icon: Users },
+    { href: "/admin/audit-logs", label: t(d.navAuditLogs), icon: ScrollText },
+    { href: "/admin/analytics", label: t(d.navAnalytics), icon: BarChart3 },
+  ];
 
   const isActive = (href: string, exact?: boolean) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
@@ -44,7 +47,7 @@ export function AdminNav({ email }: { email: string }) {
           <span className="hidden sm:inline">LokaQuest Admin</span>
         </Link>
 
-        <nav aria-label="Navigasi admin" className="flex-1 overflow-x-auto">
+        <nav aria-label={t(d.navAria)} className="flex-1 overflow-x-auto">
           <ul className="flex items-center gap-1 text-[13px] font-medium">
             {LINKS.map((link) => (
               <li key={link.href} className="shrink-0">
@@ -72,7 +75,7 @@ export function AdminNav({ email }: { email: string }) {
           <button
             type="button"
             onClick={() => void signOut()}
-            aria-label="Keluar dari sesi admin"
+            aria-label={t(d.signOutAria)}
             className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             <LogOut className="size-4" aria-hidden="true" />

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type Phaser from "phaser";
+import { fill, type Lang } from "@/lib/i18n";
 
 export interface PhaserGameMission {
   id: string;
@@ -21,7 +22,84 @@ export interface PhaserGameProps {
   mission: PhaserGameMission;
   questions: PhaserGameQuestion[];
   onComplete: (answers: { questionId: string; answer: Record<string, unknown> }[]) => void;
+  /** Bahasa aktif untuk teks kanvas (kanvas tidak bisa memakai context React). */
+  lang?: Lang;
 }
+
+/* ------------------------------------------------------------------ */
+/* Teks kanvas per bahasa — dijaga di dalam file karena Phaser berjalan */
+/* di luar React, sehingga tidak bisa memakai useI18n/context.          */
+/* ------------------------------------------------------------------ */
+
+type CanvasStrings = {
+  missionLabel: string; // "Misi: {title}"
+  challengesAwait: string; // "{count} tantangan menanti"
+  startAdventure: string;
+  typeMultipleChoice: string;
+  typeMatching: string;
+  typeSequencing: string;
+  typeIdentification: string;
+  typeFallback: string;
+  questionOf: string; // "Pertanyaan {n} dari {m}"
+  submitMatching: string;
+  submitSequence: string;
+  listenButton: string;
+  soundOnHint: string;
+  soundOffHint: string;
+  answerSaved: string;
+  gradedOnServer: string;
+  done: string;
+  next: string;
+  allDone: string;
+  submitting: string;
+};
+
+const STRINGS: Record<Lang, CanvasStrings> = {
+  id: {
+    missionLabel: "Misi: {title}",
+    challengesAwait: "{count} tantangan menanti",
+    startAdventure: "Mulai Petualangan",
+    typeMultipleChoice: "Pilih satu jawaban",
+    typeMatching: "Ketuk motif, lalu ketuk maknanya",
+    typeSequencing: "Ketuk kejadian sesuai urutan cerita",
+    typeIdentification: "Dengarkan bunyinya, lalu tebak instrumennya",
+    typeFallback: "Jawab pertanyaan",
+    questionOf: "Pertanyaan {n} dari {m}",
+    submitMatching: "Kirim Pemasangan",
+    submitSequence: "Kirim Urutan",
+    listenButton: "▶  Dengarkan bunyinya",
+    soundOnHint: "Boleh diputar berkali-kali",
+    soundOffHint: "Suara nonaktif — grafik tetap bisa dinikmati",
+    answerSaved: "Jawaban tersimpan",
+    gradedOnServer: "Hasil dinilai server setelah misi selesai",
+    done: "Selesai",
+    next: "Lanjut",
+    allDone: "Semua tantangan selesai!",
+    submitting: "Mengirim jawaban untuk dinilai…",
+  },
+  en: {
+    missionLabel: "Mission: {title}",
+    challengesAwait: "{count} challenges await",
+    startAdventure: "Start the Adventure",
+    typeMultipleChoice: "Choose one answer",
+    typeMatching: "Tap a motif, then tap its meaning",
+    typeSequencing: "Tap the events in story order",
+    typeIdentification: "Listen to the sound, then guess the instrument",
+    typeFallback: "Answer the question",
+    questionOf: "Question {n} of {m}",
+    submitMatching: "Submit Matches",
+    submitSequence: "Submit Order",
+    listenButton: "▶  Listen to the sound",
+    soundOnHint: "You can play it as many times as you like",
+    soundOffHint: "Sound is off — you can still enjoy the visuals",
+    answerSaved: "Answer saved",
+    gradedOnServer: "Results are graded on the server after the mission ends",
+    done: "Finish",
+    next: "Next",
+    allDone: "All challenges complete!",
+    submitting: "Sending your answers for grading…",
+  },
+};
 
 /* ------------------------------------------------------------------ */
 /* Gamelan synthesizer — WebAudio, zero external assets                */
@@ -141,7 +219,7 @@ function playInstrument(name: InstrumentName) {
 /* Scene                                                               */
 /* ------------------------------------------------------------------ */
 
-export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) {
+export function PhaserGame({ mission, questions, onComplete, lang = "id" }: PhaserGameProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
@@ -152,6 +230,8 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
 
     let game: Phaser.Game | null = null;
     let cancelled = false;
+
+    const S = STRINGS[lang];
 
     (async () => {
       const Phaser = (await import("phaser")).default;
@@ -235,19 +315,19 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
           this.children.removeAll(true);
 
           this.add
-            .text(width / 2, height / 2 - 90, "Misi: " + mission.title, {
+            .text(width / 2, height / 2 - 90, fill(S.missionLabel, { title: mission.title }), {
               fontFamily: FONT, fontSize: "32px", fontStyle: "bold", color: UI.text,
               align: "center", wordWrap: { width: width - 120 },
             })
             .setOrigin(0.5);
 
           this.add
-            .text(width / 2, height / 2 - 30, `${questions.length} tantangan menanti`, {
+            .text(width / 2, height / 2 - 30, fill(S.challengesAwait, { count: questions.length }), {
               fontFamily: FONT, fontSize: "18px", color: UI.muted,
             })
             .setOrigin(0.5);
 
-          const start = this.button(width / 2, height / 2 + 55, 260, 54, "Mulai Petualangan", UI.accentDark);
+          const start = this.button(width / 2, height / 2 + 55, 260, 54, S.startAdventure, UI.accentDark);
           start.on("pointerover", () => start.setScale(1.04));
           start.on("pointerout", () => start.setScale(1));
           start.on("pointerdown", () => this.showQuestion());
@@ -275,13 +355,13 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
             .setOrigin(0.5);
 
           const labels: Record<string, string> = {
-            multiple_choice: "Pilih satu jawaban",
-            matching: "Ketuk motif, lalu ketuk maknanya",
-            sequencing: "Ketuk kejadian sesuai urutan cerita",
-            identification: "Dengarkan bunyinya, lalu tebak instrumennya",
+            multiple_choice: S.typeMultipleChoice,
+            matching: S.typeMatching,
+            sequencing: S.typeSequencing,
+            identification: S.typeIdentification,
           };
           this.add
-            .text(width / 2, 178, labels[q.question_type] ?? "Jawab pertanyaan", {
+            .text(width / 2, 178, labels[q.question_type] ?? S.typeFallback, {
               fontFamily: FONT, fontSize: "14px", color: "#f0b429",
             })
             .setOrigin(0.5);
@@ -302,7 +382,7 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
 
           this.add
             .text(width / 2, height - 26,
-              `Pertanyaan ${this.currentQuestionIndex + 1} dari ${questions.length}`,
+              fill(S.questionOf, { n: this.currentQuestionIndex + 1, m: questions.length }),
               { fontFamily: FONT, fontSize: "13px", color: UI.muted })
             .setOrigin(0.5);
         }
@@ -396,7 +476,7 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
             });
           });
 
-          const submitBtn = this.button(width / 2, 555, 250, 50, "Kirim Pemasangan", UI.accentDark, "#ffffff", 17);
+          const submitBtn = this.button(width / 2, 555, 250, 50, S.submitMatching, UI.accentDark, "#ffffff", 17);
           submitBtn.setAlpha(0.45);
           const poll = this.time.addEvent({
             delay: 200,
@@ -443,7 +523,7 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
               slotTexts[i].setColor(filled ? UI.text : UI.muted);
             });
             if (sequence.length === events.length) {
-              const submit = this.button(width / 2, 520, 240, 50, "Kirim Urutan", UI.accentDark, "#ffffff", 17);
+              const submit = this.button(width / 2, 520, 240, 50, S.submitSequence, UI.accentDark, "#ffffff", 17);
               submit.on("pointerdown", () => {
                 if (sequence.length !== events.length) return;
                 this.recordAnswer(q, { order: [...sequence] });
@@ -482,7 +562,7 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
           const found = instruments.find((i) => playable.includes(i.toLowerCase() as InstrumentName));
           const soundName = (found ?? "saron").toLowerCase() as InstrumentName;
 
-          const playBtn = this.button(width / 2, 250, 310, 54, "▶  Dengarkan bunyinya", UI.accentDark, "#ffffff", 18);
+          const playBtn = this.button(width / 2, 250, 310, 54, S.listenButton, UI.accentDark, "#ffffff", 18);
           playBtn.on("pointerdown", () => {
             playInstrument(soundName);
             playBtn.setScale(0.96);
@@ -490,7 +570,7 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
           });
 
           this.add
-            .text(width / 2, 302, isSoundMuted() ? "Suara nonaktif — grafik tetap bisa dinikmati" : "Boleh diputar berkali-kali", {
+            .text(width / 2, 302, isSoundMuted() ? S.soundOffHint : S.soundOnHint, {
               fontFamily: FONT, fontSize: "13px", color: UI.muted,
             })
             .setOrigin(0.5);
@@ -515,19 +595,19 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
           const { width, height } = this.scale;
           this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.7);
           this.add
-            .text(width / 2, height / 2 - 42, "Jawaban tersimpan", {
+            .text(width / 2, height / 2 - 42, S.answerSaved, {
               fontFamily: FONT, fontSize: "28px", fontStyle: "bold", color: "#4ade80",
             })
             .setOrigin(0.5);
           this.add
-            .text(width / 2, height / 2 + 8, "Hasil dinilai server setelah misi selesai", {
+            .text(width / 2, height / 2 + 8, S.gradedOnServer, {
               fontFamily: FONT, fontSize: "15px", color: UI.muted,
             })
             .setOrigin(0.5);
 
           const isLast = this.currentQuestionIndex + 1 >= questions.length;
           const nextBtn = this.button(
-            width / 2, height / 2 + 68, 200, 50, isLast ? "Selesai" : "Lanjut", UI.accentDark, "#ffffff", 18
+            width / 2, height / 2 + 68, 200, 50, isLast ? S.done : S.next, UI.accentDark, "#ffffff", 18
           );
           nextBtn.on("pointerdown", () => {
             this.currentQuestionIndex++;
@@ -542,12 +622,12 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
           const { width, height } = this.scale;
 
           this.add
-            .text(width / 2, height / 2 - 50, "Semua tantangan selesai!", {
+            .text(width / 2, height / 2 - 50, S.allDone, {
               fontFamily: FONT, fontSize: "38px", fontStyle: "bold", color: "#4ade80",
             })
             .setOrigin(0.5);
           this.add
-            .text(width / 2, height / 2 + 10, "Mengirim jawaban untuk dinilai…", {
+            .text(width / 2, height / 2 + 10, S.submitting, {
               fontFamily: FONT, fontSize: "16px", color: "#f0b429",
             })
             .setOrigin(0.5);
@@ -576,7 +656,7 @@ export function PhaserGame({ mission, questions, onComplete }: PhaserGameProps) 
         game = null;
       }
     };
-  }, [mission, questions]);
+  }, [mission, questions, lang]);
 
   return <div ref={containerRef} className="w-full" />;
 }

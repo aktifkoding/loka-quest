@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+import { shellDict as d } from "@/lib/i18n/dict/shell";
 
 export function ThemeToggle() {
   const [dark, setDark] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));
@@ -23,7 +26,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      aria-label={dark ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
+      aria-label={dark ? t(d.themeLightAria) : t(d.themeDarkAria)}
       className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
     >
       {dark ? <Sun className="size-4" aria-hidden="true" /> : <Moon className="size-4" aria-hidden="true" />}

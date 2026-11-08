@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth/session";
+import { getServerI18n } from "@/lib/i18n/server";
+import { educatorDict as d } from "@/lib/i18n/dict/educator";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollStagger } from "@/components/landing/motion";
@@ -16,8 +19,14 @@ import {
   LineChart,
 } from "lucide-react";
 
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t(d.dashboardMetaTitle) };
+}
+
 export default async function EducatorDashboardPage() {
   try {
+    const { t } = await getServerI18n();
     const user = await requireRole(["educator", "admin"]);
     const supabase = await createClient();
 
@@ -48,18 +57,18 @@ export default async function EducatorDashboardPage() {
     const firstSteps = [
       {
         icon: Plus,
-        title: "Buat kelompok kelas",
-        description: "Satu kelompok per kelas atau klub budaya.",
+        title: t(d.stepCreateGroupTitle),
+        description: t(d.stepCreateGroupDescription),
       },
       {
         icon: UserPlus,
-        title: "Tugaskan misi & kuis",
-        description: "Siswa bergabung dengan kode kelompok, lalu mengerjakan misi budaya.",
+        title: t(d.stepAssignTitle),
+        description: t(d.stepAssignDescription),
       },
       {
         icon: LineChart,
-        title: "Pantau perkembangan",
-        description: "Bandingkan pre-test dan post-test di analisis pembelajaran.",
+        title: t(d.stepMonitorTitle),
+        description: t(d.stepMonitorDescription),
       },
     ];
 
@@ -68,21 +77,21 @@ export default async function EducatorDashboardPage() {
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-2xl">
             <h1 className="font-display text-4xl font-semibold tracking-tight">
-              Dasbor pendidik
+              {t(d.dashboardTitle)}
             </h1>
             <p className="mt-2 text-muted-foreground">
-              Pantau progres kelompok siswa dan hasil asesmen pembelajaran.
+              {t(d.dashboardDescription)}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button asChild>
               <Link href="/educator/groups">
                 <Plus className="size-4" aria-hidden="true" />
-                Kelola kelompok
+                {t(d.manageGroupsCta)}
               </Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/educator/quiz">Kuis live</Link>
+              <Link href="/educator/quiz">{t(d.liveQuizCta)}</Link>
             </Button>
           </div>
         </header>
@@ -93,7 +102,7 @@ export default async function EducatorDashboardPage() {
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-muted-foreground">
-                  Kelompok aktif
+                  {t(d.metricActiveGroups)}
                 </p>
                 <Users className="size-5 text-muted-foreground" aria-hidden="true" />
               </div>
@@ -101,7 +110,7 @@ export default async function EducatorDashboardPage() {
                 {groups_.length}
               </p>
               <p className="mt-1 text-[13px] text-muted-foreground">
-                kelompok yang Anda kelola
+                {t(d.metricActiveGroupsNote)}
               </p>
             </div>
           </Card>
@@ -110,7 +119,7 @@ export default async function EducatorDashboardPage() {
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-muted-foreground">
-                  Total siswa
+                  {t(d.metricTotalStudents)}
                 </p>
                 <GraduationCap
                   className="size-5 text-muted-foreground"
@@ -121,7 +130,7 @@ export default async function EducatorDashboardPage() {
                 {memberCount ?? 0}
               </p>
               <p className="mt-1 text-[13px] text-muted-foreground">
-                tergabung di semua kelompok
+                {t(d.metricTotalStudentsNote)}
               </p>
             </div>
           </Card>
@@ -130,7 +139,7 @@ export default async function EducatorDashboardPage() {
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-muted-foreground">
-                  Misi tersedia
+                  {t(d.metricAvailableMissions)}
                 </p>
                 <BookOpen className="size-5 text-muted-foreground" aria-hidden="true" />
               </div>
@@ -138,7 +147,7 @@ export default async function EducatorDashboardPage() {
                 {totalMissions}
               </p>
               <p className="mt-1 text-[13px] text-muted-foreground">
-                misi budaya yang bisa ditugaskan
+                {t(d.metricAvailableMissionsNote)}
               </p>
             </div>
           </Card>
@@ -148,7 +157,9 @@ export default async function EducatorDashboardPage() {
           {/* Groups — dominant column */}
           <Card className="lg:col-span-3">
             <div className="p-6">
-              <h2 className="font-display text-xl font-semibold">Kelompok saya</h2>
+              <h2 className="font-display text-xl font-semibold">
+                {t(d.myGroupsHeading)}
+              </h2>
               {groups_.length > 0 ? (
                 <ul className="mt-5 divide-y divide-border">
                   {groups_.map((group) => (
@@ -181,15 +192,14 @@ export default async function EducatorDashboardPage() {
                 </ul>
               ) : (
                 <div className="mt-5 rounded-xl border border-dashed border-border px-4 py-10 text-center">
-                  <p className="text-sm font-medium">Belum ada kelompok</p>
+                  <p className="text-sm font-medium">{t(d.emptyGroupsTitle)}</p>
                   <p className="mx-auto mt-1 max-w-xs text-[13px] leading-relaxed text-muted-foreground">
-                    Buat kelompok pertama — misalnya “Kelas 8A” — lalu bagikan
-                    kode gabung ke siswa.
+                    {t(d.emptyGroupsDescription)}
                   </p>
                   <Button asChild size="sm" className="mt-4">
                     <Link href="/educator/groups">
                       <Plus className="size-4" aria-hidden="true" />
-                      Buat kelompok pertama
+                      {t(d.createFirstGroupCta)}
                     </Link>
                   </Button>
                 </div>
@@ -201,18 +211,16 @@ export default async function EducatorDashboardPage() {
           <Card className="lg:col-span-2">
             <div className="flex h-full flex-col p-6">
               <h2 className="font-display text-xl font-semibold">
-                Analisis pembelajaran
+                {t(d.analyticsCardHeading)}
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Bandingkan hasil pre-test dan post-test untuk melihat perubahan
-                pemahaman siswa. Laporan menyertakan jumlah sampel dan
-                keterbatasannya.
+                {t(d.analyticsCardDescription)}
               </p>
               <div className="mt-auto pt-6">
                 <Button asChild className="w-full">
                   <Link href="/educator/analytics">
                     <BarChart3 className="size-4" aria-hidden="true" />
-                    Buka analisis
+                    {t(d.openAnalyticsCta)}
                   </Link>
                 </Button>
               </div>
@@ -224,7 +232,7 @@ export default async function EducatorDashboardPage() {
         {groups_.length === 0 && (
           <section className="mt-10">
             <h2 className="font-display text-xl font-semibold">
-              Mulai dalam tiga langkah
+              {t(d.stepsHeading)}
             </h2>
             <ol className="mt-5 grid gap-4 md:grid-cols-3">
               {firstSteps.map((step, index) => (
@@ -236,7 +244,7 @@ export default async function EducatorDashboardPage() {
                           <step.icon className="size-4" aria-hidden="true" />
                         </span>
                         <span className="text-[13px] font-medium tabular-nums text-muted-foreground">
-                          Langkah {index + 1}
+                          {t(d.stepN, { n: index + 1 })}
                         </span>
                       </div>
                       <p className="mt-3 text-sm font-semibold">{step.title}</p>

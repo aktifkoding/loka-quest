@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
+import { educatorDict as d } from "@/lib/i18n/dict/educator";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Radio, Plus } from "lucide-react";
@@ -9,6 +11,7 @@ import { ArrowLeft, Radio, Plus } from "lucide-react";
 type Mission = { id: string; title: string; status: string };
 
 export default function CreateQuizPage() {
+  const { t } = useI18n();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [missionId, setMissionId] = useState("");
   const [session, setSession] = useState<{ code: string; missionTitle: string } | null>(null);
@@ -22,8 +25,8 @@ export default function CreateQuizPage() {
         setMissions(json.data ?? []);
         setMissionId((current) => current || json.data?.[0]?.id || "");
       })
-      .catch(() => setError("Gagal memuat misi"));
-  }, []);
+      .catch(() => setError(t(d.loadMissionsFailed)));
+  }, [t]);
 
   async function create(event: React.FormEvent) {
     event.preventDefault();
@@ -36,10 +39,10 @@ export default function CreateQuizPage() {
         body: JSON.stringify({ missionId }),
       });
       const json = await response.json();
-      if (!response.ok) throw new Error(json.error || "Gagal membuat kuis");
+      if (!response.ok) throw new Error(json.error || t(d.createQuizFailed));
       setSession(json.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal membuat kuis");
+      setError(err instanceof Error ? err.message : t(d.createQuizFailed));
     } finally {
       setBusy(false);
     }
@@ -50,16 +53,16 @@ export default function CreateQuizPage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/educator/dashboard">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Dasbor pendidik
+          {t(d.backToDashboard)}
         </Link>
       </Button>
 
       <header>
         <h1 className="font-display text-4xl font-semibold tracking-tight">
-          Kuis kelas live
+          {t(d.quizCreateTitle)}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Buat sesi, bagikan kode, dan mainkan bersama siswa.
+          {t(d.quizCreateDescription)}
         </p>
       </header>
 
@@ -73,14 +76,14 @@ export default function CreateQuizPage() {
         <Card className="mt-6 p-6">
           <form onSubmit={create} className="grid gap-4">
             <label className="block text-sm font-medium">
-              Misi
+              {t(d.missionLabel)}
               <select
                 className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
                 required
                 value={missionId}
                 onChange={(event) => setMissionId(event.target.value)}
               >
-                <option value="">Pilih misi</option>
+                <option value="">{t(d.missionPlaceholder)}</option>
                 {missions.map((mission) => (
                   <option key={mission.id} value={mission.id}>
                     {mission.title}
@@ -90,14 +93,14 @@ export default function CreateQuizPage() {
             </label>
             <Button type="submit" disabled={busy || !missionId}>
               <Plus className="size-4" aria-hidden="true" />
-              {busy ? "Membuat…" : "Buat sesi kuis"}
+              {busy ? t(d.creating) : t(d.createQuizSessionCta)}
             </Button>
           </form>
         </Card>
       ) : (
         <Card className="mt-6 p-6 text-center">
           <Radio className="mx-auto size-8 text-primary" aria-hidden="true" />
-          <p className="mt-3 text-sm text-muted-foreground">Kode sesi</p>
+          <p className="mt-3 text-sm text-muted-foreground">{t(d.sessionCodeLabel)}</p>
           <p className="mt-1 font-display text-5xl font-semibold tracking-[0.2em]">
             {session.code}
           </p>
@@ -106,10 +109,10 @@ export default function CreateQuizPage() {
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Button asChild>
-              <Link href={`/educator/quiz/${session.code}`}>Buka ruang host</Link>
+              <Link href={`/educator/quiz/${session.code}`}>{t(d.hostRoomCta)}</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href={`/kuis/${session.code}`}>Buka layar peserta</Link>
+              <Link href={`/kuis/${session.code}`}>{t(d.playerScreenCta)}</Link>
             </Button>
           </div>
         </Card>

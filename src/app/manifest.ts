@@ -1,16 +1,19 @@
 import type { MetadataRoute } from "next";
+import { getServerI18n } from "@/lib/i18n/server";
+import { appMetaDict as meta } from "@/lib/i18n/dict/common";
 
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const { lang, t } = await getServerI18n();
+
   return {
-    name: "LokaQuest — Jelajahi Nusantara",
+    name: t(meta.manifestName),
     short_name: "LokaQuest",
-    description:
-      "Aplikasi pembelajaran budaya Indonesia yang interaktif: batik, gamelan, dan wayang lewat misi permainan.",
+    description: t(meta.manifestDescription),
     start_url: "/",
     display: "standalone",
     background_color: "#faf7f0",
     theme_color: "#2b3a85",
-    lang: "id",
+    lang,
     icons: [
       {
         src: "/icon.svg",

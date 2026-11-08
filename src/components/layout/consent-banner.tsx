@@ -4,9 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getConsent, setConsent, trackEvent } from "@/lib/analytics-client";
+import { useI18n } from "@/lib/i18n";
+import { shellDict as d } from "@/lib/i18n/dict/shell";
 
 export function ConsentBanner() {
   const [visible, setVisible] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => {
     setVisible(getConsent() === null);
@@ -17,14 +20,13 @@ export function ConsentBanner() {
   return (
     <div
       role="dialog"
-      aria-label="Persetujuan analitik"
+      aria-label={t(d.consentAria)}
       className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-xl rounded-2xl border border-border bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-xl md:left-auto md:right-6 md:mx-0"
     >
       <p className="text-sm leading-relaxed">
-        Kami ingin memahami fitur mana yang dipakai agar LokaQuest lebih baik.
-        Analitik bersifat opsional dan tidak memuat data pribadi.{" "}
+        {t(d.consentBody)}{" "}
         <Link href="/tentang" className="text-primary underline-offset-4 hover:underline">
-          Pelajari
+          {t(d.consentLearnMore)}
         </Link>
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
@@ -36,7 +38,7 @@ export function ConsentBanner() {
             setVisible(false);
           }}
         >
-          Izinkan
+          {t(d.consentAllow)}
         </Button>
         <Button
           size="sm"
@@ -46,7 +48,7 @@ export function ConsentBanner() {
             setVisible(false);
           }}
         >
-          Tolak
+          {t(d.consentDeny)}
         </Button>
       </div>
     </div>

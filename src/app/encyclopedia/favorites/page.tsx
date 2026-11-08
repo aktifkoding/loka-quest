@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useI18n } from "@/lib/i18n";
+import { commonDict } from "@/lib/i18n/dict/common";
+import { encyclopediaDict as d } from "@/lib/i18n/dict/encyclopedia";
 
 type FavoriteItem = {
   article: {
@@ -20,6 +23,7 @@ type FavoriteItem = {
 };
 
 export default function EncyclopediaFavoritesPage() {
+  const { t } = useI18n();
   const [items, setItems] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -31,12 +35,12 @@ export default function EncyclopediaFavoritesPage() {
       const json = await response.json();
       if (!response.ok) {
         throw new Error(
-          response.status === 401 ? "Masuk untuk melihat artikel favorit." : "Favorit belum dapat dimuat."
+          response.status === 401 ? t(d.favoritesAuthMessage) : t(d.favoritesLoadError)
         );
       }
       setItems(json.data ?? []);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Terjadi kesalahan.");
+      setMessage(error instanceof Error ? error.message : t(commonDict.errorGeneric));
     } finally {
       setLoading(false);
     }
@@ -55,10 +59,10 @@ export default function EncyclopediaFavoritesPage() {
     <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
       <PageHeader
         icon={Bookmark}
-        title="Favorit saya"
-        description="Artikel yang Anda simpan untuk dibaca kembali."
+        title={t(d.favoritesTitle)}
+        description={t(d.favoritesDescription)}
         backHref="/encyclopedia"
-        backLabel="Ensiklopedia"
+        backLabel={t(d.backToEncyclopedia)}
       />
 
       {loading ? (
@@ -81,9 +85,9 @@ export default function EncyclopediaFavoritesPage() {
         <div className="mt-8">
           <EmptyState
             icon={Bookmark}
-            title="Favorit tidak tersedia"
+            title={t(d.favoritesUnavailableTitle)}
             description={message}
-            action={{ label: "Masuk", href: "/auth/login" }}
+            action={{ label: t(d.signInCta), href: "/auth/login" }}
           />
         </div>
       ) : items.length ? (
@@ -106,7 +110,7 @@ export default function EncyclopediaFavoritesPage() {
                   <Button
                     variant="ghost"
                     size="iconSm"
-                    aria-label={`Hapus ${article.title} dari favorit`}
+                    aria-label={t(d.removeFavoriteAria, { title: article.title })}
                     onClick={() => remove(article.id)}
                   >
                     <Trash2 className="size-4" aria-hidden="true" />
@@ -120,9 +124,9 @@ export default function EncyclopediaFavoritesPage() {
         <div className="mt-8">
           <EmptyState
             icon={Bookmark}
-            title="Belum ada favorit"
-            description="Simpan artikel yang ingin Anda baca kembali."
-            action={{ label: "Jelajahi artikel", href: "/encyclopedia/explore" }}
+            title={t(d.emptyFavoritesTitle)}
+            description={t(d.emptyFavoritesDescription)}
+            action={{ label: t(d.exploreArticlesCta), href: "/encyclopedia/explore" }}
           />
         </div>
       )}

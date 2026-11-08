@@ -1,4 +1,5 @@
 import { REGIONAL_LANGUAGES } from "./languages";
+import type { Lang } from "./i18n/types";
 
 export interface PersonalizedRecommendation {
   id: string;
@@ -27,7 +28,8 @@ export interface PlayerContext {
 }
 
 export function generatePersonalizedRecommendations(
-  ctx: PlayerContext
+  ctx: PlayerContext,
+  lang: Lang = "id"
 ): PersonalizedRecommendation[] {
   const recommendations: PersonalizedRecommendation[] = [];
 
@@ -36,16 +38,25 @@ export function generatePersonalizedRecommendations(
     recommendations.push({
       id: "rec-spaced-repetition",
       category: "review",
-      title: "Review Pintar Menunggumu",
-      subtitle: `${ctx.dueReviewCount} soal jatuh tempo hari ini`,
-      description: "Ulangi soal yang pernah keliru dengan metode spaced-repetition agar materi melekat kuat di ingatan jangka panjang.",
-      badge: "Prioritas Belajar",
+      title: lang === "en" ? "Smart Review Awaits You" : "Review Pintar Menunggumu",
+      subtitle:
+        lang === "en"
+          ? `${ctx.dueReviewCount} questions due today`
+          : `${ctx.dueReviewCount} soal jatuh tempo hari ini`,
+      description:
+        lang === "en"
+          ? "Revisit questions you got wrong using spaced repetition so the material sticks in your long-term memory."
+          : "Ulangi soal yang pernah keliru dengan metode spaced-repetition agar materi melekat kuat di ingatan jangka panjang.",
+      badge: lang === "en" ? "Learning priority" : "Prioritas Belajar",
       badgeVariant: "urgent",
       href: "/player/review",
-      actionLabel: "Mulai Review",
+      actionLabel: lang === "en" ? "Start review" : "Mulai Review",
       xpReward: ctx.dueReviewCount * 20,
       iconName: "rotate",
-      reason: "Mencegah lupa berdasarkan kurva retensi belajar.",
+      reason:
+        lang === "en"
+          ? "Prevents forgetting based on the learning retention curve."
+          : "Mencegah lupa berdasarkan kurva retensi belajar.",
     });
   }
 
@@ -60,45 +71,63 @@ export function generatePersonalizedRecommendations(
       id: "rec-mission-batik",
       category: "misi",
       title: "Misi: Batik Detective",
-      subtitle: "Tingkat Pemula · 100 XP",
-      description: "Temukan filosofi di balik motif klasik Parang & Kawung dan kuasai teknik canting tradisional.",
-      badge: "Rekomendasi Pemula",
+      subtitle: lang === "en" ? "Beginner level · 100 XP" : "Tingkat Pemula · 100 XP",
+      description:
+        lang === "en"
+          ? "Discover the philosophy behind the classic Parang & Kawung motifs and master the traditional canting technique."
+          : "Temukan filosofi di balik motif klasik Parang & Kawung dan kuasai teknik canting tradisional.",
+      badge: lang === "en" ? "Beginner recommendation" : "Rekomendasi Pemula",
       badgeVariant: "default",
       href: "/missions/batik-detective",
-      actionLabel: "Mulai Misi",
+      actionLabel: lang === "en" ? "Start mission" : "Mulai Misi",
       xpReward: 100,
       iconName: "gamepad",
-      reason: "Fondasi visual terbaik untuk memahami seni kriya Nusantara.",
+      reason:
+        lang === "en"
+          ? "The best visual foundation for understanding Indonesian craft art."
+          : "Fondasi visual terbaik untuk memahami seni kriya Nusantara.",
     });
   } else if (!ctx.completedSlugs.includes("gamelan-maestro") || avgScore >= 75) {
     recommendations.push({
       id: "rec-mission-gamelan",
       category: "misi",
       title: "Misi: Gamelan Maestro",
-      subtitle: "Tingkat Menengah · 150 XP",
-      description: "Dengarkan alunan kendang, pelog, dan slendro dalam ansambel musik adiluhung Jawa.",
-      badge: "Tantangan Menengah",
+      subtitle: lang === "en" ? "Intermediate level · 150 XP" : "Tingkat Menengah · 150 XP",
+      description:
+        lang === "en"
+          ? "Listen to the kendang, pelog, and slendro in the sublime Javanese gamelan ensemble."
+          : "Dengarkan alunan kendang, pelog, dan slendro dalam ansambel musik adiluhung Jawa.",
+      badge: lang === "en" ? "Intermediate challenge" : "Tantangan Menengah",
       badgeVariant: "gold",
       href: "/missions/gamelan-maestro",
-      actionLabel: "Mulai Misi",
+      actionLabel: lang === "en" ? "Start mission" : "Mulai Misi",
       xpReward: 150,
       iconName: "gamepad",
-      reason: "Akurasi bermainmu stabil, cocok untuk eksplorasi ritme dan identifikasi instrumen.",
+      reason:
+        lang === "en"
+          ? "Your accuracy is steady — perfect for exploring rhythm and identifying instruments."
+          : "Akurasi bermainmu stabil, cocok untuk eksplorasi ritme dan identifikasi instrumen.",
     });
   } else {
     recommendations.push({
       id: "rec-mission-wayang",
       category: "misi",
       title: "Misi: Wayang Story Adventure",
-      subtitle: "Tingkat Lanjutan · 200 XP",
-      description: "Uji kemampuan menata urutan lakon wayang dan mendalami makna lakon Mahabharata.",
-      badge: "Tantangan Maestro",
+      subtitle: lang === "en" ? "Advanced level · 200 XP" : "Tingkat Lanjutan · 200 XP",
+      description:
+        lang === "en"
+          ? "Test your skill at sequencing wayang story acts and delve into the meaning of the Mahabharata."
+          : "Uji kemampuan menata urutan lakon wayang dan mendalami makna lakon Mahabharata.",
+      badge: lang === "en" ? "Maestro challenge" : "Tantangan Maestro",
       badgeVariant: "gold",
       href: "/missions/wayang-story",
-      actionLabel: "Mulai Misi",
+      actionLabel: lang === "en" ? "Start mission" : "Mulai Misi",
       xpReward: 200,
       iconName: "gamepad",
-      reason: "Kamu telah menyelesaikan misi dasar; saatnya menguji daya nalar sekuensial.",
+      reason:
+        lang === "en"
+          ? "You have completed the basic missions — time to test your sequential reasoning."
+          : "Kamu telah menyelesaikan misi dasar; saatnya menguji daya nalar sekuensial.",
     });
   }
 
@@ -111,31 +140,49 @@ export function generatePersonalizedRecommendations(
   recommendations.push({
     id: `rec-lang-${recommendedLang.slug}`,
     category: "bahasa",
-    title: `Kosakata ${recommendedLang.name}`,
-    subtitle: `${recommendedLang.nativeName} · Audio Pelafalan`,
-    description: `Pelajari kosakata sapaan "${recommendedLang.greeting.word}" dan ikuti mini kuis kosakata untuk tambahan XP.`,
-    badge: "Modul Bahasa Daerah",
+    title: lang === "en" ? `Vocabulary: ${recommendedLang.name}` : `Kosakata ${recommendedLang.name}`,
+    subtitle:
+      lang === "en"
+        ? `${recommendedLang.nativeName} · pronunciation audio`
+        : `${recommendedLang.nativeName} · Audio Pelafalan`,
+    description:
+      lang === "en"
+        ? `Learn the greeting "${recommendedLang.greeting.word}" and take a mini vocabulary quiz for bonus XP.`
+        : `Pelajari kosakata sapaan "${recommendedLang.greeting.word}" dan ikuti mini kuis kosakata untuk tambahan XP.`,
+    badge: lang === "en" ? "Regional language module" : "Modul Bahasa Daerah",
     badgeVariant: "success",
     href: `/bahasa/${recommendedLang.slug}`,
-    actionLabel: "Pelajari Kosakata",
+    actionLabel: lang === "en" ? "Learn vocabulary" : "Pelajari Kosakata",
     xpReward: 75,
     iconName: "languages",
-    reason: "Mengetahui bahasa daerah memperkaya pemahaman konteks artikel dan artefak.",
+    reason:
+      lang === "en"
+        ? "Knowing a regional language enriches how you read articles and interpret artifacts."
+        : "Mengetahui bahasa daerah memperkaya pemahaman konteks artikel dan artefak.",
   });
 
   // 4. Cultural Encyclopedia with Audio/Video Media
   recommendations.push({
     id: "rec-article-media",
     category: "ensiklopedia",
-    title: "Eksplorasi Audio & Video Budaya",
-    subtitle: "Gamelan Jawa, Tari Saman, & Tari Kecak",
-    description: "Nikmati dokumentasi pertunjukan tari tradisional dan rekaman audio instrumen otentik Nusantara.",
-    badge: "Media Interaktif",
+    title: lang === "en" ? "Explore Culture Audio & Video" : "Eksplorasi Audio & Video Budaya",
+    subtitle:
+      lang === "en"
+        ? "Javanese Gamelan, Saman Dance, & Kecak Dance"
+        : "Gamelan Jawa, Tari Saman, & Tari Kecak",
+    description:
+      lang === "en"
+        ? "Enjoy documentaries of traditional dance performances and audio recordings of authentic Indonesian instruments."
+        : "Nikmati dokumentasi pertunjukan tari tradisional dan rekaman audio instrumen otentik Nusantara.",
+    badge: lang === "en" ? "Interactive media" : "Media Interaktif",
     badgeVariant: "default",
     href: "/encyclopedia/gamelan-jawa",
-    actionLabel: "Buka Galeri Media",
+    actionLabel: lang === "en" ? "Open media gallery" : "Buka Galeri Media",
     iconName: "book",
-    reason: "Memperluas wawasan sebelum menempuh misi berikutnya.",
+    reason:
+      lang === "en"
+        ? "Broadens your horizons before the next mission."
+        : "Memperluas wawasan sebelum menempuh misi berikutnya.",
   });
 
   return recommendations;

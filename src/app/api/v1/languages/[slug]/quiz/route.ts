@@ -4,6 +4,8 @@ import { withErrorHandling } from "@/lib/api/handler";
 import { parseJsonBody } from "@/lib/api/response";
 import { requireAuth } from "@/lib/auth/session";
 import { createServiceClient } from "@/lib/supabase/service-role";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 
 const submitSchema = z.object({
   answers: z.array(
@@ -19,12 +21,13 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const { slug } = await params;
     const language = getLanguageBySlug(slug);
 
     if (!language) {
       return Response.json(
-        { success: false, error: "Bahasa daerah tidak ditemukan" },
+        { success: false, error: E.languageNotFound[lang] },
         { status: 404 }
       );
     }
@@ -48,11 +51,12 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const { slug } = await params;
     const language = getLanguageBySlug(slug);
     if (!language) {
       return Response.json(
-        { success: false, error: "Bahasa daerah tidak ditemukan" },
+        { success: false, error: E.languageNotFound[lang] },
         { status: 404 }
       );
     }
@@ -70,7 +74,11 @@ export async function POST(
         correctAnswer: vocab?.meaning ?? "",
         userAnswer: ans.selectedAnswer,
         isCorrect,
-        explanation: vocab ? `"${vocab.word}" berarti ${vocab.meaning}. Contoh: ${vocab.exampleSentence}` : "",
+        explanation: vocab
+          ? lang === "en"
+            ? `"${vocab.word}" means ${vocab.meaningEn ?? vocab.meaning}. Example: ${vocab.exampleSentence}`
+            : `"${vocab.word}" berarti ${vocab.meaning}. Contoh: ${vocab.exampleSentence}`
+          : "",
       };
     });
 

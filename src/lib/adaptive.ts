@@ -4,6 +4,8 @@
  * difficulty tiers and review sequences.
  */
 
+import type { Lang } from "./i18n/types";
+
 export type DifficultyLevel = "beginner" | "intermediate" | "advanced";
 
 export type LearningStage = "fondasi" | "eksplorasi" | "maestro";
@@ -100,11 +102,13 @@ export function calculateRetentionScore(items: SpacedRepetitionItem[]): number {
 
 /**
  * Generate full adaptive profile for a player.
+ * Strings default to Indonesian ("id"); pass lang="en" for English UI copy.
  */
 export function generateAdaptiveProfile(
   attempts: AttemptSummary[],
   reviewItems: SpacedRepetitionItem[],
-  totalMissionsCompleted = 0
+  totalMissionsCompleted = 0,
+  lang: Lang = "id"
 ): AdaptiveProfile {
   const now = new Date();
   const dueItems = reviewItems.filter(
@@ -144,13 +148,25 @@ export function generateAdaptiveProfile(
 
   let adjustmentReason = "";
   if (dueItems.length > 0) {
-    adjustmentReason = `Terdapat ${dueItems.length} materi review yang perlu diperkuat dengan spaced-repetition sebelum tingkat kesulitan dinaikkan.`;
+    adjustmentReason =
+      lang === "en"
+        ? `There are ${dueItems.length} review items to reinforce with spaced repetition before the difficulty is raised.`
+        : `Terdapat ${dueItems.length} materi review yang perlu diperkuat dengan spaced-repetition sebelum tingkat kesulitan dinaikkan.`;
   } else if (recommendedDifficulty === "advanced") {
-    adjustmentReason = `Akurasi rata-ratamu ${recentAverage}% sangat konsisten. Jalur adaptif menaikkan tantangan ke level Lanjutan.`;
+    adjustmentReason =
+      lang === "en"
+        ? `Your average accuracy of ${recentAverage}% is very consistent. The adaptive path raises the challenge to the Advanced level.`
+        : `Akurasi rata-ratamu ${recentAverage}% sangat konsisten. Jalur adaptif menaikkan tantangan ke level Lanjutan.`;
   } else if (recommendedDifficulty === "intermediate") {
-    adjustmentReason = `Performa stabil (rata-rata ${recentAverage}%). Kamu siap menyelesaikan misi Menengah.`;
+    adjustmentReason =
+      lang === "en"
+        ? `Steady performance (average ${recentAverage}%). You are ready to complete Intermediate missions.`
+        : `Performa stabil (rata-rata ${recentAverage}%). Kamu siap menyelesaikan misi Menengah.`;
   } else {
-    adjustmentReason = `Jalur adaptif memfokuskan pemantapan konsep dasar dan pengulangan berkala.`;
+    adjustmentReason =
+      lang === "en"
+        ? `The adaptive path focuses on consolidating the basics with regular review.`
+        : `Jalur adaptif memfokuskan pemantapan konsep dasar dan pengulangan berkala.`;
   }
 
   // Construct personalized adaptive path steps
@@ -161,12 +177,18 @@ export function generateAdaptiveProfile(
     path.push({
       id: "step-spaced-review",
       type: "spaced_review",
-      title: "Review Pintar Terjadwal",
-      description: `${dueItems.length} soal yang pernah dijawab salah telah jatuh tempo untuk diulang hari ini agar tersimpan di memori jangka panjang.`,
+      title: lang === "en" ? "Scheduled Smart Review" : "Review Pintar Terjadwal",
+      description:
+        lang === "en"
+          ? `${dueItems.length} questions you previously answered incorrectly are due to be repeated today so they stick in long-term memory.`
+          : `${dueItems.length} soal yang pernah dijawab salah telah jatuh tempo untuk diulang hari ini agar tersimpan di memori jangka panjang.`,
       priority: "urgent",
       difficulty: "beginner",
       href: "/player/review",
-      reason: "Spaced-repetition mengoptimalkan kurva daya ingat Ebbinghaus.",
+      reason:
+        lang === "en"
+          ? "Spaced repetition optimizes the Ebbinghaus forgetting curve."
+          : "Spaced-repetition mengoptimalkan kurva daya ingat Ebbinghaus.",
       xpRewardEstimate: dueItems.length * 20,
     });
   }
@@ -176,36 +198,54 @@ export function generateAdaptiveProfile(
     path.push({
       id: "step-mission-advanced",
       type: "mission",
-      title: "Misi Tingkat Lanjutan: Wayang Story Adventure",
-      description: "Tantangan penataan lakon Mahabharata & analisis filosofi pertunjukan wayang kulit purwa.",
+      title: lang === "en" ? "Advanced Mission: Wayang Story Adventure" : "Misi Tingkat Lanjutan: Wayang Story Adventure",
+      description:
+        lang === "en"
+          ? "A challenge in sequencing Mahabharata story acts and analyzing the philosophy of shadow puppet performances."
+          : "Tantangan penataan lakon Mahabharata & analisis filosofi pertunjukan wayang kulit purwa.",
       priority: "recommended",
       difficulty: "advanced",
       href: "/missions/wayang-story",
-      reason: "Tingkat akurasi tinggi memenuhi syarat untuk tantangan urutan (sequencing) lanjutan.",
+      reason:
+        lang === "en"
+          ? "Your high accuracy qualifies you for advanced sequencing challenges."
+          : "Tingkat akurasi tinggi memenuhi syarat untuk tantangan urutan (sequencing) lanjutan.",
       xpRewardEstimate: 150,
     });
   } else if (recommendedDifficulty === "intermediate") {
     path.push({
       id: "step-mission-intermediate",
       type: "mission",
-      title: "Misi Tingkat Menengah: Gamelan Maestro",
-      description: "Harmonisasi ritme kendang, laras slendro-pelog, dan struktur gongan gamelan Jawa.",
+      title: lang === "en" ? "Intermediate Mission: Gamelan Maestro" : "Misi Tingkat Menengah: Gamelan Maestro",
+      description:
+        lang === "en"
+          ? "Harmonize kendang rhythms, slendro-pelog tunings, and the gong structures of Javanese gamelan."
+          : "Harmonisasi ritme kendang, laras slendro-pelog, dan struktur gongan gamelan Jawa.",
       priority: "recommended",
       difficulty: "intermediate",
       href: "/missions/gamelan-maestro",
-      reason: "Tingkat pemahaman fondasi telah tercapai, saatnya eksplorasi musikal yang lebih dinamis.",
+      reason:
+        lang === "en"
+          ? "You have mastered the foundations — time for more dynamic musical exploration."
+          : "Tingkat pemahaman fondasi telah tercapai, saatnya eksplorasi musikal yang lebih dinamis.",
       xpRewardEstimate: 120,
     });
   } else {
     path.push({
       id: "step-mission-beginner",
       type: "mission",
-      title: "Misi Tingkat Pemula: Batik Detective",
-      description: "Eksplorasi motif klasik Parang & Kawung serta teknik canting lilin malam.",
+      title: lang === "en" ? "Beginner Mission: Batik Detective" : "Misi Tingkat Pemula: Batik Detective",
+      description:
+        lang === "en"
+          ? "Explore the classic Parang & Kawung motifs and the wax-resist canting technique."
+          : "Eksplorasi motif klasik Parang & Kawung serta teknik canting lilin malam.",
       priority: "recommended",
       difficulty: "beginner",
       href: "/missions/batik-detective",
-      reason: "Latihan mengenali pola dasar visual dan sejarah budaya Nusantara.",
+      reason:
+        lang === "en"
+          ? "Practice recognizing basic visual patterns and the cultural history of the archipelago."
+          : "Latihan mengenali pola dasar visual dan sejarah budaya Nusantara.",
       xpRewardEstimate: 100,
     });
   }
@@ -214,12 +254,18 @@ export function generateAdaptiveProfile(
   path.push({
     id: "step-vocab-quiz",
     type: "vocabulary_quiz",
-    title: "Kuis Kosakata Bahasa Daerah",
-    description: "Perkuat pemahaman kosakata adat & pelafalan audio fonetis bahasa Nusantara.",
+    title: lang === "en" ? "Regional Language Vocabulary Quiz" : "Kuis Kosakata Bahasa Daerah",
+    description:
+      lang === "en"
+        ? "Strengthen your grasp of traditional vocabulary and the phonetic audio pronunciation of regional languages."
+        : "Perkuat pemahaman kosakata adat & pelafalan audio fonetis bahasa Nusantara.",
     priority: "recommended",
     difficulty: recommendedDifficulty,
     href: "/bahasa",
-    reason: "Penguasaan istilah budaya terbukti meningkatkan kecepatan memahami soal misi.",
+    reason:
+      lang === "en"
+        ? "Mastering cultural terms is proven to speed up understanding of mission questions."
+        : "Penguasaan istilah budaya terbukti meningkatkan kecepatan memahami soal misi.",
     xpRewardEstimate: 75,
   });
 
@@ -227,12 +273,18 @@ export function generateAdaptiveProfile(
   path.push({
     id: "step-reading",
     type: "cultural_reading",
-    title: "Eksplorasi Ensiklopedia & Media",
-    description: "Saksikan video tari tradisional dan dengarkan rekaman audio musik instrumen daerah.",
+    title: lang === "en" ? "Encyclopedia & Media Exploration" : "Eksplorasi Ensiklopedia & Media",
+    description:
+      lang === "en"
+        ? "Watch traditional dance videos and listen to audio recordings of regional instruments."
+        : "Saksikan video tari tradisional dan dengarkan rekaman audio musik instrumen daerah.",
     priority: "optional",
     difficulty: "beginner",
     href: "/encyclopedia/explore",
-    reason: "Memperkaya konteks kultural dengan media interaktif.",
+    reason:
+      lang === "en"
+        ? "Enrich your cultural context with interactive media."
+        : "Memperkaya konteks kultural dengan media interaktif.",
   });
 
   return {

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useI18n, formatDate } from "@/lib/i18n";
+import { playerDict } from "@/lib/i18n/dict/player";
 import { ArrowLeft, Users, CheckCircle2, Clock } from "lucide-react";
 
 type Assignment = {
@@ -21,6 +23,7 @@ type Assignment = {
 };
 
 export default function PlayerClassesPage() {
+  const { lang, t } = useI18n();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(true);
@@ -51,11 +54,11 @@ export default function PlayerClassesPage() {
     });
     const json = await response.json();
     if (!response.ok) {
-      setError(json.error || "Gagal bergabung");
+      setError(json.error || t(playerDict.errorJoin));
       return;
     }
     setCode("");
-    setMessage(`Berhasil bergabung ke ${json.data.group.name}.`);
+    setMessage(t(playerDict.joinedSuccess, { name: json.data.group.name }));
     await load();
   }
 
@@ -64,16 +67,16 @@ export default function PlayerClassesPage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/player/dashboard">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Dasbor
+          {t(playerDict.dashboard)}
         </Link>
       </Button>
 
       <header>
         <h1 className="font-display text-4xl font-semibold tracking-tight">
-          Kelas saya
+          {t(playerDict.classesTitle)}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Gabung dengan kode dari guru, lalu kerjakan tugas yang diberikan.
+          {t(playerDict.classesIntro)}
         </p>
       </header>
 
@@ -91,7 +94,7 @@ export default function PlayerClassesPage() {
       <Card className="mt-6 p-6">
         <form onSubmit={join} className="flex flex-wrap items-end gap-3">
           <label className="min-w-[200px] flex-1 text-sm font-medium">
-            Kode kelas
+            {t(playerDict.classCodeLabel)}
             <Input
               className="mt-1 uppercase tracking-[0.2em]"
               required
@@ -102,18 +105,18 @@ export default function PlayerClassesPage() {
               placeholder="ABC123"
             />
           </label>
-          <Button type="submit">Gabung kelas</Button>
+          <Button type="submit">{t(playerDict.joinCta)}</Button>
         </form>
       </Card>
 
       <div className="mt-8">
         {loading ? (
-          <p className="text-sm text-muted-foreground">Memuat tugas…</p>
+          <p className="text-sm text-muted-foreground">{t(playerDict.loadingAssignments)}</p>
         ) : assignments.length === 0 ? (
           <EmptyState
             icon={Users}
-            title="Belum ada tugas kelas"
-            description="Setelah bergabung dengan kelas, tugas dari guru akan muncul di sini."
+            title={t(playerDict.emptyAssignmentsTitle)}
+            description={t(playerDict.emptyAssignmentsDesc)}
           />
         ) : (
           <div className="space-y-3">
@@ -134,19 +137,23 @@ export default function PlayerClassesPage() {
                     <Clock className="size-5 text-muted-foreground" aria-hidden="true" />
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium">{mission?.title ?? "Misi"}</p>
+                    <p className="font-medium">{mission?.title ?? t(playerDict.missionFallback)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {group?.name ?? "Kelas"}
+                      {group?.name ?? t(playerDict.classFallback)}
                       {assignment.due_at
-                        ? ` · tenggat ${new Date(assignment.due_at).toLocaleDateString("id-ID")}`
+                        ? t(playerDict.dueTemplate, {
+                            date: formatDate(assignment.due_at, lang),
+                          })
                         : ""}
-                      {done ? ` · skor terbaik ${assignment.bestScore}` : ""}
+                      {done
+                        ? t(playerDict.bestScoreTemplate, { score: assignment.bestScore ?? 0 })
+                        : ""}
                     </p>
                   </div>
                   {mission && (
                     <Button asChild size="sm" variant={done ? "outline" : "default"}>
                       <Link href={`/missions/${mission.slug}`}>
-                        {done ? "Main lagi" : "Kerjakan"}
+                        {done ? t(playerDict.playAgainCta) : t(playerDict.workOnCta)}
                       </Link>
                     </Button>
                   )}

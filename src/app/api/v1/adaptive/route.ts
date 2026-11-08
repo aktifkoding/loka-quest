@@ -6,16 +6,18 @@ import {
   type AttemptSummary,
   type SpacedRepetitionItem,
 } from "@/lib/adaptive";
+import { getLangFromRequest } from "@/lib/i18n/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     let userId: string | null = null;
     try {
       const user = await requireAuth();
       userId = user.id;
     } catch {
       // Guest fallback: provide default beginner profile
-      const defaultProfile = generateAdaptiveProfile([], [], 0);
+      const defaultProfile = generateAdaptiveProfile([], [], 0, lang);
       return Response.json({
         success: true,
         data: defaultProfile,
@@ -62,7 +64,7 @@ export async function GET() {
 
     const missionsCompleted = progressRes.data?.missions_completed ?? 0;
 
-    const profile = generateAdaptiveProfile(attempts, reviewItems, missionsCompleted);
+    const profile = generateAdaptiveProfile(attempts, reviewItems, missionsCompleted, lang);
 
     return Response.json(
       { success: true, data: profile, isGuest: false },

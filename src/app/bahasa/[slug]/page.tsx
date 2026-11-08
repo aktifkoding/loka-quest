@@ -10,6 +10,8 @@ import {
   GraduationCap,
   Filter,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+import { bahasaDict as d } from "@/lib/i18n/dict/bahasa";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PronunciationButton } from "@/components/bahasa/pronunciation-button";
@@ -28,6 +30,7 @@ export default function LanguageDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
+  const { t } = useI18n();
   const language = getLanguageBySlug(slug);
 
   const [activeTab, setActiveTab] = useState<"vocab" | "quiz">("vocab");
@@ -50,12 +53,12 @@ export default function LanguageDetailPage({
   }
 
   const categories = [
-    { key: "all", label: "Semua" },
-    { key: "sapaan", label: "Sapaan" },
-    { key: "budaya", label: "Budaya" },
-    { key: "sehari_hari", label: "Sehari-hari" },
-    { key: "alam", label: "Alam" },
-    { key: "ungkapan", label: "Ungkapan" },
+    { key: "all", label: t(d.categoryAll) },
+    { key: "sapaan", label: t(d.categoryGreetings) },
+    { key: "budaya", label: t(d.categoryCulture) },
+    { key: "sehari_hari", label: t(d.categoryDaily) },
+    { key: "alam", label: t(d.categoryNature) },
+    { key: "ungkapan", label: t(d.categoryExpressions) },
   ];
 
   return (
@@ -64,7 +67,7 @@ export default function LanguageDetailPage({
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/bahasa">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Semua Bahasa Daerah
+          {t(d.backToAllLanguages)}
         </Link>
       </Button>
 
@@ -87,7 +90,7 @@ export default function LanguageDetailPage({
               word={language.greeting.word}
               phonetic={language.greeting.phonetic}
               audioUrl={language.greeting.audioUrl}
-              label={`Sapaan: ${language.greeting.word}`}
+              label={t(d.greetingAria, { word: language.greeting.word })}
               size="default"
             />
           </div>
@@ -99,15 +102,15 @@ export default function LanguageDetailPage({
 
         <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-4 text-xs text-muted-foreground">
           <span>
-            <strong>Aksara:</strong> {language.scriptName || "Alfabet Latin"}
+            <strong>{t(d.scriptLabel)}</strong> {language.scriptName || t(d.latinScriptFallback)}
           </span>
           <span aria-hidden="true">·</span>
           <span>
-            <strong>Penutur:</strong> {language.speakersEstimate}
+            <strong>{t(d.speakersLabel)}</strong> {language.speakersEstimate}
           </span>
           <span aria-hidden="true">·</span>
           <span>
-            <strong>Catatan Budaya:</strong> {language.culturalNote}
+            <strong>{t(d.culturalNoteLabel)}</strong> {language.culturalNote}
           </span>
         </div>
       </header>
@@ -123,7 +126,7 @@ export default function LanguageDetailPage({
           }`}
         >
           <BookOpen className="size-4" aria-hidden="true" />
-          Kosakata & Pelafalan ({vocabList.length})
+          {t(d.tabVocab, { n: vocabList.length })}
         </button>
         <button
           onClick={() => setActiveTab("quiz")}
@@ -134,7 +137,7 @@ export default function LanguageDetailPage({
           }`}
         >
           <GraduationCap className="size-4" aria-hidden="true" />
-          Kuis Pemahaman (+XP)
+          {t(d.tabQuiz)}
         </button>
       </div>
 
@@ -144,7 +147,7 @@ export default function LanguageDetailPage({
           {/* Category Filter */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-medium text-muted-foreground mr-1 flex items-center gap-1">
-              <Filter className="size-3.5" aria-hidden="true" /> Filter:
+              <Filter className="size-3.5" aria-hidden="true" /> {t(d.filterLabel)}
             </span>
             {categories.map((cat) => (
               <button
@@ -207,7 +210,7 @@ export default function LanguageDetailPage({
                       href={`/encyclopedia/${item.relatedArticleSlug}`}
                       className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                     >
-                      Artikel Terkait
+                      {t(d.relatedArticleCta)}
                       <ExternalLink className="size-3" aria-hidden="true" />
                     </Link>
                   )}

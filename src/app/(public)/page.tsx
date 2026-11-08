@@ -1,4 +1,9 @@
+import { Fragment } from "react";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
+import { getServerI18n } from "@/lib/i18n/server";
+import { landingDict as d, landingHeroWords } from "@/lib/i18n/dict/landing";
+import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { CountUp } from "@/components/ui/count-up";
@@ -26,8 +31,71 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-// Statistik dan daftar misi diambil dari database, dirender ulang tiap jam.
-export const revalidate = 3600;
+// Statistik dan daftar misi diambil dari database. Cache data selama 1 jam
+// (layout root membaca cookie bahasa, jadi halaman dirender per-request —
+// data tetap di-cache agar database tidak dipukul setiap kunjungan).
+const getLandingData = unstable_cache(
+  async (): Promise<{
+    stats: LandingStats;
+    missions: LandingMission[];
+  }> => {
+    const stats: LandingStats = { ...FALLBACK_STATS };
+    let missions: LandingMission[] = FALLBACK_MISSIONS;
+
+    try {
+      const supabase = createServiceClient();
+      const [missionsResult, regionsResult, questionsResult, sourcesResult] =
+        await Promise.all([
+          supabase
+            .from("missions")
+            .select("slug, title, description, xp_reward, difficulty, region_id")
+            .eq("status", "published")
+            .order("sort_order"),
+          supabase.from("cultural_regions").select("id, name"),
+          supabase
+            .from("mission_questions")
+            .select("id", { count: "exact", head: true }),
+          supabase
+            .from("cultural_sources")
+            .select("id", { count: "exact", head: true }),
+        ]);
+
+      if (!regionsResult.error && regionsResult.data) {
+        stats.regions = regionsResult.data.length;
+      }
+      if (!questionsResult.error && questionsResult.count !== null) {
+        stats.questions = questionsResult.count;
+      }
+      if (!sourcesResult.error && sourcesResult.count !== null) {
+        stats.sources = sourcesResult.count;
+      }
+      if (
+        !missionsResult.error &&
+        missionsResult.data &&
+        missionsResult.data.length > 0
+      ) {
+        const regionNames = new Map(
+          (regionsResult.data ?? []).map((region) => [region.id, region.name])
+        );
+        stats.missions = missionsResult.data.length;
+        missions = missionsResult.data.map((mission) => ({
+          slug: mission.slug,
+          title: mission.title,
+          description: mission.description,
+          xp: mission.xp_reward,
+          region: regionNames.get(mission.region_id) ?? "",
+          icon: MISSION_ICONS[mission.slug] ?? Sparkles,
+        }));
+      }
+    } catch {
+      // Database tidak terjangkau — biarkan fallback di atas.
+    }
+
+    return { stats, missions };
+  },
+  ["landing-data"],
+  { revalidate: 3600 },
+);
 
 type LandingStats = {
   missions: number;
@@ -98,84 +166,15 @@ const FALLBACK_MISSIONS: LandingMission[] = [
 ];
 
 const steps = [
-  {
-    number: "1",
-    title: "Buat akun",
-    description: "Daftar dengan email. Selesai dalam satu menit.",
-  },
-  {
-    number: "2",
-    title: "Mainkan misi",
-    description: "Jawab tantangan budaya di setiap wilayah.",
-  },
-  {
-    number: "3",
-    title: "Pantau progres",
-    description: "Nilai, XP, dan lencana tercatat otomatis di dasbor.",
-  },
+  { number: "1", title: d.step1Title, description: d.step1Desc },
+  { number: "2", title: d.step2Title, description: d.step2Desc },
+  { number: "3", title: d.step3Title, description: d.step3Desc },
 ];
 
-async function getLandingData(): Promise<{
-  stats: LandingStats;
-  missions: LandingMission[];
-}> {
-  const stats: LandingStats = { ...FALLBACK_STATS };
-  let missions: LandingMission[] = FALLBACK_MISSIONS;
-
-  try {
-    const supabase = createServiceClient();
-    const [missionsResult, regionsResult, questionsResult, sourcesResult] =
-      await Promise.all([
-        supabase
-          .from("missions")
-          .select("slug, title, description, xp_reward, difficulty, region_id")
-          .eq("status", "published")
-          .order("sort_order"),
-        supabase.from("cultural_regions").select("id, name"),
-        supabase
-          .from("mission_questions")
-          .select("id", { count: "exact", head: true }),
-        supabase
-          .from("cultural_sources")
-          .select("id", { count: "exact", head: true }),
-      ]);
-
-    if (!regionsResult.error && regionsResult.data) {
-      stats.regions = regionsResult.data.length;
-    }
-    if (!questionsResult.error && questionsResult.count !== null) {
-      stats.questions = questionsResult.count;
-    }
-    if (!sourcesResult.error && sourcesResult.count !== null) {
-      stats.sources = sourcesResult.count;
-    }
-    if (
-      !missionsResult.error &&
-      missionsResult.data &&
-      missionsResult.data.length > 0
-    ) {
-      const regionNames = new Map(
-        (regionsResult.data ?? []).map((region) => [region.id, region.name])
-      );
-      stats.missions = missionsResult.data.length;
-      missions = missionsResult.data.map((mission) => ({
-        slug: mission.slug,
-        title: mission.title,
-        description: mission.description,
-        xp: mission.xp_reward,
-        region: regionNames.get(mission.region_id) ?? "",
-        icon: MISSION_ICONS[mission.slug] ?? Sparkles,
-      }));
-    }
-  } catch {
-    // Database tidak terjangkau — biarkan fallback di atas.
-  }
-
-  return { stats, missions };
-}
-
 export default async function HomePage() {
+  const { lang, t } = await getServerI18n();
   const { stats, missions } = await getLandingData();
+  const heroWords = landingHeroWords[lang];
 
   return (
     <div>
@@ -189,29 +188,29 @@ export default async function HomePage() {
                 className="size-1.5 rounded-full bg-gold"
                 aria-hidden="true"
               />
-              Platform belajar budaya Indonesia
+              {t(d.badge)}
             </p>
             <h1
-              aria-label="Jelajahi Nusantara, hidupkan warisan budaya"
+              aria-label={t(d.heroAria)}
               className="font-display text-4xl font-semibold leading-[1.1] sm:text-5xl md:text-[3.4rem]"
             >
               <span aria-hidden="true">
-                <span className="hero-word inline-block will-change-transform">
-                  Jelajahi
-                </span>{" "}
-                <span className="hero-word inline-block will-change-transform">
-                  Nusantara,
-                </span>{" "}
-                <span className="hero-word inline-block will-change-transform">
-                  hidupkan
-                </span>{" "}
+                {heroWords.main.map((word, i) => (
+                  <Fragment key={`${word}-${i}`}>
+                    <span className="hero-word inline-block will-change-transform">
+                      {word}
+                    </span>{" "}
+                  </Fragment>
+                ))}
                 <span className="relative inline-block pb-1">
-                  <span className="hero-word inline-block will-change-transform">
-                    warisan
-                  </span>{" "}
-                  <span className="hero-word inline-block will-change-transform">
-                    budaya
-                  </span>
+                  {heroWords.tail.map((word, i) => (
+                    <Fragment key={`${word}-${i}`}>
+                      <span className="hero-word inline-block will-change-transform">
+                        {word}
+                      </span>
+                      {i < heroWords.tail.length - 1 ? " " : null}
+                    </Fragment>
+                  ))}
                   <span
                     className="hero-underline absolute inset-x-0 bottom-0 h-1 origin-left rounded-full bg-gold/60"
                     aria-hidden="true"
@@ -220,20 +219,18 @@ export default async function HomePage() {
               </span>
             </h1>
             <p className="hero-sub mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
-              {stats.missions} misi interaktif dari {stats.regions} wilayah —
-              dari batik Jawa Tengah sampai noken Papua. Jawaban dinilai
-              otomatis, progres tersimpan.
+              {t(d.heroSub, { missions: stats.missions, regions: stats.regions })}
             </p>
             <div className="hero-cta mt-8 flex flex-col gap-3 sm:flex-row">
               <Button size="lg" asChild>
-                <Link href="/auth/register">Mulai Petualangan</Link>
+                <Link href="/auth/register">{t(d.ctaStart)}</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/missions">Jelajahi Misi</Link>
+                <Link href="/missions">{t(d.ctaExploreMissions)}</Link>
               </Button>
             </div>
             <p className="hero-note mt-4 text-sm text-muted-foreground">
-              Gratis untuk pelajar. Tanpa iklan, tanpa biaya tersembunyi.
+              {t(d.heroNote)}
             </p>
           </div>
 
@@ -244,10 +241,10 @@ export default async function HomePage() {
             <div className="animate-float rounded-2xl border border-border/80 bg-card p-6 shadow-raised">
               <div className="mb-4 flex items-center justify-between">
                 <p className="text-[13px] font-medium text-muted-foreground">
-                  Misi Batik Detective
+                  {t(d.demoMissionLabel)}
                 </p>
                 <p className="text-[13px] tabular-nums text-muted-foreground">
-                  Soal 1 dari 2
+                  {t(d.demoQuestionOf)}
                 </p>
               </div>
               <div
@@ -257,7 +254,7 @@ export default async function HomePage() {
                 <div className="h-full w-1/2 rounded-full bg-primary" />
               </div>
               <p className="font-display text-lg font-semibold leading-snug">
-                Motif batik yang melambangkan keberanian dan keteguhan adalah…
+                {t(d.demoQuestion)}
               </p>
               <div className="mt-4 grid gap-2" role="presentation">
                 <span className="rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary">
@@ -293,7 +290,7 @@ export default async function HomePage() {
                 className="font-display text-4xl font-semibold tabular-nums"
               />
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                misi interaktif dengan soal, nilai, dan pembahasan
+                {t(d.statMissionsCaption)}
               </p>
             </div>
             <div data-stagger-item>
@@ -302,7 +299,7 @@ export default async function HomePage() {
                 className="font-display text-4xl font-semibold tabular-nums"
               />
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                wilayah budaya dari Aceh sampai Papua
+                {t(d.statRegionsCaption)}
               </p>
             </div>
             <div data-stagger-item>
@@ -311,7 +308,7 @@ export default async function HomePage() {
                 className="font-display text-4xl font-semibold tabular-nums"
               />
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                soal misi dengan pembahasan di tiap jawaban
+                {t(d.statQuestionsCaption)}
               </p>
             </div>
             <div data-stagger-item>
@@ -320,7 +317,7 @@ export default async function HomePage() {
                 className="font-display text-4xl font-semibold tabular-nums"
               />
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                sumber referensi tercatat di balik konten
+                {t(d.statSourcesCaption)}
               </p>
             </div>
           </div>
@@ -333,25 +330,24 @@ export default async function HomePage() {
           <div className="grid items-center gap-10 md:grid-cols-2">
             <div className="md:order-1">
               <h2 className="font-display text-3xl font-semibold leading-tight">
-                Nilai muncul, bukan tebakan
+                {t(d.scoringTitle)}
               </h2>
               <p className="mt-4 max-w-md leading-relaxed text-muted-foreground">
-                Setiap jawaban dinilai di server, bukan di browser. Begitu misi
-                selesai, kamu melihat pembahasan singkat untuk tiap soal.
+                {t(d.scoringBody)}
               </p>
             </div>
             <div className="md:order-2">
               <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-card">
                 <div className="flex items-baseline justify-between">
                   <p className="text-sm font-medium text-muted-foreground">
-                    Hasil misi
+                    {t(d.resultCardLabel)}
                   </p>
                   <p className="font-display text-3xl font-semibold tabular-nums">
                     67<span className="text-lg text-muted-foreground">/100</span>
                   </p>
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  2 dari 3 jawaban benar
+                  {t(d.resultCorrect)}
                 </p>
                 <div className="mt-4 flex items-center gap-1.5 rounded-lg bg-gold/10 px-3.5 py-2.5">
                   <Zap className="size-4 text-gold" aria-hidden="true" />
@@ -359,12 +355,11 @@ export default async function HomePage() {
                     +100 XP
                   </span>
                   <span className="ml-auto text-sm text-muted-foreground">
-                    Level 3
+                    {t(commonDict.level, { n: 3 })}
                   </span>
                 </div>
                 <p className="mt-4 border-t border-border pt-4 text-sm leading-relaxed text-muted-foreground">
-                  Parang Rusak melambangkan keberanian; Kawung melambangkan
-                  kebersihan hati.
+                  {t(d.resultNote)}
                 </p>
               </div>
             </div>
@@ -386,9 +381,9 @@ export default async function HomePage() {
                     />
                   </div>
                   <div>
-                    <p className="font-medium">Sumber tercatat</p>
+                    <p className="font-medium">{t(d.sourceCardTitle)}</p>
                     <p className="text-sm text-muted-foreground">
-                      Referensi wajib untuk konten yang dipublikasikan
+                      {t(d.sourceCardBody)}
                     </p>
                   </div>
                 </div>
@@ -400,18 +395,17 @@ export default async function HomePage() {
                     Gramedia Pustaka Utama, 2010
                   </p>
                   <p className="mt-2 text-[13px] text-muted-foreground">
-                    Lisensi: CC BY-SA 4.0
+                    {t(d.licenseLabel)}
                   </p>
                 </div>
               </div>
             </div>
             <div>
               <h2 className="font-display text-3xl font-semibold leading-tight">
-                Setiap konten punya sumber
+                {t(d.sourcesTitle)}
               </h2>
               <p className="mt-4 max-w-md leading-relaxed text-muted-foreground">
-                Batik, gamelan, dan wayang ditulis dari referensi yang tercatat
-                dan bisa diperiksa. Tidak ada fakta karangan.
+                {t(d.sourcesBody)}
               </p>
             </div>
           </div>
@@ -424,13 +418,13 @@ export default async function HomePage() {
       <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
         <div className="mb-8 flex items-end justify-between gap-4">
           <h2 className="font-display text-3xl font-semibold">
-            {missions.length} misi, {stats.regions} wilayah
+            {t(d.missionsHeading, { missions: missions.length, regions: stats.regions })}
           </h2>
           <Link
             href="/missions"
             className="hidden shrink-0 items-center gap-1 text-sm font-medium text-primary hover:underline sm:flex"
           >
-            Semua misi
+            {t(d.allMissions)}
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
         </div>
@@ -473,7 +467,7 @@ export default async function HomePage() {
       {/* How it works — 3 real steps in order */}
       <Reveal>
         <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
-          <h2 className="font-display text-3xl font-semibold">Cara kerjanya</h2>
+          <h2 className="font-display text-3xl font-semibold">{t(d.howTitle)}</h2>
           <ol className="mt-10 grid gap-8 md:grid-cols-3">
             {steps.map((step, index) => (
               <li key={step.number} className="relative">
@@ -486,9 +480,9 @@ export default async function HomePage() {
                     aria-hidden="true"
                   />
                 )}
-                <p className="mt-4 font-semibold">{step.title}</p>
+                <p className="mt-4 font-semibold">{t(step.title)}</p>
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  {step.description}
+                  {t(step.description)}
                 </p>
               </li>
             ))}
@@ -506,35 +500,32 @@ export default async function HomePage() {
                   <GraduationCap className="size-5" aria-hidden="true" />
                 </div>
                 <h2 className="font-display text-3xl font-semibold leading-tight">
-                  Dibangun untuk kelas, bukan hanya layar pribadi
+                  {t(d.educatorTitle)}
                 </h2>
                 <ul className="mt-6 space-y-3">
-                  {[
-                    "Pantau progres belajar per kelompok siswa",
-                    "Bandingkan hasil pre-test dan post-test",
-                    "Kelola konten budaya lewat dasbor admin",
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-2.5">
-                      <Check
-                        className="mt-0.5 size-4 shrink-0 text-primary"
-                        aria-hidden="true"
-                      />
-                      <span className="leading-relaxed">{item}</span>
-                    </li>
-                  ))}
+                  {[d.educatorCheck1, d.educatorCheck2, d.educatorCheck3].map(
+                    (item) => (
+                      <li key={item.en} className="flex items-start gap-2.5">
+                        <Check
+                          className="mt-0.5 size-4 shrink-0 text-primary"
+                          aria-hidden="true"
+                        />
+                        <span className="leading-relaxed">{t(item)}</span>
+                      </li>
+                    ),
+                  )}
                 </ul>
               </div>
               <div className="md:justify-self-end">
                 <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-card md:max-w-sm">
                   <p className="font-display text-lg font-semibold">
-                    Siap membawa LokaQuest ke kelas Anda?
+                    {t(d.educatorCardTitle)}
                   </p>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Buat akun, lalu minta admin menetapkan peran pendidik untuk
-                    membuka dasbor kelompok.
+                    {t(d.educatorCardBody)}
                   </p>
                   <Button asChild className="mt-5 w-full sm:w-auto">
-                    <Link href="/auth/register">Buat akun</Link>
+                    <Link href="/auth/register">{t(d.educatorCta)}</Link>
                   </Button>
                 </div>
               </div>
@@ -549,18 +540,17 @@ export default async function HomePage() {
           <div className="batik-grid absolute inset-0" aria-hidden="true" />
           <div className="relative mx-auto max-w-3xl">
             <h2 className="font-display text-4xl font-semibold leading-tight">
-              Warisan budaya menunggu untuk dijelajahi
+              {t(d.finalTitle)}
             </h2>
             <p className="mx-auto mt-4 max-w-md leading-relaxed text-muted-foreground">
-              Mulai dari misi pertama, kumpulkan XP, dan lihat seberapa jauh
-              pemahamanmu berkembang.
+              {t(d.finalBody)}
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button size="lg" asChild>
-                <Link href="/auth/register">Mulai Petualangan</Link>
+                <Link href="/auth/register">{t(d.ctaStart)}</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/encyclopedia">Baca Ensiklopedia</Link>
+                <Link href="/encyclopedia">{t(d.ctaEncyclopedia)}</Link>
               </Button>
             </div>
           </div>

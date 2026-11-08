@@ -1,13 +1,12 @@
 import { createServiceClient } from "@/lib/supabase/service-role";
+import { formatNumber } from "@/lib/i18n";
+import { getServerI18n } from "@/lib/i18n/server";
+import { miscDict as d } from "@/lib/i18n/dict/misc";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Trophy, Zap, Medal } from "lucide-react";
 import { ShareButton } from "@/components/layout/share-button";
-
-export const metadata = {
-  title: "Leaderboard",
-};
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +14,14 @@ export const dynamic = "force-dynamic";
  * Privacy-conscious leaderboard: display name + XP only, via the service
  * client because progress rows are owner-only under RLS. No emails exposed.
  */
+export async function generateMetadata() {
+  const { t } = await getServerI18n();
+  return { title: t(d.leaderboardMetaTitle) };
+}
+
 export default async function LeaderboardPage() {
   const service = createServiceClient();
+  const { t, lang } = await getServerI18n();
 
   const { data: rows } = await service
     .from("player_progress")
@@ -28,7 +33,7 @@ export default async function LeaderboardPage() {
     .map((r) => {
       const profile = Array.isArray(r.profiles) ? r.profiles[0] : r.profiles;
       return {
-        name: profile?.full_name || "Penjelajah",
+        name: profile?.full_name || t(d.explorerFallback),
         level: profile?.level ?? 1,
         xp: r.total_xp,
         missions: r.missions_completed,
@@ -42,14 +47,14 @@ export default async function LeaderboardPage() {
     <div className="mx-auto max-w-2xl px-4 py-10 md:py-14">
       <PageHeader
         icon={Trophy}
-        title="Papan peringkat"
-        description="20 penjelajah dengan XP tertinggi. Hanya nama tampilan yang ditampilkan."
+        title={t(d.leaderboardTitle)}
+        description={t(d.leaderboardDescription)}
         backHref="/"
-        backLabel="Beranda"
+        backLabel={t(d.homeBackLabel)}
         actions={
           <ShareButton
-            title="LokaQuest Leaderboard"
-            text="Lihat papan peringkat penjelajah budaya di LokaQuest!"
+            title={t(d.shareTitle)}
+            text={t(d.shareText)}
           />
         }
       />
@@ -59,9 +64,9 @@ export default async function LeaderboardPage() {
           <div className="m-4">
             <EmptyState
               icon={Trophy}
-              title="Belum ada peringkat"
-              description="Jadilah yang pertama menyelesaikan misi dan masuk papan peringkat."
-              action={{ label: "Mulai misi", href: "/missions" }}
+              title={t(d.leaderboardEmptyTitle)}
+              description={t(d.leaderboardEmptyDescription)}
+              action={{ label: t(d.startMissionCta), href: "/missions" }}
             />
           </div>
         ) : (
@@ -85,12 +90,12 @@ export default async function LeaderboardPage() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{row.name}</p>
                   <p className="text-[12px] text-muted-foreground">
-                    Level {row.level} · {row.missions} misi selesai
+                    {t(d.levelMissions, { level: row.level, missions: row.missions })}
                   </p>
                 </div>
                 <p className="flex shrink-0 items-center gap-1 font-semibold tabular-nums">
                   <Zap className="size-4 text-gold" aria-hidden="true" />
-                  {row.xp.toLocaleString("id-ID")}
+                  {formatNumber(row.xp, lang)}
                 </p>
               </li>
             ))}

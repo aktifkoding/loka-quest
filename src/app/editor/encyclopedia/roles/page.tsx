@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
+import { adminDict as d } from "@/lib/i18n/dict/admin";
+import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,14 +20,14 @@ type EditorRole = {
     | null;
 };
 
-const roleLabel: Record<string, string> = {
-  content_administrator: "Administrator konten",
-  cultural_editor: "Editor budaya",
-  reviewer: "Reviewer",
-  contributor: "Kontributor",
-};
-
 export default function EncyclopediaRolesPage() {
+  const { t } = useI18n();
+  const roleLabel: Record<string, string> = {
+    content_administrator: t(d.roleContentAdministrator),
+    cultural_editor: t(d.roleCulturalEditor),
+    reviewer: t(d.roleReviewer),
+    contributor: t(d.roleContributor),
+  };
   const [roles, setRoles] = useState<EditorRole[]>([]);
   const [email, setEmail] = useState("");
   const [editorRole, setEditorRole] = useState("contributor");
@@ -38,14 +41,14 @@ export default function EncyclopediaRolesPage() {
         cache: "no-store",
       });
       const json = await response.json();
-      if (!response.ok) throw new Error(json.error || "Gagal memuat peran");
+      if (!response.ok) throw new Error(json.error || t(d.rolesLoadFailed));
       setRoles(json.data ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      setError(err instanceof Error ? err.message : t(commonDict.errorGeneric));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -62,26 +65,26 @@ export default function EncyclopediaRolesPage() {
     });
     const json = await response.json();
     if (!response.ok) {
-      setError(json.error || "Gagal menetapkan peran");
+      setError(json.error || t(d.assignRoleFailed));
       return;
     }
     setEmail("");
-    setMessage("Peran editorial diperbarui.");
+    setMessage(t(d.roleUpdatedToast));
     await load();
   }
 
   async function remove(profileId: string) {
-    if (!confirm("Cabut peran editorial pengguna ini?")) return;
+    if (!confirm(t(d.revokeRoleConfirm))) return;
     const response = await fetch(
       `/api/v1/admin/encyclopedia/roles/${profileId}`,
       { method: "DELETE" }
     );
     if (!response.ok) {
       const json = await response.json();
-      setError(json.error || "Gagal mencabut peran");
+      setError(json.error || t(d.revokeRoleFailed));
       return;
     }
-    setMessage("Peran dicabut.");
+    setMessage(t(d.roleRevokedToast));
     await load();
   }
 
@@ -90,16 +93,16 @@ export default function EncyclopediaRolesPage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/editor/encyclopedia">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          CMS ensiklopedia
+          {t(d.backToCms)}
         </Link>
       </Button>
 
       <header>
         <h1 className="font-display text-3xl font-semibold tracking-tight">
-          Peran editorial
+          {t(d.rolesTitle)}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Berikan akses kontributor, reviewer, editor, atau administrator konten.
+          {t(d.rolesDescription)}
         </p>
       </header>
 
@@ -117,7 +120,7 @@ export default function EncyclopediaRolesPage() {
       <Card className="mt-6 p-6">
         <form onSubmit={assign} className="grid gap-4 sm:grid-cols-[1fr_200px_auto]">
           <label className="block text-sm font-medium">
-            Email pengguna
+            {t(d.userEmailLabel)}
             <Input
               className="mt-1"
               type="email"
@@ -128,22 +131,22 @@ export default function EncyclopediaRolesPage() {
             />
           </label>
           <label className="block text-sm font-medium">
-            Peran
+            {t(d.roleLabel)}
             <select
               className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
               value={editorRole}
               onChange={(event) => setEditorRole(event.target.value)}
             >
-              <option value="contributor">Kontributor</option>
-              <option value="reviewer">Reviewer</option>
-              <option value="cultural_editor">Editor budaya</option>
-              <option value="content_administrator">Administrator konten</option>
+              <option value="contributor">{t(d.roleContributor)}</option>
+              <option value="reviewer">{t(d.roleReviewer)}</option>
+              <option value="cultural_editor">{t(d.roleCulturalEditor)}</option>
+              <option value="content_administrator">{t(d.roleContentAdministrator)}</option>
             </select>
           </label>
           <div className="flex items-end">
             <Button type="submit">
               <UserPlus className="size-4" aria-hidden="true" />
-              Tetapkan
+              {t(d.assignCta)}
             </Button>
           </div>
         </form>
@@ -151,10 +154,10 @@ export default function EncyclopediaRolesPage() {
 
       <div className="mt-8">
         {loading ? (
-          <p className="text-sm text-muted-foreground">Memuat…</p>
+          <p className="text-sm text-muted-foreground">{t(commonDict.loadingShort)}</p>
         ) : roles.length === 0 ? (
           <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            Belum ada peran editorial. Administrator aplikasi tetap memiliki akses penuh.
+            {t(d.emptyRoles)}
           </p>
         ) : (
           <Card className="divide-y divide-border">
@@ -176,7 +179,7 @@ export default function EncyclopediaRolesPage() {
                     size="sm"
                     variant="ghost"
                     onClick={() => remove(role.profile_id)}
-                    aria-label="Cabut peran"
+                    aria-label={t(d.revokeRoleAria)}
                   >
                     <Trash2 className="size-4" aria-hidden="true" />
                   </Button>

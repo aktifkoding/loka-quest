@@ -10,6 +10,8 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+import { shellDict as d } from "@/lib/i18n/dict/shell";
 import { getCulturalMediaForMission } from "@/lib/cultural-media";
 
 interface MissionMediaGuideProps {
@@ -20,6 +22,7 @@ export function MissionMediaGuide({
   missionSlug,
 }: MissionMediaGuideProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { t } = useI18n();
   const mediaItems = getCulturalMediaForMission(missionSlug);
 
   if (mediaItems.length === 0) return null;
@@ -34,14 +37,14 @@ export function MissionMediaGuide({
           <div>
             <div className="flex items-center gap-2">
               <span className="rounded-md bg-gold/15 px-2 py-0.5 text-[11px] font-semibold text-gold">
-                Petunjuk Media Budaya
+                {t(d.mediaGuideBadge)}
               </span>
               <span className="text-xs text-muted-foreground">
-                {mediaItems.length} media tersedia
+                {t(d.mediaCount, { n: mediaItems.length })}
               </span>
             </div>
             <p className="mt-0.5 text-sm font-semibold text-foreground">
-              Dengarkan audio & tonton video pendukung misi ini
+              {t(d.mediaGuideSubtitle)}
             </p>
           </div>
         </div>
@@ -52,7 +55,7 @@ export function MissionMediaGuide({
           onClick={() => setIsExpanded((prev) => !prev)}
           className="gap-1.5 text-xs"
         >
-          <span>{isExpanded ? "Tutup Media" : "Buka Petunjuk Media"}</span>
+          <span>{isExpanded ? t(d.mediaToggleClose) : t(d.mediaToggleOpen)}</span>
           {isExpanded ? (
             <ChevronUp className="size-3.5" aria-hidden="true" />
           ) : (
@@ -64,7 +67,7 @@ export function MissionMediaGuide({
       {isExpanded && (
         <div className="mt-5 space-y-4 border-t border-primary/15 pt-4 animate-fade-in">
           <p className="text-xs text-muted-foreground">
-            Petunjuk audio dan video di bawah ini berisi melodi instrumen, vokal, dan ragam gerak tradisional yang dapat membantumu menyelesaikan tantangan misi.
+            {t(d.mediaGuideHelp)}
           </p>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -81,10 +84,10 @@ export function MissionMediaGuide({
                   )}
                   <p className="text-xs font-bold uppercase tracking-wider text-primary">
                     {item.category === "musik"
-                      ? "Musik Tradisional"
+                      ? t(d.mediaCategoryMusic)
                       : item.category === "tari"
-                      ? "Pertunjukan Seni Tari"
-                      : "Narasi Budaya"}
+                      ? t(d.mediaCategoryDance)
+                      : t(d.mediaCategoryNarration)}
                   </p>
                 </div>
                 <h4 className="mt-1 font-display text-sm font-bold text-foreground">
@@ -102,7 +105,7 @@ export function MissionMediaGuide({
                       src={item.url}
                       className="w-full h-9"
                     >
-                      Browser Anda tidak mendukung audio.
+                      {t(d.mediaAudioUnsupported)}
                     </audio>
                   ) : (
                     <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
@@ -120,7 +123,7 @@ export function MissionMediaGuide({
 
                 {item.attribution && (
                   <p className="mt-2 text-[10px] text-muted-foreground">
-                    Sumber: {item.attribution}
+                    {t(d.mediaSource, { source: item.attribution })}
                   </p>
                 )}
               </div>

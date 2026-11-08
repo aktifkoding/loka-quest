@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useI18n } from "@/lib/i18n";
+import { miscDict as d } from "@/lib/i18n/dict/misc";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, XCircle, Trophy, Loader2 } from "lucide-react";
@@ -27,6 +29,7 @@ type State = {
 export default function QuizPlayerPage() {
   const params = useParams<{ code: string }>();
   const code = params.code;
+  const { t } = useI18n();
   const [state, setState] = useState<State | null>(null);
   const [joined, setJoined] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,12 +40,12 @@ export default function QuizPlayerPage() {
     const response = await fetch(`/api/v1/quiz/${code}`, { cache: "no-store" });
     const json = await response.json();
     if (!response.ok) {
-      setError(json.error || "Gagal memuat sesi");
+      setError(json.error || t(d.loadSessionFailed));
       return;
     }
     setState(json.data);
     setError(null);
-  }, [code]);
+  }, [code, t]);
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null;
@@ -55,7 +58,7 @@ export default function QuizPlayerPage() {
       });
       const json = await response.json();
       if (!response.ok) {
-        setError(json.error || "Gagal bergabung");
+        setError(json.error || t(d.joinFailed));
         return;
       }
       setJoined(true);
@@ -67,7 +70,7 @@ export default function QuizPlayerPage() {
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [code, load]);
+  }, [code, load, t]);
 
   async function answer(questionId: string, value: string) {
     setPending(true);
@@ -79,15 +82,15 @@ export default function QuizPlayerPage() {
         body: JSON.stringify({ questionId, answer: { selected: value } }),
       });
       const json = await response.json();
-      if (!response.ok) throw new Error(json.error || "Gagal mengirim jawaban");
+      if (!response.ok) throw new Error(json.error || t(d.submitAnswerFailed));
       setFeedback(
         json.data.isCorrect
-          ? "Benar! +1 poin"
-          : `Belum tepat. ${json.data.explanation ?? ""}`
+          ? t(d.correctFeedback)
+          : t(d.incorrectFeedback, { explanation: json.data.explanation ?? "" })
       );
       await load();
     } catch (err) {
-      setFeedback(err instanceof Error ? err.message : "Gagal mengirim jawaban");
+      setFeedback(err instanceof Error ? err.message : t(d.submitAnswerFailed));
     } finally {
       setPending(false);
     }
@@ -102,7 +105,7 @@ export default function QuizPlayerPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 md:py-14">
       <header className="text-center">
-        <p className="text-sm text-muted-foreground">Kuis kelas</p>
+        <p className="text-sm text-muted-foreground">{t(d.classQuizLabel)}</p>
         <p className="font-display text-3xl font-semibold tracking-[0.18em]">
           {code}
         </p>
@@ -114,9 +117,9 @@ export default function QuizPlayerPage() {
       {error && (
         <div role="alert" className="mt-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
-          {error.includes("belum bergabung") && (
+          {(error.includes("belum bergabung") || error.includes("not joined this session")) && (
             <Button asChild variant="outline" size="sm" className="ml-3">
-              <Link href="/auth/login">Masuk</Link>
+              <Link href="/auth/login">{t(d.signInCta)}</Link>
             </Button>
           )}
         </div>
@@ -125,18 +128,18 @@ export default function QuizPlayerPage() {
       {!joined && !error && (
         <div className="mt-10 flex items-center justify-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          Bergabung ke sesi…
+          {t(d.joiningSession)}
         </div>
       )}
 
       {state?.status === "lobby" && (
         <Card className="mt-8 p-8 text-center">
-          <p className="font-display text-xl font-semibold">Menunggu host memulai…</p>
+          <p className="font-display text-xl font-semibold">{t(d.lobbyTitle)}</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Kamu sudah masuk. Siapkan jarimu.
+            {t(d.lobbyHint)}
           </p>
           <p className="mt-4 text-sm">
-            Peserta: <strong>{state.participants.length}</strong>
+            {t(d.participantsLabel)} <strong>{state.participants.length}</strong>
           </p>
         </Card>
       )}
@@ -144,7 +147,7 @@ export default function QuizPlayerPage() {
       {state?.status === "active" && question && (
         <Card className="mt-8 p-6">
           <p className="text-xs text-muted-foreground">
-            Soal {state.currentIndex + 1} dari {state.totalQuestions}
+            {t(d.questionNofM, { i: state.currentIndex + 1, n: state.totalQuestions })}
           </p>
           <h1 className="mt-3 font-display text-2xl font-semibold">
             {question.prompt}
@@ -155,12 +158,12 @@ export default function QuizPlayerPage() {
               {state.myAnswer.is_correct ? (
                 <>
                   <CheckCircle2 className="size-5 text-primary" aria-hidden="true" />
-                  Jawaban benar. Menunggu soal berikutnya…
+                  {t(d.answerCorrect)}
                 </>
               ) : (
                 <>
                   <XCircle className="size-5 text-destructive" aria-hidden="true" />
-                  Jawaban sudah dikirim. Menunggu soal berikutnya…
+                  {t(d.answerAlreadySent)}
                 </>
               )}
             </p>
@@ -168,7 +171,7 @@ export default function QuizPlayerPage() {
             <div className="mt-6 space-y-3">
               {choices.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Tipe soal ini belum didukung di kuis live.
+                  {t(d.unsupportedQuestionType)}
                 </p>
               ) : (
                 choices.map((choice) => (
@@ -198,10 +201,10 @@ export default function QuizPlayerPage() {
         <Card className="mt-8 p-6">
           <Trophy className="mx-auto size-8 text-gold" aria-hidden="true" />
           <h1 className="mt-2 text-center font-display text-2xl font-semibold">
-            Kuis selesai
+            {t(d.quizFinishedTitle)}
           </h1>
           <p className="mt-1 text-center text-sm text-muted-foreground">
-            Skor kamu: <strong>{state.me.score}</strong>
+            {t(d.yourScore)} <strong>{state.me.score}</strong>
           </p>
           <ol className="mt-6 space-y-2">
             {state.participants.map((participant, index) => (
@@ -219,7 +222,7 @@ export default function QuizPlayerPage() {
             ))}
           </ol>
           <Button asChild className="mt-6 w-full">
-            <Link href="/player/dashboard">Ke dasbor</Link>
+            <Link href="/player/dashboard">{t(d.toDashboardCta)}</Link>
           </Button>
         </Card>
       )}

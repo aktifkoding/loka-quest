@@ -3,11 +3,14 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n";
+import { authDict as d } from "@/lib/i18n/dict/auth";
 import { Gamepad2 } from "lucide-react";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
   const supabase = createClient();
+  const { t } = useI18n();
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -31,9 +34,9 @@ export default function AuthCallbackPage() {
         <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-raised">
           <Gamepad2 className="size-7" aria-hidden="true" />
         </span>
-        <p className="mt-4 font-display text-lg font-semibold">Menyiapkan sesimu…</p>
+        <p className="mt-4 font-display text-lg font-semibold">{t(d.preparingSession)}</p>
         <p className="mt-1 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
-          Memproses autentikasi
+          {t(d.processingAuth)}
           {[0, 1, 2].map((i) => (
             <span
               key={i}

@@ -4,6 +4,8 @@ import { withErrorHandling } from "@/lib/api/handler";
 import { parseJsonBody } from "@/lib/api/response";
 import { calculateScore } from "@/lib/scoring";
 import { durableRateLimit } from "@/lib/security/rate-limit-db";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 import { z } from "zod";
 
 const submitSchema = z.object({
@@ -63,10 +65,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const rl = await durableRateLimit(request, "assessments", 20, 60);
     if (!rl.ok) {
       return Response.json(
-        { success: false, error: "Terlalu banyak pengiriman. Coba lagi nanti." },
+        { success: false, error: E.rateLimitSubmissions[lang] },
         { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
       );
     }

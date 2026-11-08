@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useI18n } from "@/lib/i18n";
+import { playerDict } from "@/lib/i18n/dict/player";
 import {
   ArrowLeft,
   RotateCcw,
@@ -36,13 +38,32 @@ type ReviewItem = {
   }[] | null;
 };
 
-const difficultyLabels: Record<string, { label: string; color: string }> = {
-  beginner: { label: "Pemula (Fondasi)", color: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10" },
-  intermediate: { label: "Menengah (Eksplorasi)", color: "text-amber-600 dark:text-amber-400 bg-amber-500/10" },
-  advanced: { label: "Lanjutan (Maestro)", color: "text-purple-600 dark:text-purple-400 bg-purple-500/10" },
+const difficultyStyles: Record<string, string> = {
+  beginner: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
+  intermediate: "text-amber-600 dark:text-amber-400 bg-amber-500/10",
+  advanced: "text-purple-600 dark:text-purple-400 bg-purple-500/10",
+};
+
+const difficultyLabels: Record<string, typeof playerDict.difficultyBeginner> = {
+  beginner: playerDict.difficultyBeginner,
+  intermediate: playerDict.difficultyIntermediate,
+  advanced: playerDict.difficultyAdvanced,
+};
+
+const difficultyShortLabels: Record<string, typeof playerDict.difficultyShortBeginner> = {
+  beginner: playerDict.difficultyShortBeginner,
+  intermediate: playerDict.difficultyShortIntermediate,
+  advanced: playerDict.difficultyShortAdvanced,
+};
+
+const stageLabels: Record<string, typeof playerDict.stageFondasi> = {
+  fondasi: playerDict.stageFondasi,
+  eksplorasi: playerDict.stageEksplorasi,
+  maestro: playerDict.stageMaestro,
 };
 
 export default function ReviewPage() {
+  const { t } = useI18n();
   const [activeView, setActiveView] = useState<"queue" | "adaptive">("queue");
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [adaptive, setAdaptive] = useState<AdaptiveProfile | null>(null);
@@ -87,7 +108,7 @@ export default function ReviewPage() {
     });
     const json = await response.json();
     if (!response.ok) {
-      setFeedback(json.error || "Gagal menyimpan jawaban");
+      setFeedback(json.error || t(playerDict.errorSaveAnswer));
       return;
     }
     setResult(json.data.isCorrect);
@@ -110,7 +131,7 @@ export default function ReviewPage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/player/dashboard">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Dasbor
+          {t(playerDict.dashboard)}
         </Link>
       </Button>
 
@@ -118,19 +139,21 @@ export default function ReviewPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="font-display text-4xl font-semibold tracking-tight">
-              Review Pintar & Jalur Belajar Adaptif
+              {t(playerDict.reviewTitle)}
             </h1>
             <p className="mt-2 text-muted-foreground">
-              Sistem spaced-repetition dan algoritma adaptif menyesuaikan level kesulitan berdasarkan akurasi dan retensi belajarmu.
+              {t(playerDict.reviewIntro)}
             </p>
           </div>
           {adaptive && (
             <span
               className={`rounded-full px-4 py-1.5 text-xs font-semibold ${
-                difficultyLabels[adaptive.recommendedDifficulty]?.color ?? "bg-secondary text-foreground"
+                difficultyStyles[adaptive.recommendedDifficulty] ?? "bg-secondary text-foreground"
               }`}
             >
-              Rekomendasi Level: {difficultyLabels[adaptive.recommendedDifficulty]?.label}
+              {t(playerDict.recommendedLevel, {
+                label: t(difficultyLabels[adaptive.recommendedDifficulty] ?? playerDict.difficultyShortBeginner),
+              })}
             </span>
           )}
         </div>
@@ -146,7 +169,7 @@ export default function ReviewPage() {
             }`}
           >
             <RotateCcw className="size-4" aria-hidden="true" />
-            Antrean Spaced Repetition ({items.length})
+            {t(playerDict.queueTab, { n: items.length })}
           </button>
           <button
             onClick={() => setActiveView("adaptive")}
@@ -157,7 +180,7 @@ export default function ReviewPage() {
             }`}
           >
             <Brain className="size-4" aria-hidden="true" />
-            Jalur Belajar Adaptif
+            {t(playerDict.adaptiveTab)}
           </button>
         </div>
       </header>
@@ -169,40 +192,40 @@ export default function ReviewPage() {
           <div className="grid gap-4 sm:grid-cols-3">
             <Card className="p-5 border-primary/20 bg-primary/5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground">Level Kesulitan</span>
+                <span className="text-xs font-medium text-muted-foreground">{t(playerDict.difficultyLevelLabel)}</span>
                 <Compass className="size-4 text-primary" aria-hidden="true" />
               </div>
-              <p className="mt-2 font-display text-2xl font-bold capitalize text-foreground">
-                {adaptive.recommendedDifficulty}
+              <p className="mt-2 font-display text-2xl font-bold text-foreground">
+                {t(difficultyShortLabels[adaptive.recommendedDifficulty] ?? playerDict.difficultyShortBeginner)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Tahap: {adaptive.learningStage}
+                {t(playerDict.stagePrefix, { stage: t(stageLabels[adaptive.learningStage] ?? playerDict.stageFondasi) })}
               </p>
             </Card>
 
             <Card className="p-5 border-border bg-card">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground">Retensi Memori</span>
+                <span className="text-xs font-medium text-muted-foreground">{t(playerDict.retentionLabel)}</span>
                 <Brain className="size-4 text-emerald-500" aria-hidden="true" />
               </div>
               <p className="mt-2 font-display text-2xl font-bold tabular-nums text-foreground">
                 {adaptive.retentionScore}%
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                berdasarkan kurva spaced repetition
+                {t(playerDict.retentionCaption)}
               </p>
             </Card>
 
             <Card className="p-5 border-border bg-card">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground">Akurasi Misi Terakhir</span>
+                <span className="text-xs font-medium text-muted-foreground">{t(playerDict.accuracyLabel)}</span>
                 <TrendingUp className="size-4 text-gold" aria-hidden="true" />
               </div>
               <p className="mt-2 font-display text-2xl font-bold tabular-nums text-foreground">
                 {adaptive.recentAverageScore}%
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                dari {adaptive.totalAttempts} percobaan misi
+                {t(playerDict.accuracyCaption, { n: adaptive.totalAttempts })}
               </p>
             </Card>
           </div>
@@ -213,7 +236,7 @@ export default function ReviewPage() {
               <Sparkles className="size-5 text-gold shrink-0 mt-0.5" aria-hidden="true" />
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-                  Evaluasi Jalur Adaptif
+                  {t(playerDict.evaluationLabel)}
                 </p>
                 <p className="mt-1 text-sm font-medium text-foreground/90">
                   {adaptive.adjustmentReason}
@@ -224,9 +247,9 @@ export default function ReviewPage() {
 
           {/* Recommended Progression Steps */}
           <div>
-            <h3 className="font-display text-xl font-bold">Langkah Belajar Selanjutnya</h3>
+            <h3 className="font-display text-xl font-bold">{t(playerDict.nextStepsTitle)}</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Urutan aktivitas yang direkomendasikan sistem untuk memaksimalkan retensi dan penguasaan materi:
+              {t(playerDict.nextStepsDesc)}
             </p>
 
             <div className="mt-4 space-y-3">
@@ -245,11 +268,11 @@ export default function ReviewPage() {
                         <h4 className="font-semibold text-foreground">{step.title}</h4>
                         {step.priority === "urgent" && (
                           <span className="rounded-md bg-destructive/10 px-2 py-0.5 text-[11px] font-semibold text-destructive">
-                            Wajib Diulang
+                            {t(playerDict.priorityUrgent)}
                           </span>
                         )}
-                        <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground capitalize">
-                          {step.difficulty}
+                        <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                          {t(difficultyShortLabels[step.difficulty] ?? playerDict.difficultyShortBeginner)}
                         </span>
                         {step.xpRewardEstimate && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gold">
@@ -260,14 +283,14 @@ export default function ReviewPage() {
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">{step.description}</p>
                       <p className="mt-1 text-[11px] text-primary/80 italic">
-                        Alasan: {step.reason}
+                        {t(playerDict.reasonPrefix, { reason: step.reason })}
                       </p>
                     </div>
                   </div>
 
                   <Button asChild size="sm" className="gap-1.5 shrink-0">
                     <Link href={step.href}>
-                      Mulai
+                      {t(playerDict.startCta)}
                       <ArrowRight className="size-3.5" aria-hidden="true" />
                     </Link>
                   </Button>
@@ -282,27 +305,27 @@ export default function ReviewPage() {
       {activeView === "queue" && (
         <div className="mt-8 animate-fade-in max-w-2xl mx-auto">
           {loading ? (
-            <p className="mt-10 text-sm text-muted-foreground">Memuat antrean…</p>
+            <p className="mt-10 text-sm text-muted-foreground">{t(playerDict.loadingQueue)}</p>
           ) : !item ? (
             <div className="mt-10">
               <EmptyState
                 icon={RotateCcw}
-                title={done > 0 ? "Review selesai!" : "Antrean review kosong"}
+                title={done > 0 ? t(playerDict.reviewDoneTitle) : t(playerDict.reviewQueueEmptyTitle)}
                 description={
                   done > 0
-                    ? `${done} soal berhasil ditinjau. Sistem spaced-repetition telah memperbarui jadwal interval berikutnya.`
-                    : "Belum ada soal yang jatuh tempo review. Jawaban yang perlu diperkuat akan otomatis muncul di sini."
+                    ? t(playerDict.reviewDoneDesc, { n: done })
+                    : t(playerDict.reviewQueueEmptyDesc)
                 }
-                action={{ label: "Ke daftar misi", href: "/missions" }}
+                action={{ label: t(playerDict.goToList), href: "/missions" }}
               />
             </div>
           ) : (
             <Card className="p-6">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>
-                  Soal {index + 1} dari {items.length}
+                  {t(playerDict.questionCounter, { n: index + 1, total: items.length })}
                 </span>
-                <span>{mission?.title ?? "Misi"}</span>
+                <span>{mission?.title ?? t(playerDict.missionFallback)}</span>
               </div>
               <h2 className="mt-4 font-display text-xl font-semibold">
                 {question?.prompt}
@@ -321,12 +344,12 @@ export default function ReviewPage() {
                   ) {
                     return (
                       <p className="text-sm text-muted-foreground">
-                        Tipe soal ini perlu dibuka di halaman misi.{" "}
+                        {t(playerDict.openInMissionNotice)}{" "}
                         <Link
                           href={`/missions/${mission?.slug ?? ""}`}
                           className="text-primary underline"
                         >
-                          Buka misi
+                          {t(playerDict.openMissionLink)}
                         </Link>
                       </p>
                     );
@@ -351,12 +374,12 @@ export default function ReviewPage() {
                     {result ? (
                       <>
                         <CheckCircle2 className="size-5 text-primary" aria-hidden="true" />
-                        Benar! Interval memori diperpanjang.
+                        {t(playerDict.correctFeedback)}
                       </>
                     ) : (
                       <>
                         <XCircle className="size-5 text-destructive" aria-hidden="true" />
-                        Belum tepat. Soal akan diulang segera.
+                        {t(playerDict.wrongFeedback)}
                       </>
                     )}
                   </p>
@@ -364,7 +387,7 @@ export default function ReviewPage() {
                     <p className="mt-2 text-sm text-muted-foreground">{feedback}</p>
                   )}
                   <Button className="mt-4" onClick={next}>
-                    Lanjut
+                    {t(playerDict.nextButton)}
                   </Button>
                 </div>
               )}

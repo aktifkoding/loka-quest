@@ -1,14 +1,21 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { WikimediaImage } from "@/components/wikimedia-image";
 import { createClient } from "@/lib/supabase/server";
 import { MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
+import { getServerI18n } from "@/lib/i18n/server";
+import { encyclopediaDict as d } from "@/lib/i18n/dict/encyclopedia";
 
-export const metadata = { title: "Wilayah Nusantara" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t(d.regionsMetaTitle) };
+}
 
 export default async function EncyclopediaRegionsPage() {
+  const { t } = await getServerI18n();
   const supabase = await createClient();
   const { data: rawArticleRegions, error } = await supabase
     .from("encyclopedia_article_regions")
@@ -33,19 +40,19 @@ export default async function EncyclopediaRegionsPage() {
     <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
       <PageHeader
         icon={MapPin}
-        title="Wilayah Nusantara"
-        description="Wilayah ditampilkan berdasarkan keterkaitan artikel yang sudah diterbitkan. Lokasi tidak ditambahkan tanpa verifikasi."
+        title={t(d.regionsPageTitle)}
+        description={t(d.regionsPageDescription)}
         backHref="/encyclopedia"
-        backLabel="Ensiklopedia"
+        backLabel={t(d.backToEncyclopedia)}
       />
 
       {error || !regions.length ? (
         <div className="mt-10">
           <EmptyState
             icon={MapPin}
-            title={error ? "Wilayah belum dapat dimuat" : "Belum ada wilayah terkait"}
-            description="Wilayah akan ditampilkan ketika ada artikel ensiklopedia terbit yang terhubung."
-            action={{ label: "Jelajahi wilayah LokaQuest", href: "/explore" }}
+            title={error ? t(d.regionsErrorTitle) : t(d.regionsEmptyTitle)}
+            description={t(d.regionsEmptyDescription)}
+            action={{ label: t(d.exploreLokaQuestRegionsCta), href: "/explore" }}
           />
         </div>
       ) : (

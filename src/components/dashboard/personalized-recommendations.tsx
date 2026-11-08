@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
+import { playerDict } from "@/lib/i18n/dict/player";
 import {
   Sparkles,
   Gamepad2,
@@ -20,6 +22,8 @@ interface PersonalizedRecommendationsProps {
 export function PersonalizedRecommendations({
   recommendations,
 }: PersonalizedRecommendationsProps) {
+  const { t } = useI18n();
+
   if (recommendations.length === 0) return null;
 
   const iconMap = {
@@ -44,13 +48,13 @@ export function PersonalizedRecommendations({
         <div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <Sparkles className="size-3.5 text-gold" aria-hidden="true" />
-            Rekomendasi Personal Untukmu
+            {t(playerDict.personalizedBadge)}
           </span>
           <h2 className="mt-2 font-display text-2xl font-bold tracking-tight">
-            Langkah Pembelajaran Pilihan
+            {t(playerDict.personalizedTitle)}
           </h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Disusun berdasarkan progres misi, akurasi jawaban, dan antrean spaced repetition kamu.
+            {t(playerDict.personalizedExplainer)}
           </p>
         </div>
       </div>

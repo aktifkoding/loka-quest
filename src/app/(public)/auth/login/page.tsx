@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Gamepad2, Loader2, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n";
+import { authDict as d } from "@/lib/i18n/dict/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -18,6 +20,7 @@ export default function LoginPage() {
   const [demoLoading, setDemoLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const { t } = useI18n();
 
   const startDemo = async () => {
     setDemoLoading(true);
@@ -25,11 +28,11 @@ export default function LoginPage() {
     try {
       const res = await fetch("/api/v1/auth/demo", { method: "POST" });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Gagal memulai demo");
+      if (!res.ok) throw new Error(json.error || t(d.demoError));
       router.push("/player/dashboard");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal memulai demo");
+      setError(err instanceof Error ? err.message : t(d.demoError));
       setDemoLoading(false);
     }
   };
@@ -48,7 +51,7 @@ export default function LoginPage() {
       if (error) {
         setError(
           error.message === "Invalid login credentials"
-            ? "Email atau kata sandi tidak cocok."
+            ? t(d.invalidCredentials)
             : error.message
         );
         return;
@@ -57,7 +60,7 @@ export default function LoginPage() {
       router.push("/player/dashboard");
       router.refresh();
     } catch {
-      setError("Terjadi kesalahan. Coba lagi.");
+      setError(t(d.errorTryAgain));
     } finally {
       setLoading(false);
     }
@@ -77,14 +80,14 @@ export default function LoginPage() {
         <div className="mt-10 rounded-2xl border border-border/70 bg-card p-6 shadow-card">
           <div className="flex items-center justify-between">
             <p className="text-[13px] font-medium text-muted-foreground">
-              Misi Batik Detective
+              {t(d.demoMissionName)}
             </p>
             <p className="text-[13px] font-semibold tabular-nums text-gold">
               150 XP
             </p>
           </div>
           <p className="mt-3 font-display text-lg font-semibold leading-snug">
-            Motif batik yang melambangkan keberanian adalah…
+            {t(d.demoQuestion)}
           </p>
           <div className="mt-4 space-y-2 text-sm" role="presentation">
             <p className="rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 font-medium text-primary">
@@ -97,18 +100,17 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-10 border-t border-border pt-6 text-[13px] leading-relaxed text-muted-foreground">
-          Progres pemain hanya bisa diakses pemiliknya. Data tersimpan aman di
-          Supabase dengan proteksi tingkat baris.
+          {t(d.trustCopy)}
         </p>
       </aside>
 
       {/* Form column — 360-400px, speed is the design */}
       <div className="animate-fade-up mx-auto w-full max-w-[400px]" style={{ animationDelay: "120ms" }}>
         <h1 className="font-display text-3xl font-semibold tracking-tight">
-          Selamat datang kembali
+          {t(d.loginHeading)}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Masuk untuk melanjutkan petualangan budayamu.
+          {t(d.loginSub)}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -122,12 +124,12 @@ export default function LoginPage() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t(d.labelEmail)}</Label>
             <Input
               id="email"
               type="email"
               autoComplete="email"
-              placeholder="nama@email.com"
+              placeholder={t(d.placeholderEmail)}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -136,12 +138,12 @@ export default function LoginPage() {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">Kata sandi</Label>
+              <Label htmlFor="password">{t(d.labelPassword)}</Label>
               <Link
                 href="/auth/forgot-password"
                 className="text-[13px] font-medium text-primary hover:underline"
               >
-                Lupa kata sandi?
+                {t(d.forgotLink)}
               </Link>
             </div>
             <div className="relative">
@@ -149,7 +151,7 @@ export default function LoginPage() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
-                placeholder="Kata sandi kamu"
+                placeholder={t(d.loginPasswordPlaceholder)}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -159,7 +161,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={
-                  showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
+                  showPassword ? t(d.hidePasswordAria) : t(d.showPasswordAria)
                 }
                 className="absolute right-1 top-1 flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               >
@@ -176,16 +178,16 @@ export default function LoginPage() {
             {loading ? (
               <>
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                Memproses…
+                {t(d.processing)}
               </>
             ) : (
-              "Masuk"
+              t(d.signInCta)
             )}
           </Button>
 
           <div className="flex items-center gap-3" role="presentation">
             <span className="h-px flex-1 bg-border" />
-            <span className="text-[12px] text-muted-foreground">atau</span>
+            <span className="text-[12px] text-muted-foreground">{t(d.orDivider)}</span>
             <span className="h-px flex-1 bg-border" />
           </div>
 
@@ -199,20 +201,20 @@ export default function LoginPage() {
             {demoLoading ? (
               <>
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                Menyiapkan akun demo…
+                {t(d.demoPreparing)}
               </>
             ) : (
               <>
                 <Sparkles className="size-4 text-gold" aria-hidden="true" />
-                Coba demo instan — tanpa daftar
+                {t(d.demoCta)}
               </>
             )}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
-            Baru di LokaQuest?{" "}
+            {t(d.noAccount)}{" "}
             <Link href="/auth/register" className="font-medium text-primary hover:underline">
-              Buat akun
+              {t(d.createAccountCta)}
             </Link>
           </p>
         </form>

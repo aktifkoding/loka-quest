@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, MailCheck, Gamepad2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n";
+import { authDict as d } from "@/lib/i18n/dict/auth";
+import { commonDict } from "@/lib/i18n/dict/common";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -14,6 +17,7 @@ export default function ForgotPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
+  const { t } = useI18n();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +36,7 @@ export default function ForgotPasswordPage() {
 
       setSuccess(true);
     } catch {
-      setError("Terjadi kesalahan. Coba lagi.");
+      setError(t(d.errorTryAgain));
     } finally {
       setLoading(false);
     }
@@ -52,24 +56,24 @@ export default function ForgotPasswordPage() {
             <MailCheck className="size-5" aria-hidden="true" />
           </div>
           <h1 className="font-display text-2xl font-semibold tracking-tight">
-            Periksa kotak masukmu
+            {t(d.resetSuccessHeading)}
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Jika <span className="font-medium text-foreground">{email}</span>{" "}
-            terdaftar, tautan untuk mengatur ulang kata sandi sudah dikirim.
-            Tautan berlaku selama satu jam.
+            {t(d.resetSuccessIfPrefix)}{" "}
+            <span className="font-medium text-foreground">{email}</span>{" "}
+            {t(d.resetSuccessRest)}
           </p>
           <Button variant="outline" asChild className="mt-6">
-            <Link href="/auth/login">Kembali ke halaman masuk</Link>
+            <Link href="/auth/login">{t(d.backToLoginCta)}</Link>
           </Button>
         </div>
       ) : (
         <>
           <h1 className="font-display text-3xl font-semibold tracking-tight">
-            Atur ulang kata sandi
+            {t(d.forgotHeading)}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Masukkan emailmu dan kami kirim tautan pengaturan ulang.
+            {t(d.forgotSub)}
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -83,12 +87,12 @@ export default function ForgotPasswordPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t(d.labelEmail)}</Label>
               <Input
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="nama@email.com"
+                placeholder={t(d.placeholderEmail)}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -99,20 +103,20 @@ export default function ForgotPasswordPage() {
               {loading ? (
                 <>
                   <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                  Mengirim…
+                  {t(commonDict.sending)}
                 </>
               ) : (
-                "Kirim tautan"
+                t(d.sendLinkCta)
               )}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Ingat kata sandinya?{" "}
+              {t(d.rememberPassword)}{" "}
               <Link
                 href="/auth/login"
                 className="font-medium text-primary hover:underline"
               >
-                Masuk
+                {t(d.signInCta)}
               </Link>
             </p>
           </form>

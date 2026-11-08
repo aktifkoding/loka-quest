@@ -26,6 +26,10 @@ import {
   X,
   Maximize2,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+import { publicDict as d } from "@/lib/i18n/dict/public";
+import { commonDict } from "@/lib/i18n/dict/common";
+import type { Localized } from "@/lib/i18n";
 
 interface ImageCredit {
   title: string;
@@ -65,21 +69,22 @@ interface Mission {
   xp_reward: number;
 }
 
-const difficultyLabel: Record<string, string> = {
-  beginner: "Pemula",
-  intermediate: "Menengah",
-  advanced: "Lanjutan",
+const difficultyLabel: Record<string, Localized> = {
+  beginner: d.difficultyBeginner,
+  intermediate: d.difficultyIntermediate,
+  advanced: d.difficultyAdvanced,
 };
 
-const contentTypeMeta: Record<string, { label: string; icon: typeof ScrollText; color: string }> = {
-  tradition: { label: "Tradisi", icon: ScrollText, color: "bg-amber-500/10 text-amber-700 dark:text-amber-400" },
-  artifact: { label: "Artefak", icon: Landmark, color: "bg-rose-500/10 text-rose-700 dark:text-rose-400" },
-  practice: { label: "Praktik", icon: Users, color: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" },
-  story: { label: "Cerita", icon: BookMarked, color: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-400" },
+const contentTypeMeta: Record<string, { label: Localized; icon: typeof ScrollText; color: string }> = {
+  tradition: { label: d.contentTypeTradition, icon: ScrollText, color: "bg-amber-500/10 text-amber-700 dark:text-amber-400" },
+  artifact: { label: d.contentTypeArtifact, icon: Landmark, color: "bg-rose-500/10 text-rose-700 dark:text-rose-400" },
+  practice: { label: d.contentTypePractice, icon: Users, color: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" },
+  story: { label: d.contentTypeStory, icon: BookMarked, color: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-400" },
 };
 
 export default function RegionDetailPage() {
   const params = useParams();
+  const { t } = useI18n();
   const [region, setRegion] = useState<RegionDetail | null>(null);
   const [missions, setMissions] = useState<Mission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,13 +103,13 @@ export default function RegionDetailPage() {
         const missionsData = await missionsRes.json();
 
         if (!regionRes.ok) {
-          throw new Error(regionData.error || "Gagal memuat wilayah");
+          throw new Error(regionData.error || t(d.errorLoadRegions));
         }
 
         setRegion(regionData.data ?? null);
         setMissions(missionsData.data || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+        setError(err instanceof Error ? err.message : t(commonDict.errorGeneric));
       } finally {
         setLoading(false);
       }
@@ -146,12 +151,12 @@ export default function RegionDetailPage() {
       <div className="mx-auto max-w-4xl px-4 py-16">
         <EmptyState
           icon={Compass}
-          title="Wilayah tidak ditemukan"
+          title={t(d.regionNotFoundTitle)}
           description={
             error ??
-            "Wilayah budaya ini belum dipublikasikan atau sudah dipindahkan."
+            t(d.regionNotFoundDescription)
           }
-          action={{ label: "Kembali ke peta jelajah", href: "/explore" }}
+          action={{ label: t(d.backToExploreCta), href: "/explore" }}
         />
       </div>
     );
@@ -162,7 +167,7 @@ export default function RegionDetailPage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/explore">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Jelajahi
+          {t(d.exploreLink)}
         </Link>
       </Button>
 
@@ -173,7 +178,7 @@ export default function RegionDetailPage() {
             <Image
                   loader={wikimediaLoader}
               src={region.image_url}
-              alt={`Suasana ${region.name}`}
+              alt={t(d.regionImageAlt, { name: region.name })}
               fill
               priority
               sizes="100vw"
@@ -198,23 +203,23 @@ export default function RegionDetailPage() {
       )}
 
       {/* Description */}
-      <section aria-label="Tentang wilayah" className="mb-12">
+      <section aria-label={t(d.aboutSectionAria)} className="mb-12">
         <Reveal>
-          <h2 className="font-display text-xl font-semibold">Tentang wilayah ini</h2>
+          <h2 className="font-display text-xl font-semibold">{t(d.aboutHeading)}</h2>
           <p className="mt-3 leading-relaxed text-muted-foreground">{region.description}</p>
         </Reveal>
       </section>
 
       {/* Konten budaya */}
       {region.contents.length > 0 && (
-        <section className="mb-14" aria-label="Tradisi dan cerita">
+        <section className="mb-14" aria-label={t(d.contentsSectionAria)}>
           <Reveal>
             <div className="flex items-center gap-2">
               <Sparkles className="size-5 text-primary" aria-hidden="true" />
-              <h2 className="font-display text-2xl font-semibold">Tradisi &amp; cerita</h2>
+              <h2 className="font-display text-2xl font-semibold">{t(d.contentsHeading)}</h2>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Setiap tulisan bersumber tercatat — sentuh sumbernya untuk tahu rujukannya.
+              {t(d.contentsIntro)}
             </p>
           </Reveal>
 
@@ -243,10 +248,10 @@ export default function RegionDetailPage() {
                             <button
                               onClick={() => setLightbox(content.media_url)}
                               className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm transition hover:bg-black/60"
-                              aria-label="Perbesar gambar"
+                              aria-label={t(d.zoomAria)}
                             >
                               <Maximize2 className="size-3.5" aria-hidden="true" />
-                              Perbesar
+                              {t(d.zoomCta)}
                             </button>
                           </div>
                         </div>
@@ -257,7 +262,7 @@ export default function RegionDetailPage() {
                           <span className={`inline-flex size-8 items-center justify-center rounded-lg ${meta.color}`}>
                             <Icon className="size-4" aria-hidden="true" />
                           </span>
-                          <p className="text-[13px] font-semibold text-primary">{meta.label}</p>
+                          <p className="text-[13px] font-semibold text-primary">{t(meta.label)}</p>
                         </div>
                         <h3 className="mt-2.5 font-display text-xl font-semibold leading-snug">
                           {content.title}
@@ -278,7 +283,7 @@ export default function RegionDetailPage() {
                           <div className="mt-5 flex flex-wrap items-center gap-1.5 border-t border-border pt-3.5 text-[12px] text-muted-foreground">
                             <BookMarked className="size-3.5 shrink-0" aria-hidden="true" />
                             <span>
-                              Sumber: {content.source.title}
+                              {t(d.sourcePrefix, { x: content.source.title })}
                               {content.source.publisher ? ` · ${content.source.publisher}` : ""}
                               {content.source.license ? ` · ${content.source.license}` : ""}
                             </span>
@@ -290,7 +295,7 @@ export default function RegionDetailPage() {
                                 className="inline-flex items-center gap-0.5 text-primary hover:underline"
                               >
                                 <ExternalLink className="size-3" aria-hidden="true" />
-                                buka
+                                {t(d.openSourceCta)}
                               </a>
                             )}
                           </div>
@@ -306,18 +311,18 @@ export default function RegionDetailPage() {
       )}
 
       {/* Misi di wilayah ini */}
-      <section className="mb-14" aria-label="Misi di wilayah ini">
+      <section className="mb-14" aria-label={t(d.missionsSectionAria)}>
         <Reveal>
-          <h2 className="font-display text-2xl font-semibold">Misi di wilayah ini</h2>
+          <h2 className="font-display text-2xl font-semibold">{t(d.missionsHeading)}</h2>
         </Reveal>
 
         {missions.length === 0 ? (
           <div className="mt-6">
             <EmptyState
               icon={Gamepad2}
-              title="Misi belum dibuka"
-              description="Belum ada misi yang dipublikasikan untuk wilayah ini. Cek lagi nanti."
-              action={{ label: "Lihat wilayah lain", href: "/explore" }}
+              title={t(d.missionsEmptyTitle)}
+              description={t(d.missionsEmptyDescription)}
+              action={{ label: t(d.otherRegionsCta), href: "/explore" }}
             />
           </div>
         ) : (
@@ -338,7 +343,11 @@ export default function RegionDetailPage() {
                               {mission.description}
                             </p>
                             <p className="mt-1.5 text-[13px] text-muted-foreground">
-                              <span>{difficultyLabel[mission.difficulty] ?? mission.difficulty}</span>
+                              <span>
+                                {difficultyLabel[mission.difficulty]
+                                  ? t(difficultyLabel[mission.difficulty])
+                                  : mission.difficulty}
+                              </span>
                               <span aria-hidden="true"> · </span>
                               <span className="font-semibold tabular-nums text-gold">
                                 {mission.xp_reward} XP
@@ -367,19 +376,19 @@ export default function RegionDetailPage() {
           onClick={() => setLightbox(null)}
           role="dialog"
           aria-modal="true"
-          aria-label="Pratinjau gambar"
+          aria-label={t(d.lightboxAria)}
         >
           <button
             onClick={() => setLightbox(null)}
             className="animate-scale-in absolute right-4 top-4 inline-flex size-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
-            aria-label="Tutup pratinjau"
+            aria-label={t(d.lightboxCloseAria)}
           >
             <X className="size-5" aria-hidden="true" />
           </button>
           {/* eslint-disable-next-line @next/next/no-img-element -- lightbox perlu ukuran asli gambar */}
           <img
             src={lightbox}
-            alt="Pratinjau"
+            alt={t(d.previewAlt)}
             className="animate-scale-in max-h-[90vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />

@@ -1,20 +1,26 @@
 import Link from "next/link";
 import { Gamepad2 } from "lucide-react";
+import { type Localized } from "@/lib/i18n";
+import { getServerI18n } from "@/lib/i18n/server";
+import { navDict } from "@/lib/i18n/dict/nav";
+import { shellDict as d } from "@/lib/i18n/dict/shell";
 
-const FOOTER_LINKS: [string, string][] = [
-  ["Grafik Budaya", "/jelajahi"],
-  ["Komunitas", "/komunitas"],
-  ["Asisten AI", "/asisten"],
-  ["Jelajahi", "/explore"],
-  ["Misi", "/missions"],
-  ["Ensiklopedia", "/encyclopedia"],
-  ["Sumber budaya", "/sumber"],
-  ["Leaderboard", "/leaderboard"],
-  ["Tentang", "/tentang"],
+const FOOTER_LINKS: { href: string; label: Localized }[] = [
+  { href: "/jelajahi", label: navDict.graph },
+  { href: "/komunitas", label: navDict.community },
+  { href: "/asisten", label: navDict.assistant },
+  { href: "/explore", label: navDict.explore },
+  { href: "/missions", label: navDict.missions },
+  { href: "/encyclopedia", label: navDict.encyclopedia },
+  { href: "/sumber", label: d.footerSources },
+  { href: "/leaderboard", label: { id: "Leaderboard", en: "Leaderboard" } },
+  { href: "/tentang", label: d.footerAbout },
 ];
 
 /** Footer bersama untuk semua halaman publik — tenang, tematik, tanpa ribut. */
-export function SiteFooter() {
+export async function SiteFooter() {
+  const { t } = await getServerI18n();
+
   return (
     <footer className="border-t border-border bg-card/40">
       <div className="mx-auto max-w-6xl px-4 py-12">
@@ -27,27 +33,27 @@ export function SiteFooter() {
               LokaQuest
             </p>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Jelajahi Nusantara, hidupkan warisan budaya.
+              {t(d.footerTagline)}
             </p>
             <div className="tenun mt-5 w-24" aria-hidden="true" />
           </div>
           <nav
             className="grid grid-cols-2 gap-x-12 gap-y-2.5 text-sm sm:grid-cols-3"
-            aria-label="Footer"
+            aria-label={t(d.footerAria)}
           >
-            {FOOTER_LINKS.map(([label, href]) => (
+            {FOOTER_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
               >
-                {label}
+                {t(label)}
               </Link>
             ))}
           </nav>
         </div>
         <p className="mt-10 text-[13px] text-muted-foreground">
-          © 2026 LokaQuest. Konten budaya disertai sumber referensi.
+          {t(d.footerCopyright)}
         </p>
       </div>
     </footer>

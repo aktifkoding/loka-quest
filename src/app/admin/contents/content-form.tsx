@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n";
+import { adminDict as d } from "@/lib/i18n/dict/admin";
 import { Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,17 +13,9 @@ import { Label } from "@/components/ui/label";
 type Region = { id: string; name: string };
 type Source = { id: string; title: string };
 
-const CONTENT_TYPES = [
-  { value: "tradition", label: "Tradisi" },
-  { value: "artifact", label: "Artefak" },
-  { value: "practice", label: "Praktik" },
-  { value: "story", label: "Cerita" },
-] as const;
-
-const STATUSES = ["draft", "review", "published", "archived"] as const;
-
 export function ContentForm({ regions, sources }: { regions: Region[]; sources: Source[] }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +54,7 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Gagal menyimpan konten");
+      if (!res.ok) throw new Error(json.error ?? t(d.saveContentFailed));
       setOpen(false);
       setForm((prev) => ({
         ...prev,
@@ -72,7 +66,7 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
       }));
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal menyimpan konten");
+      setError(err instanceof Error ? err.message : t(d.saveContentFailed));
     } finally {
       setBusy(false);
     }
@@ -81,16 +75,31 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
   if (regions.length === 0) {
     return (
       <p className="mt-4 text-sm text-muted-foreground">
-        Tambahkan wilayah terlebih dahulu sebelum membuat konten.
+        {t(d.needRegionFirst)}
       </p>
     );
   }
+
+  const CONTENT_TYPES = [
+    { value: "tradition", label: t(d.typeTradition) },
+    { value: "artifact", label: t(d.typeArtifact) },
+    { value: "practice", label: t(d.typePractice) },
+    { value: "story", label: t(d.typeStory) },
+  ] as const;
+
+  const STATUSES = ["draft", "review", "published", "archived"] as const;
+  const statusLabels: Record<(typeof STATUSES)[number], string> = {
+    draft: t(d.statusDraft),
+    review: t(d.statusReview),
+    published: t(d.statusPublished),
+    archived: t(d.statusArchived),
+  };
 
   return (
     <div className="mt-4">
       <Button type="button" onClick={() => setOpen((value) => !value)}>
         <Plus className="size-4" aria-hidden="true" />
-        {open ? "Tutup form" : "Tambah konten"}
+        {open ? t(d.closeFormCta) : t(d.addContentCta)}
       </Button>
 
       {error && (
@@ -107,7 +116,7 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
           <form onSubmit={submit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <Label htmlFor="content-title">Judul</Label>
+                <Label htmlFor="content-title">{t(d.titleLabel)}</Label>
                 <Input
                   id="content-title"
                   value={form.title}
@@ -118,7 +127,7 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
                 />
               </div>
               <div>
-                <Label htmlFor="content-region">Wilayah</Label>
+                <Label htmlFor="content-region">{t(d.regionLabel)}</Label>
                 <select
                   id="content-region"
                   className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
@@ -134,7 +143,7 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
                 </select>
               </div>
               <div>
-                <Label htmlFor="content-type">Jenis</Label>
+                <Label htmlFor="content-type">{t(d.typeLabel)}</Label>
                 <select
                   id="content-type"
                   className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
@@ -149,7 +158,7 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
                 </select>
               </div>
               <div>
-                <Label htmlFor="content-status">Status</Label>
+                <Label htmlFor="content-status">{t(d.statusLabel)}</Label>
                 <select
                   id="content-status"
                   className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
@@ -158,7 +167,7 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
                 >
                   {STATUSES.map((status) => (
                     <option key={status} value={status}>
-                      {status}
+                      {statusLabels[status]}
                     </option>
                   ))}
                 </select>
@@ -166,7 +175,7 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
             </div>
 
             <div>
-              <Label htmlFor="content-description">Deskripsi</Label>
+              <Label htmlFor="content-description">{t(d.descriptionLabel)}</Label>
               <textarea
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
                 id="content-description"
@@ -180,7 +189,7 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
             </div>
 
             <div>
-              <Label htmlFor="content-body">Isi (opsional)</Label>
+              <Label htmlFor="content-body">{t(d.bodyLabel)}</Label>
               <textarea
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
                 id="content-body"
@@ -192,14 +201,14 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
             </div>
 
             <div>
-              <Label htmlFor="content-source">Sumber</Label>
+              <Label htmlFor="content-source">{t(d.sourceLabel)}</Label>
               <select
                 id="content-source"
                 className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
                 value={form.sourceId}
                 onChange={(e) => update("sourceId", e.target.value)}
               >
-                <option value="">Belum ada sumber</option>
+                <option value="">{t(d.noSourceOption)}</option>
                 {sources.map((source) => (
                   <option key={source.id} value={source.id}>
                     {source.title}
@@ -207,12 +216,12 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
                 ))}
               </select>
               <p className="mt-1 text-[13px] text-muted-foreground">
-                Wajib dipilih sebelum status diubah menjadi published.
+                {t(d.sourceRequiredNote)}
               </p>
             </div>
 
             <div>
-              <Label htmlFor="content-media">URL media (opsional)</Label>
+              <Label htmlFor="content-media">{t(d.mediaUrlLabel)}</Label>
               <Input
                 id="content-media"
                 type="url"
@@ -224,7 +233,7 @@ export function ContentForm({ regions, sources }: { regions: Region[]; sources: 
 
             <Button type="submit" disabled={busy}>
               {busy && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
-              Simpan konten
+              {t(d.saveContentCta)}
             </Button>
           </form>
         </Card>

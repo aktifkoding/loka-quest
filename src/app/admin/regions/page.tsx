@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
+import { adminDict as d } from "@/lib/i18n/dict/admin";
+import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,14 +27,14 @@ const statusDot: Record<string, string> = {
   archived: "bg-muted-foreground/30",
 };
 
-const statusLabel: Record<string, string> = {
-  published: "Terbit",
-  review: "Review",
-  draft: "Draf",
-  archived: "Arsip",
-};
-
 export default function AdminRegionsPage() {
+  const { t } = useI18n();
+  const statusLabel: Record<string, string> = {
+    published: t(d.statusPublished),
+    review: t(d.statusReview),
+    draft: t(d.statusDraft),
+    archived: t(d.statusArchived),
+  };
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,17 +53,17 @@ export default function AdminRegionsPage() {
       try {
         const res = await fetch("/api/v1/admin/regions");
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Gagal memuat wilayah");
+        if (!res.ok) throw new Error(data.error || t(d.loadRegionsFailed));
         setRegions(data.data || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+        setError(err instanceof Error ? err.message : t(commonDict.errorGeneric));
       } finally {
         setLoading(false);
       }
     };
 
     void fetchRegions();
-  }, []);
+  }, [t]);
 
   async function createRegion(event: React.FormEvent) {
     event.preventDefault();
@@ -78,14 +81,14 @@ export default function AdminRegionsPage() {
         }),
       });
       const json = await response.json();
-      if (!response.ok) throw new Error(json.error || "Gagal membuat wilayah");
+      if (!response.ok) throw new Error(json.error || t(d.createRegionFailed));
       setShowForm(false);
       setForm({ name: "", slug: "", description: "", status: "draft" });
       const refreshed = await fetch("/api/v1/admin/regions", { cache: "no-store" });
       const refreshedJson = await refreshed.json();
       setRegions(refreshedJson.data ?? []);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Gagal membuat wilayah");
+      setFormError(err instanceof Error ? err.message : t(d.createRegionFailed));
     } finally {
       setBusy(false);
     }
@@ -96,22 +99,22 @@ export default function AdminRegionsPage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/admin">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Dasbor admin
+          {t(d.backToAdmin)}
         </Link>
       </Button>
 
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-4xl font-semibold tracking-tight">
-            Wilayah budaya
+            {t(d.regionsTitle)}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Atur wilayah lewat status editorial: draf, review, terbit, arsip.
+            {t(d.regionsDescription)}
           </p>
         </div>
         <Button onClick={() => setShowForm((value) => !value)}>
           <Plus className="size-4" aria-hidden="true" />
-          Tambah wilayah
+          {t(d.addRegionCta)}
         </Button>
       </header>
 
@@ -125,7 +128,7 @@ export default function AdminRegionsPage() {
         <Card className="mt-6 p-6">
           <form onSubmit={createRegion} className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm font-medium">
-              Nama
+              {t(d.nameLabel)}
               <Input
                 className="mt-1"
                 required
@@ -135,7 +138,7 @@ export default function AdminRegionsPage() {
               />
             </label>
             <label className="block text-sm font-medium">
-              Slug
+              {t(d.slugLabel)}
               <Input
                 className="mt-1"
                 required
@@ -146,7 +149,7 @@ export default function AdminRegionsPage() {
               />
             </label>
             <label className="block text-sm font-medium sm:col-span-2">
-              Deskripsi
+              {t(d.descriptionLabel)}
               <textarea
                 className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 rows={3}
@@ -159,23 +162,23 @@ export default function AdminRegionsPage() {
               />
             </label>
             <label className="block text-sm font-medium">
-              Status
+              {t(d.statusLabel)}
               <select
                 className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
                 value={form.status}
                 onChange={(event) => setForm({ ...form, status: event.target.value })}
               >
-                <option value="draft">Draf</option>
-                <option value="review">Review</option>
-                <option value="published">Terbit</option>
+                <option value="draft">{t(d.statusDraft)}</option>
+                <option value="review">{t(d.statusReview)}</option>
+                <option value="published">{t(d.statusPublished)}</option>
               </select>
             </label>
             <div className="flex items-end gap-3">
               <Button type="submit" disabled={busy}>
-                {busy ? "Menyimpan…" : "Simpan wilayah"}
+                {busy ? t(d.saving) : t(d.saveRegionCta)}
               </Button>
               <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-                Batal
+                {t(commonDict.cancel)}
               </Button>
             </div>
           </form>
@@ -187,7 +190,7 @@ export default function AdminRegionsPage() {
           <div
             className="space-y-3"
             aria-busy="true"
-            aria-label="Memuat wilayah"
+            aria-label={t(d.loadingRegionsAria)}
           >
             {[0, 1, 2].map((i) => (
               <div
@@ -205,14 +208,14 @@ export default function AdminRegionsPage() {
         ) : error ? (
           <EmptyState
             icon={MapPin}
-            title="Wilayah tidak bisa dimuat"
+            title={t(d.regionsErrorTitle)}
             description={error}
           />
         ) : regions.length === 0 ? (
           <EmptyState
             icon={MapPin}
-            title="Belum ada wilayah"
-            description="Tambahkan wilayah pertama, lalu isi konten dan sumbernya sebelum menerbitkan."
+            title={t(d.regionsEmptyTitle)}
+            description={t(d.regionsEmptyDescription)}
           />
         ) : (
           <ul className="space-y-3">

@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageHeaderBackLabel } from "@/components/ui/page-header-back-label";
 
 interface PageHeaderProps {
   icon: LucideIcon;
@@ -39,7 +40,7 @@ export function PageHeader({
           className="mb-4 inline-flex items-center gap-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
-          {backLabel ?? "Kembali"}
+          <PageHeaderBackLabel label={backLabel} />
         </Link>
       )}
 

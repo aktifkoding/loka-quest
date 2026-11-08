@@ -8,15 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, Eye, EyeOff, Gamepad2, Loader2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n";
+import { authDict as d } from "@/lib/i18n/dict/auth";
 import { cn } from "@/lib/utils";
 
 const RULES = [
-  { label: "Minimal 8 karakter", test: (v: string) => v.length >= 8 },
+  { label: d.ruleMinLength, test: (v: string) => v.length >= 8 },
   {
-    label: "Ada huruf besar dan kecil",
+    label: d.ruleUpperLower,
     test: (v: string) => /[A-Z]/.test(v) && /[a-z]/.test(v),
   },
-  { label: "Ada angka", test: (v: string) => /[0-9]/.test(v) },
+  { label: d.ruleDigit, test: (v: string) => /[0-9]/.test(v) },
 ];
 
 export default function RegisterPage() {
@@ -28,6 +30,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const { t } = useI18n();
 
   // Live password hint appears only after the user starts typing
   const touched = password.length > 0;
@@ -42,7 +45,7 @@ export default function RegisterPage() {
     setError(null);
 
     if (!allPassed) {
-      setError("Kata sandi belum memenuhi syarat. Periksa petunjuk di bawah.");
+      setError(t(d.passwordNotMet));
       return;
     }
 
@@ -60,7 +63,7 @@ export default function RegisterPage() {
       if (error) {
         setError(
           error.message.includes("already registered")
-            ? "Email ini sudah terdaftar. Coba masuk saja."
+            ? t(d.emailAlreadyRegistered)
             : error.message
         );
         return;
@@ -68,7 +71,7 @@ export default function RegisterPage() {
 
       router.push("/auth/callback?registered=true");
     } catch {
-      setError("Terjadi kesalahan. Coba lagi.");
+      setError(t(d.errorTryAgain));
     } finally {
       setLoading(false);
     }
@@ -87,7 +90,7 @@ export default function RegisterPage() {
 
         <div className="mt-10 rounded-2xl border border-border/70 bg-card p-6 shadow-card">
           <p className="font-display text-lg font-semibold leading-snug">
-            Level 1 menuju Level 2
+            {t(d.progressHeading)}
           </p>
           <div
             className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-muted"
@@ -96,31 +99,30 @@ export default function RegisterPage() {
             <div className="h-full w-2/5 rounded-full bg-primary" />
           </div>
           <p className="mt-3 text-sm tabular-nums text-muted-foreground">
-            240 dari 500 XP
+            {t(d.xpProgress)}
           </p>
           <div className="mt-4 flex items-center gap-2 border-t border-border pt-4 text-sm">
             <span className="rounded-full bg-gold/10 px-2.5 py-1 font-semibold tabular-nums text-gold">
               +150
             </span>
             <span className="text-muted-foreground">
-              XP dari misi pertama
+              {t(d.xpFromFirstMission)}
             </span>
           </div>
         </div>
 
         <p className="mt-10 border-t border-border pt-6 text-[13px] leading-relaxed text-muted-foreground">
-          Gratis untuk pelajar. Kami hanya menyimpan email dan nama tampilan —
-          tanpa iklan, tanpa pelacakan iklan.
+          {t(d.registerPrivacyCopy)}
         </p>
       </aside>
 
       {/* Form */}
       <div className="animate-fade-up mx-auto w-full max-w-[400px]" style={{ animationDelay: "120ms" }}>
         <h1 className="font-display text-3xl font-semibold tracking-tight">
-          Buat akun LokaQuest
+          {t(d.registerHeading)}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Satu menit untuk mulai misi pertamamu.
+          {t(d.registerSub)}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -134,12 +136,12 @@ export default function RegisterPage() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="fullName">Nama lengkap</Label>
+            <Label htmlFor="fullName">{t(d.labelFullName)}</Label>
             <Input
               id="fullName"
               type="text"
               autoComplete="name"
-              placeholder="Nama yang tampil di dasbor"
+              placeholder={t(d.placeholderFullName)}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
@@ -148,12 +150,12 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t(d.labelEmail)}</Label>
             <Input
               id="email"
               type="email"
               autoComplete="email"
-              placeholder="nama@email.com"
+              placeholder={t(d.placeholderEmail)}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -161,13 +163,13 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Kata sandi</Label>
+            <Label htmlFor="password">{t(d.labelPassword)}</Label>
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
-                placeholder="Buat kata sandi"
+                placeholder={t(d.newPasswordPlaceholder)}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -177,7 +179,7 @@ export default function RegisterPage() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={
-                  showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
+                  showPassword ? t(d.hidePasswordAria) : t(d.showPasswordAria)
                 }
                 className="absolute right-1 top-1 flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               >
@@ -193,7 +195,7 @@ export default function RegisterPage() {
               <ul className="space-y-1.5 pt-1" aria-live="polite">
                 {ruleStates.map((rule) => (
                   <li
-                    key={rule.label}
+                    key={rule.label.en}
                     className={cn(
                       "flex items-center gap-2 text-[13px]",
                       rule.passed ? "text-primary" : "text-muted-foreground"
@@ -204,7 +206,7 @@ export default function RegisterPage() {
                     ) : (
                       <X className="size-3.5" aria-hidden="true" />
                     )}
-                    {rule.label}
+                    {t(rule.label)}
                   </li>
                 ))}
               </ul>
@@ -215,22 +217,21 @@ export default function RegisterPage() {
             {loading ? (
               <>
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                Memproses…
+                {t(d.processing)}
               </>
             ) : (
-              "Buat akun"
+              t(d.createAccountCta)
             )}
           </Button>
 
           <p className="text-center text-[13px] leading-relaxed text-muted-foreground">
-            Dengan mendaftar, kamu setuju bahwa data progres belajarmu
-            disimpan untuk pelaporan pembelajaran.
+            {t(d.consentCopy)}
           </p>
 
           <p className="text-center text-sm text-muted-foreground">
-            Sudah punya akun?{" "}
+            {t(d.haveAccount)}{" "}
             <Link href="/auth/login" className="font-medium text-primary hover:underline">
-              Masuk
+              {t(d.signInCta)}
             </Link>
           </p>
         </form>

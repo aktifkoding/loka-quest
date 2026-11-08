@@ -13,6 +13,9 @@ import { IndonesiaMap } from "@/components/maps/indonesia-map";
 import { Tilt3D } from "@/components/ui/tilt3d";
 import { Reveal } from "@/components/ui/reveal";
 import { Compass, MapPin, ArrowRight, Globe2, LayoutGrid } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+import { publicDict as d } from "@/lib/i18n/dict/public";
+import { commonDict } from "@/lib/i18n/dict/common";
 interface Region {
   id: string;
   slug: string;
@@ -26,6 +29,7 @@ type ViewMode = "map" | "cards";
 
 export default function ExplorePage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,10 +40,10 @@ export default function ExplorePage() {
       try {
         const response = await fetch("/api/v1/regions");
         const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Gagal memuat wilayah");
+        if (!response.ok) throw new Error(result.error || t(d.errorLoadRegions));
         setRegions(result.data || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+        setError(err instanceof Error ? err.message : t(commonDict.errorGeneric));
       } finally {
         setLoading(false);
       }
@@ -51,8 +55,8 @@ export default function ExplorePage() {
     <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
       <PageHeader
         icon={Compass}
-        title="Jelajahi wilayah budaya"
-        description="Pilih wilayah untuk memulai misi, membaca cerita, dan menemukan warisan Nusantara yang bersumber."
+        title={t(d.exploreTitle)}
+        description={t(d.exploreDescription)}
         actions={
           /* View toggle */
           <div className="flex items-center gap-1 rounded-xl border border-border/70 bg-secondary/30 p-1">
@@ -65,7 +69,7 @@ export default function ExplorePage() {
               }`}
             >
               <Globe2 className="size-4" aria-hidden="true" />
-              Peta
+              {t(d.mapView)}
             </button>
             <button
               onClick={() => setView("cards")}
@@ -76,7 +80,7 @@ export default function ExplorePage() {
               }`}
             >
               <LayoutGrid className="size-4" aria-hidden="true" />
-              Kartu
+              {t(d.cardsView)}
             </button>
           </div>
         }
@@ -102,14 +106,14 @@ export default function ExplorePage() {
         ) : error ? (
           <EmptyState
             icon={Compass}
-            title="Wilayah tidak bisa dimuat"
+            title={t(d.regionsErrorTitle)}
             description={error}
           />
         ) : regions.length === 0 ? (
           <EmptyState
             icon={Compass}
-            title="Belum ada wilayah terbuka"
-            description="Tim konten sedang menyiapkan wilayah budaya. Muncul di sini begitu dipublikasikan."
+            title={t(d.regionsEmptyTitle)}
+            description={t(d.regionsEmptyDescription)}
           />
         ) : view === "map" ? (
           <Reveal>

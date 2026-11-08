@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Languages, ArrowRight } from "lucide-react";
 import { PronunciationButton } from "@/components/bahasa/pronunciation-button";
 import { getVocabulariesForArticle, getLanguageBySlug } from "@/lib/languages";
+import { useI18n } from "@/lib/i18n";
+import { encyclopediaDict as d } from "@/lib/i18n/dict/encyclopedia";
 
 interface RelatedVocabulariesProps {
   articleSlug: string;
@@ -16,6 +18,7 @@ export function RelatedVocabularies({
   articleSlug,
   articleTitle,
 }: RelatedVocabulariesProps) {
+  const { t } = useI18n();
   const vocabularies = getVocabulariesForArticle(articleSlug);
 
   if (vocabularies.length === 0) return null;
@@ -29,19 +32,22 @@ export function RelatedVocabularies({
         <div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <Languages className="size-3.5" aria-hidden="true" />
-            Modul Bahasa Daerah Terkait
+            {t(d.vocabBadge)}
           </span>
           <h2 className="mt-2 font-display text-2xl font-semibold">
-            Kosakata {language?.name ?? "Bahasa Daerah"} seputar {articleTitle}
+            {t(d.vocabHeading, {
+              language: language?.name ?? t(d.vocabFallbackLanguage),
+              title: articleTitle,
+            })}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Dengarkan pelafalan otentik dan pahami makna kultural istilah daerah yang digunakan.
+            {t(d.vocabDescription)}
           </p>
         </div>
         {language && (
           <Button asChild variant="outline" size="sm" className="gap-1.5">
             <Link href={`/bahasa/${language.slug}`}>
-              Jelajahi {language.name}
+              {t(d.vocabExploreCta, { language: language.name })}
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
           </Button>

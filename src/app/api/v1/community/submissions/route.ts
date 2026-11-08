@@ -4,6 +4,8 @@ import { parseJsonBody } from "@/lib/api/response";
 import { requireAuth } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { durableRateLimit } from "@/lib/security/rate-limit-db";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 
 const submissionSchema = z.object({
   title: z.string().trim().min(3).max(180),
@@ -43,10 +45,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const rl = await durableRateLimit(request, "community-submit", 5, 60);
     if (!rl.ok) {
       return Response.json(
-        { success: false, error: "Terlalu banyak kiriman. Coba lagi nanti." },
+        { success: false, error: E.rateLimitContributions[lang] },
         { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
       );
     }

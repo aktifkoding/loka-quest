@@ -3,6 +3,8 @@ import { requireRole } from "@/lib/auth/session";
 import { withErrorHandling } from "@/lib/api/handler";
 import { durableRateLimit } from "@/lib/security/rate-limit-db";
 import { auditLog } from "@/lib/audit";
+import { getLangFromRequest } from "@/lib/i18n/server";
+import { errorsDict as E } from "@/lib/i18n/dict/errors";
 import { z } from "zod";
 
 const patchSchema = z.object({
@@ -14,10 +16,11 @@ export async function PATCH(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   return withErrorHandling(async () => {
+    const lang = getLangFromRequest(request);
     const rl = await durableRateLimit(request, "admin-role", 20, 60);
     if (!rl.ok) {
       return Response.json(
-        { success: false, error: "Terlalu banyak permintaan." },
+        { success: false, error: E.rateLimitGeneric[lang] },
         { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
       );
     }
@@ -28,7 +31,7 @@ export async function PATCH(
 
     if (userId === admin.id) {
       return Response.json(
-        { success: false, error: "Tidak bisa mengubah peran akun sendiri." },
+        { success: false, error: E.cannotChangeOwnRole[lang] },
         { status: 400 }
       );
     }
@@ -44,7 +47,7 @@ export async function PATCH(
 
     if (error || !updated) {
       return Response.json(
-        { success: false, error: "Pengguna tidak ditemukan." },
+        { success: false, error: E.userNotFound[lang] },
         { status: 404 }
       );
     }

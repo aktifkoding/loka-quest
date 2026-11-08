@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,16 +9,21 @@ import {
   BookOpen,
   Sparkles,
 } from "lucide-react";
+import { getServerI18n } from "@/lib/i18n/server";
+import { bahasaDict as d } from "@/lib/i18n/dict/bahasa";
 import { getRegionalLanguages, REGIONAL_VOCABULARIES } from "@/lib/languages";
 import { PronunciationButton } from "@/components/bahasa/pronunciation-button";
 
-export const metadata = {
-  title: "Modul Bahasa Daerah Nusantara | LokaQuest",
-  description:
-    "Pelajari kosakata, pelafalan otentik, dan uji pemahaman ragam bahasa daerah Nusantara yang terintegrasi dengan ensiklopedia budaya.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return {
+    title: t(d.metaTitle),
+    description: t(d.metaDescription),
+  };
+}
 
-export default function BahasaDaerahHubPage() {
+export default async function BahasaDaerahHubPage() {
+  const { t } = await getServerI18n();
   const languages = getRegionalLanguages();
   const totalVocab = REGIONAL_VOCABULARIES.length;
 
@@ -26,13 +32,13 @@ export default function BahasaDaerahHubPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <PageHeader
           icon={Languages}
-          title="Modul Bahasa Daerah"
-          description="Eksplorasi kosakata, pelafalan otentik, dan kuis interaktif bahasa daerah Nusantara yang terhubung erat dengan ensiklopedia budaya."
+          title={t(d.pageTitle)}
+          description={t(d.pageDescription)}
         />
         <Button asChild variant="outline" className="gap-2">
           <Link href="/encyclopedia">
             <BookOpen className="size-4" aria-hidden="true" />
-            Buka Ensiklopedia
+            {t(d.openEncyclopediaCta)}
           </Link>
         </Button>
       </div>
@@ -40,41 +46,41 @@ export default function BahasaDaerahHubPage() {
       {/* Hero Stats */}
       <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card className="p-5 border-primary/20 bg-primary/5">
-          <p className="text-xs font-medium text-muted-foreground">Bahasa Daerah</p>
+          <p className="text-xs font-medium text-muted-foreground">{t(d.statLanguages)}</p>
           <p className="mt-2 font-display text-3xl font-bold text-foreground">
             {languages.length}
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">dialek utama nusantara</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t(d.statLanguagesNote)}</p>
         </Card>
         <Card className="p-5 border-border bg-card">
-          <p className="text-xs font-medium text-muted-foreground">Kosakata Pilihan</p>
+          <p className="text-xs font-medium text-muted-foreground">{t(d.statVocab)}</p>
           <p className="mt-2 font-display text-3xl font-bold text-foreground">
             {totalVocab}+
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">lengkap arti & fonetik</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t(d.statVocabNote)}</p>
         </Card>
         <Card className="p-5 border-border bg-card">
-          <p className="text-xs font-medium text-muted-foreground">Fitur Pelafalan</p>
+          <p className="text-xs font-medium text-muted-foreground">{t(d.statPronunciation)}</p>
           <p className="mt-2 font-display text-3xl font-bold text-emerald-600 dark:text-emerald-400">
             Audio
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">suara & sintesis fonetis</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t(d.statPronunciationNote)}</p>
         </Card>
         <Card className="p-5 border-border bg-card">
-          <p className="text-xs font-medium text-muted-foreground">Kuis Interaktif</p>
+          <p className="text-xs font-medium text-muted-foreground">{t(d.statQuiz)}</p>
           <p className="mt-2 font-display text-3xl font-bold text-gold">
             +XP
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">skor & evaluasi performa</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t(d.statQuizNote)}</p>
         </Card>
       </div>
 
       {/* Languages Grid */}
       <div className="mt-12">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-2xl font-bold">Pilih Bahasa Daerah</h2>
+          <h2 className="font-display text-2xl font-bold">{t(d.chooseHeading)}</h2>
           <span className="text-sm text-muted-foreground">
-            Pilih bahasa untuk belajar kosakata & mengikuti kuis
+            {t(d.chooseHint)}
           </span>
         </div>
 
@@ -114,7 +120,7 @@ export default function BahasaDaerahHubPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                        Sapaan Khas
+                        {t(d.greetingLabel)}
                       </span>
                       <p className="font-display text-sm font-bold text-foreground">
                         {lang.greeting.word}
@@ -139,7 +145,7 @@ export default function BahasaDaerahHubPage() {
                 </span>
                 <Button asChild size="sm" className="gap-1.5">
                   <Link href={`/bahasa/${lang.slug}`}>
-                    Belajar & Kuis
+                    {t(d.learnQuizCta)}
                     <ArrowRight className="size-3.5" aria-hidden="true" />
                   </Link>
                 </Button>
@@ -154,22 +160,20 @@ export default function BahasaDaerahHubPage() {
         <div className="max-w-2xl">
           <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <Sparkles className="size-3.5 text-gold" aria-hidden="true" />
-            Integrasi Ensiklopedia & Bahasa
+            {t(d.integrationBadge)}
           </span>
           <h2 className="mt-3 font-display text-2xl font-bold md:text-3xl">
-            Bahasa adalah Jendela Nilai Kultural
+            {t(d.integrationHeading)}
           </h2>
           <p className="mt-3 text-muted-foreground leading-relaxed">
-            Setiap artikel ensiklopedia di LokaQuest—mulai dari Batik, Gamelan, Randai,
-            hingga Subak—kini terhubung langsung dengan istilah dan ungkapan bahasa daerah
-            asalnya. Mempelajari bahasa memperkuat pemahaman konteks historis dan filosofi adat.
+            {t(d.integrationDescription)}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button asChild>
-              <Link href="/encyclopedia/explore">Telusuri Ensiklopedia</Link>
+              <Link href="/encyclopedia/explore">{t(d.exploreEncyclopediaCta)}</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/missions">Uji di Misi Budaya</Link>
+              <Link href="/missions">{t(d.testMissionsCta)}</Link>
             </Button>
           </div>
         </div>

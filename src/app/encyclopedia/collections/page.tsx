@@ -8,6 +8,9 @@ import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useI18n, formatDate } from "@/lib/i18n";
+import { commonDict } from "@/lib/i18n/dict/common";
+import { encyclopediaDict as d } from "@/lib/i18n/dict/encyclopedia";
 
 type CollectionItem = {
   article: { id: string; slug: string; title: string; summary: string } | null;
@@ -16,6 +19,7 @@ type CollectionItem = {
 };
 
 export default function EncyclopediaCollectionsPage() {
+  const { lang, t } = useI18n();
   const [items, setItems] = useState<CollectionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -27,12 +31,12 @@ export default function EncyclopediaCollectionsPage() {
       const json = await response.json();
       if (!response.ok) {
         throw new Error(
-          response.status === 401 ? "Masuk untuk melihat riwayat bacaan." : "Riwayat belum dapat dimuat."
+          response.status === 401 ? t(d.collectionsAuthMessage) : t(d.collectionsLoadError)
         );
       }
       setItems(json.data ?? []);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Terjadi kesalahan.");
+      setMessage(error instanceof Error ? error.message : t(commonDict.errorGeneric));
     } finally {
       setLoading(false);
     }
@@ -51,15 +55,15 @@ export default function EncyclopediaCollectionsPage() {
     <div className="mx-auto max-w-5xl px-4 py-10 md:py-14">
       <PageHeader
         icon={BookOpen}
-        title="Koleksi dan riwayat baca"
-        description="Riwayat ini hanya terlihat oleh Anda."
+        title={t(d.collectionsTitle)}
+        description={t(d.collectionsDescription)}
         backHref="/encyclopedia"
-        backLabel="Ensiklopedia"
+        backLabel={t(d.backToEncyclopedia)}
         actions={
           items.length > 0 ? (
             <Button variant="outline" size="sm" onClick={clear}>
               <Trash2 className="size-4" aria-hidden="true" />
-              Hapus riwayat
+              {t(d.clearHistoryCta)}
             </Button>
           ) : undefined
         }
@@ -84,9 +88,9 @@ export default function EncyclopediaCollectionsPage() {
         <div className="mt-8">
           <EmptyState
             icon={BookOpen}
-            title="Riwayat tidak tersedia"
+            title={t(d.collectionsUnavailableTitle)}
             description={message}
-            action={{ label: "Masuk", href: "/auth/login" }}
+            action={{ label: t(d.signInCta), href: "/auth/login" }}
           />
         </div>
       ) : items.length ? (
@@ -103,7 +107,7 @@ export default function EncyclopediaCollectionsPage() {
                       {article.title}
                     </Link>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Terakhir dibaca {new Date(viewed_at).toLocaleDateString("id-ID")} ·{" "}
+                      {t(d.lastRead, { date: formatDate(viewed_at, lang) })} ·{" "}
                       <span className="tabular-nums">{progress}%</span>
                     </p>
                   </div>
@@ -119,9 +123,9 @@ export default function EncyclopediaCollectionsPage() {
         <div className="mt-8">
           <EmptyState
             icon={BookOpen}
-            title="Belum ada riwayat bacaan"
-            description="Artikel yang Anda baca akan muncul di sini setelah pencatatan riwayat tersedia."
-            action={{ label: "Jelajahi artikel", href: "/encyclopedia/explore" }}
+            title={t(d.emptyHistoryTitle)}
+            description={t(d.emptyHistoryDescription)}
+            action={{ label: t(d.exploreArticlesCta), href: "/encyclopedia/explore" }}
           />
         </div>
       )}

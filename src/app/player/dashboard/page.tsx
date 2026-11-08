@@ -2,6 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/session";
+import { getServerI18n } from "@/lib/i18n/server";
+import { commonDict } from "@/lib/i18n/dict/common";
+import { playerDict } from "@/lib/i18n/dict/player";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -32,6 +35,7 @@ const XP_PER_LEVEL = 500;
 
 export default async function PlayerDashboardPage() {
   try {
+    const { lang, t } = await getServerI18n();
     const user = await requireAuth();
     const supabase = await createClient();
 
@@ -141,7 +145,7 @@ export default async function PlayerDashboardPage() {
       recentScores: recentAttempts.map((a) => a.score),
       dueReviewCount: dueReviewsRes.count ?? 0,
       dailyCompletedToday: false,
-    });
+    }, lang);
 
     return (
       <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
@@ -149,11 +153,13 @@ export default async function PlayerDashboardPage() {
         <DailyChallengeCard />
         <header className="mt-10 max-w-2xl">
           <h1 className="font-display text-4xl font-semibold tracking-tight">
-            Dasbor
+            {t(playerDict.dashboardTitle)}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            {user.fullName ? `Halo, ${user.fullName}.` : "Selamat datang."}{" "}
-            Inilah perjalanan belajarmu sejauh ini.
+            {user.fullName
+              ? t(playerDict.greetingHello, { name: user.fullName })
+              : t(playerDict.greetingWelcome)}{" "}
+            {t(playerDict.greetingIntro)}
           </p>
         </header>
 
@@ -163,7 +169,7 @@ export default async function PlayerDashboardPage() {
             <div className="flex h-full flex-col justify-between p-6">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-muted-foreground">
-                  Level {level}
+                  {t(commonDict.level, { n: level })}
                 </p>
                 <Zap className="size-5 text-gold" aria-hidden="true" />
               </div>
@@ -172,7 +178,7 @@ export default async function PlayerDashboardPage() {
                   <CountUp value={totalXp} duration={900} />
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  total XP terkumpul
+                  {t(playerDict.totalXpCaption)}
                 </p>
               </div>
               <div>
@@ -184,11 +190,11 @@ export default async function PlayerDashboardPage() {
                   aria-valuemin={0}
                   aria-valuemax={XP_PER_LEVEL}
                   aria-valuenow={xpIntoLevel}
-                  aria-label={`Progres menuju level ${level + 1}`}
+                  aria-label={t(playerDict.progressToNextLevelAria, { n: level + 1 })}
                 />
                 <p className="mt-2 text-[13px] text-muted-foreground">
-                  <span className="tabular-nums">{xpToNext}</span> XP lagi ke
-                  level {level + 1}
+                  <span className="tabular-nums">{xpToNext}</span>{" "}
+                  {t(playerDict.xpToNextLevel, { n: level + 1 })}
                 </p>
               </div>
             </div>
@@ -198,7 +204,7 @@ export default async function PlayerDashboardPage() {
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-muted-foreground">
-                  Misi selesai
+                  {t(playerDict.missionsCompletedLabel)}
                 </p>
                 <Target className="size-5 text-muted-foreground" aria-hidden="true" />
               </div>
@@ -210,7 +216,7 @@ export default async function PlayerDashboardPage() {
                 <span className="tabular-nums">
                   {missionsCountRes.count ?? 0}
                 </span>{" "}
-                misi yang tersedia
+                {t(playerDict.missionsAvailableSuffix)}
               </p>
             </div>
           </Card>
@@ -219,7 +225,7 @@ export default async function PlayerDashboardPage() {
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-muted-foreground">
-                  Lencana
+                  {t(playerDict.badgesLabel)}
                 </p>
                 <Award className="size-5 text-muted-foreground" aria-hidden="true" />
               </div>
@@ -227,7 +233,7 @@ export default async function PlayerDashboardPage() {
                 {achievements.length}
               </p>
               <p className="mt-1 text-[13px] text-muted-foreground">
-                penghargaan yang sudah diraih
+                {t(playerDict.badgesCaption)}
               </p>
             </div>
           </Card>
@@ -239,9 +245,12 @@ export default async function PlayerDashboardPage() {
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 p-5">
               <p className="flex items-center gap-2 text-sm">
                 <BookOpen className="size-4 text-muted-foreground" aria-hidden="true" />
-                <span className="text-muted-foreground">Asesmen:</span>
+                <span className="text-muted-foreground">{t(playerDict.assessmentLabel)}</span>
                 <span className="tabular-nums">
-                  pre {preScore ?? "—"} → post {postScore ?? "—"}
+                  {t(playerDict.assessmentDelta, {
+                    pre: preScore ?? "—",
+                    post: postScore ?? "—",
+                  })}
                 </span>
               </p>
               {preScore !== null && postScore !== null && postScore !== preScore && (
@@ -253,12 +262,12 @@ export default async function PlayerDashboardPage() {
                   }`}
                 >
                   {postScore > preScore ? "+" : ""}
-                  {postScore - preScore} poin pemahaman
+                  {postScore - preScore} {t(playerDict.understandingPoints)}
                 </p>
               )}
               <Button asChild variant="ghost" size="sm" className="ml-auto -mr-2">
                 <Link href="/player/assessments">
-                  Lihat asesmen
+                  {t(playerDict.viewAssessments)}
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
               </Button>
@@ -272,12 +281,12 @@ export default async function PlayerDashboardPage() {
         {/* Quick links */}
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {[
-            { href: "/player/classes", label: "Kelas saya", icon: Users, desc: "Tugas dari guru" },
-            { href: "/player/review", label: "Review pintar", icon: RotateCcw, desc: "Jalur belajar adaptif" },
-            { href: "/bahasa", label: "Bahasa daerah", icon: Languages, desc: "Kosakata & kuis" },
-            { href: "/player/collection", label: "Koleksi artefak", icon: Gem, desc: "Artefak tiap wilayah" },
-            { href: "/player/profile", label: "Profil", icon: UserRound, desc: "Nama tampilan & akun" },
-            { href: "/leaderboard", label: "Leaderboard", icon: BarChart3, desc: "Peringkat XP" },
+            { href: "/player/classes", label: t(playerDict.quickClasses), icon: Users, desc: t(playerDict.quickClassesDesc) },
+            { href: "/player/review", label: t(playerDict.quickReview), icon: RotateCcw, desc: t(playerDict.quickReviewDesc) },
+            { href: "/bahasa", label: t(playerDict.quickLanguages), icon: Languages, desc: t(playerDict.quickLanguagesDesc) },
+            { href: "/player/collection", label: t(playerDict.quickCollection), icon: Gem, desc: t(playerDict.quickCollectionDesc) },
+            { href: "/player/profile", label: t(playerDict.quickProfile), icon: UserRound, desc: t(playerDict.quickProfileDesc) },
+            { href: "/leaderboard", label: t(playerDict.quickLeaderboard), icon: BarChart3, desc: t(playerDict.quickLeaderboardDesc) },
           ].map((link) => (
             <Link key={link.href} href={link.href} className="group">
               <Card interactive className="h-full">
@@ -306,7 +315,7 @@ export default async function PlayerDashboardPage() {
           <Card>
             <div className="p-6">
               <h2 className="font-display text-xl font-semibold">
-                Lencana terbaru
+                {t(playerDict.recentBadgesTitle)}
               </h2>
               {achievements.length > 0 ? (
                 <ul className="mt-5 space-y-3">
@@ -328,9 +337,9 @@ export default async function PlayerDashboardPage() {
                 <div className="mt-5">
                   <EmptyState
                     icon={Award}
-                    title="Belum ada lencana"
-                    description="Selesaikan misi pertama untuk meraih lencana."
-                    action={{ label: "Pilih misi", href: "/missions" }}
+                    title={t(playerDict.emptyBadgesTitle)}
+                    description={t(playerDict.emptyBadgesDesc)}
+                    action={{ label: t(playerDict.pickMission), href: "/missions" }}
                   />
                 </div>
               )}
@@ -340,20 +349,20 @@ export default async function PlayerDashboardPage() {
           <Card>
             <div className="p-6">
               <h2 className="font-display text-xl font-semibold">
-                Riwayat misi terakhir
+                {t(playerDict.recentMissionsTitle)}
               </h2>
               {recentAttempts.length > 0 ? (
                 <table className="mt-5 w-full text-sm">
                   <caption className="sr-only">
-                    Lima percobaan misi terakhir beserta nilai dan XP
+                    {t(playerDict.attemptsTableCaption)}
                   </caption>
                   <thead>
                     <tr className="border-b border-border text-left text-[13px] text-muted-foreground">
                       <th scope="col" className="pb-2 font-medium">
-                        Misi
+                        {t(playerDict.tableMission)}
                       </th>
                       <th scope="col" className="pb-2 text-right font-medium">
-                        Nilai
+                        {t(playerDict.tableScore)}
                       </th>
                       <th scope="col" className="pb-2 text-right font-medium">
                         XP
@@ -383,9 +392,9 @@ export default async function PlayerDashboardPage() {
                 <div className="mt-5">
                   <EmptyState
                     icon={Gamepad2}
-                    title="Belum ada riwayat"
-                    description="Mainkan misi pertamamu — nilainya tercatat di sini."
-                    action={{ label: "Mulai misi", href: "/missions" }}
+                    title={t(playerDict.emptyHistoryTitle)}
+                    description={t(playerDict.emptyHistoryDesc)}
+                    action={{ label: t(playerDict.startMission), href: "/missions" }}
                   />
                 </div>
               )}

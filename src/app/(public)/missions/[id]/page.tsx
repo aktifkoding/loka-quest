@@ -6,6 +6,9 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import type { PhaserGameProps } from "@/components/game/phaser-game";
+import { useI18n, type Localized } from "@/lib/i18n";
+import { gameDict as d } from "@/lib/i18n/dict/game";
+import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -64,34 +67,41 @@ interface AttemptResult {
   earnedArtifact?: EarnedArtifact | null;
 }
 
-const rarityLabel: Record<string, string> = {
-  common: "Umum",
-  uncommon: "Tak Biasa",
-  rare: "Langka",
-  legendary: "Legendaris",
+const rarityLabel: Record<string, Localized> = {
+  common: d.rarityCommon,
+  uncommon: d.rarityUncommon,
+  rare: d.rarityRare,
+  legendary: d.rarityLegendary,
 };
 
-const difficultyLabel: Record<string, string> = {
-  beginner: "Pemula",
-  intermediate: "Menengah",
-  advanced: "Lanjutan",
+const difficultyLabel: Record<string, Localized> = {
+  beginner: d.difficultyBeginner,
+  intermediate: d.difficultyIntermediate,
+  advanced: d.difficultyAdvanced,
 };
+
+/** Spinner saat chunk Phaser dimuat — komponen agar bisa memakai useI18n. */
+function GameLoading() {
+  const { t } = useI18n();
+  return (
+    <div className="flex h-full items-center justify-center">
+      <Loader2 className="size-8 animate-spin text-primary" aria-label={t(d.loadingGameAria)} />
+    </div>
+  );
+}
 
 // Phaser touches window on import — client only
 const PhaserGame = dynamic(
   () => import("@/components/game/phaser-game").then((mod) => mod.PhaserGame),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-primary" aria-label="Memuat permainan" />
-      </div>
-    ),
+    loading: () => <GameLoading />,
   }
 ) as unknown as ComponentType<PhaserGameProps>;
 
 export default function MissionPage() {
   const params = useParams();
+  const { lang, t } = useI18n();
   const [mission, setMission] = useState<Mission | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,6 +110,8 @@ export default function MissionPage() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<AttemptResult | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const loginRequiredMsg = t(d.loginRequired);
 
   const fetchMission = useCallback(async () => {
     try {
@@ -112,13 +124,13 @@ export default function MissionPage() {
       const questionsData = await questionsRes.json();
 
       if (!missionRes.ok) {
-        throw new Error(missionData.error || "Gagal memuat misi");
+        throw new Error(missionData.error || t(d.errorLoadMissions));
       }
 
       setMission(missionData.data ?? null);
       setQuestions(questionsData.data ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      setError(err instanceof Error ? err.message : t(commonDict.errorGeneric));
     } finally {
       setLoading(false);
     }
@@ -147,22 +159,22 @@ export default function MissionPage() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          setSubmitError("Masuk dulu agar nilai dan XP-mu tersimpan.");
+          setSubmitError(loginRequiredMsg);
           return;
         }
-        throw new Error(resultJson.error || "Gagal mengirim misi");
+        throw new Error(resultJson.error || t(d.errorSubmitMission));
       }
 
       setResult(resultJson.data);
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Gagal mengirim misi");
+      setSubmitError(err instanceof Error ? err.message : t(d.errorSubmitMission));
     } finally {
       setSubmitting(false);
     }
   };
 
   const promptOf = (questionId: string) =>
-    questions.find((q) => q.id === questionId)?.prompt ?? "Pertanyaan";
+    questions.find((q) => q.id === questionId)?.prompt ?? t(d.questionFallback);
 
   if (loading) {
     return (
@@ -180,12 +192,9 @@ export default function MissionPage() {
       <div className="mx-auto max-w-4xl px-4 py-16">
         <EmptyState
           icon={Gamepad2}
-          title="Misi tidak ditemukan"
-          description={
-            error ??
-            "Misi ini belum dipublikasikan atau tautannya salah."
-          }
-          action={{ label: "Lihat semua misi", href: "/missions" }}
+          title={t(d.missionNotFoundTitle)}
+          description={error ?? t(d.missionNotFoundDesc)}
+          action={{ label: t(d.seeAllMissions), href: "/missions" }}
         />
       </div>
     );
@@ -196,7 +205,7 @@ export default function MissionPage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/missions">
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Misi
+          {t(d.backToMissions)}
         </Link>
       </Button>
 
@@ -210,7 +219,11 @@ export default function MissionPage() {
           </p>
         </div>
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>{difficultyLabel[mission.difficulty] ?? mission.difficulty}</span>
+          <span>
+            {difficultyLabel[mission.difficulty]
+              ? t(difficultyLabel[mission.difficulty])
+              : mission.difficulty}
+          </span>
           <span aria-hidden="true">·</span>
           <span className="inline-flex items-center gap-1 font-semibold tabular-nums text-gold">
             <Zap className="size-4" aria-hidden="true" />
@@ -231,9 +244,9 @@ export default function MissionPage() {
             className="mx-auto size-8 animate-spin text-primary"
             aria-hidden="true"
           />
-          <p className="mt-4 font-medium">Server sedang menilai jawabanmu…</p>
+          <p className="mt-4 font-medium">{t(d.gradingTitle)}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Sebentar saja, hasil dan pembahasan muncul di sini.
+            {t(d.gradingBody)}
           </p>
         </Card>
       )}
@@ -242,11 +255,10 @@ export default function MissionPage() {
         <Card>
           <div className="px-6 py-8 text-center sm:px-10 sm:py-10">
             <h2 className="font-display text-2xl font-semibold">
-              Siap memulai?
+              {t(d.readyTitle)}
             </h2>
             <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-              {questions.length} tantangan menantimu. Kamu bisa berhenti kapan
-              saja, tapi nilai baru tercatat setelah semua soal dijawab.
+              {t(d.readyBody, { count: questions.length })}
             </p>
             {submitError && (
               <div
@@ -257,15 +269,15 @@ export default function MissionPage() {
               </div>
             )}
             <Button size="lg" onClick={() => setGameStarted(true)} className="mt-6">
-              Mulai misi
+              {t(d.startMissionCta)}
             </Button>
-            {submitError === "Masuk dulu agar nilai dan XP-mu tersimpan." && (
+            {submitError === loginRequiredMsg && (
               <p className="mt-3 text-sm">
                 <Link
                   href="/auth/login"
                   className="font-medium text-primary hover:underline"
                 >
-                  Masuk sekarang
+                  {t(d.signInNow)}
                 </Link>
               </p>
             )}
@@ -279,6 +291,7 @@ export default function MissionPage() {
             mission={mission}
             questions={questions}
             onComplete={handleGameComplete}
+            lang={lang}
           />
         </div>
       )}
@@ -289,14 +302,17 @@ export default function MissionPage() {
               <Card>
                 <div className="px-6 py-8 text-center sm:px-10">
                   <h2 className="font-display text-2xl font-semibold">
-                    Misi selesai
+                    {t(d.missionComplete)}
                   </h2>
                   <p className="mt-5 font-display text-5xl font-semibold tabular-nums">
                     {result.score}
                     <span className="text-2xl text-muted-foreground">/100</span>
                   </p>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    {result.correctCount} dari {result.totalQuestions} jawaban benar
+                    {t(d.correctCount, {
+                      correct: result.correctCount,
+                      total: result.totalQuestions,
+                    })}
                   </p>
                   <div className="mx-auto mt-5 flex w-fit items-center gap-1.5 rounded-full bg-gold/10 px-4 py-2">
                     <Zap className="size-4 text-gold" aria-hidden="true" />
@@ -307,7 +323,7 @@ export default function MissionPage() {
                       ·
                     </span>
                     <span className="text-sm tabular-nums text-muted-foreground">
-                      Total {result.newTotalXp} XP, Level {result.newLevel}
+                      {t(d.totalXpLevel, { xp: result.newTotalXp, level: result.newLevel })}
                     </span>
                   </div>
                   <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
@@ -319,10 +335,10 @@ export default function MissionPage() {
                         setSubmitError(null);
                       }}
                     >
-                      Mainkan lagi
+                      {t(d.playAgain)}
                     </Button>
                     <Button asChild>
-                      <Link href="/player/dashboard">Lihat dasbor</Link>
+                      <Link href="/player/dashboard">{t(d.viewDashboard)}</Link>
                     </Button>
                   </div>
                 </div>
@@ -333,7 +349,7 @@ export default function MissionPage() {
                 <Card className="border-gold/40 bg-gold/5">
                   <div className="p-6">
                     <h3 className="font-display text-xl font-semibold">
-                      Lencana baru diraih!
+                      {t(d.newBadgeTitle)}
                     </h3>
                     <div className="mt-4 grid gap-4 sm:grid-cols-2">
                       {result.earnedAchievements.map((badge) => (
@@ -371,9 +387,11 @@ export default function MissionPage() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="flex flex-wrap items-center gap-2 font-semibold">
-                        Artefak baru di koleksimu: {result.earnedArtifact.name}
+                        {t(d.newArtifact, { name: result.earnedArtifact.name })}
                         <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
-                          {rarityLabel[result.earnedArtifact.rarity] ?? result.earnedArtifact.rarity}
+                          {rarityLabel[result.earnedArtifact.rarity]
+                            ? t(rarityLabel[result.earnedArtifact.rarity])
+                            : result.earnedArtifact.rarity}
                         </span>
                       </p>
                       <p className="mt-0.5 text-sm text-muted-foreground">
@@ -383,7 +401,7 @@ export default function MissionPage() {
                     <Button asChild variant="outline" size="sm" className="shrink-0">
                       <Link href="/player/collection">
                         <Trophy className="size-4" aria-hidden="true" />
-                        Koleksi
+                        {t(d.collectionCta)}
                       </Link>
                     </Button>
                   </div>
@@ -392,7 +410,7 @@ export default function MissionPage() {
 
           <Card>
             <div className="px-6 py-6">
-              <h3 className="font-display text-xl font-semibold">Pembahasan</h3>
+              <h3 className="font-display text-xl font-semibold">{t(d.discussionTitle)}</h3>
               <ul className="mt-5 space-y-4">
                 {result.results.map((r, index) => (
                   <li
@@ -402,12 +420,12 @@ export default function MissionPage() {
                     {r.isCorrect ? (
                       <CheckCircle2
                         className="mt-0.5 size-5 shrink-0 text-primary"
-                        aria-label="Benar"
+                        aria-label={t(d.correctAria)}
                       />
                     ) : (
                       <XCircle
                         className="mt-0.5 size-5 shrink-0 text-destructive"
-                        aria-label="Belum tepat"
+                        aria-label={t(d.incorrectAria)}
                       />
                     )}
                     <div className="min-w-0">
