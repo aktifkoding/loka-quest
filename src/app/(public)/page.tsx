@@ -34,13 +34,17 @@ import type { LucideIcon } from "lucide-react";
 // Statistik dan daftar misi diambil dari database. Cache data selama 1 jam
 // (layout root membaca cookie bahasa, jadi halaman dirender per-request —
 // data tetap di-cache agar database tidak dipukul setiap kunjungan).
+// PENTING: unstable_cache melakukan serialisasi JSON — ikon (komponen Lucide)
+// TIDAK boleh ikut di-cache; ia dipasang ulang setelah cache dibaca.
+type CachedLandingMission = Omit<LandingMission, "icon">;
+
 const getLandingData = unstable_cache(
   async (): Promise<{
     stats: LandingStats;
-    missions: LandingMission[];
+    missions: CachedLandingMission[];
   }> => {
     const stats: LandingStats = { ...FALLBACK_STATS };
-    let missions: LandingMission[] = FALLBACK_MISSIONS;
+    let missions: CachedLandingMission[] = FALLBACK_MISSIONS;
 
     try {
       const supabase = createServiceClient();
@@ -84,7 +88,6 @@ const getLandingData = unstable_cache(
           description: mission.description,
           xp: mission.xp_reward,
           region: regionNames.get(mission.region_id) ?? "",
-          icon: MISSION_ICONS[mission.slug] ?? Sparkles,
         }));
       }
     } catch {
@@ -136,10 +139,9 @@ const FALLBACK_STATS: LandingStats = {
   sources: 105,
 };
 
-const FALLBACK_MISSIONS: LandingMission[] = [
+const FALLBACK_MISSIONS: CachedLandingMission[] = [
   {
     slug: "batik-detective",
-    icon: SwatchBook,
     title: "Batik Detective",
     description: "Pelajari pola dan makna di balik batik khas Jawa Tengah.",
     xp: 150,
@@ -147,7 +149,6 @@ const FALLBACK_MISSIONS: LandingMission[] = [
   },
   {
     slug: "gamelan-maestro",
-    icon: Music4,
     title: "Gamelan Maestro",
     description:
       "Kenali instrumen gamelan dan peranannya dalam orkestra tradisional.",
@@ -156,7 +157,6 @@ const FALLBACK_MISSIONS: LandingMission[] = [
   },
   {
     slug: "wayang-story",
-    icon: Drama,
     title: "Wayang Story Adventure",
     description:
       "Ikuti petualangan wayang dan pelajari cerita rakyat Nusantara.",
@@ -173,7 +173,12 @@ const steps = [
 
 export default async function HomePage() {
   const { lang, t } = await getServerI18n();
-  const { stats, missions } = await getLandingData();
+  const { stats, missions: cachedMissions } = await getLandingData();
+  // Ikon dipasang di sini (di luar cache) agar komponen tidak ter-serialisasi.
+  const missions: LandingMission[] = cachedMissions.map((mission) => ({
+    ...mission,
+    icon: MISSION_ICONS[mission.slug] ?? Sparkles,
+  }));
   const heroWords = landingHeroWords[lang];
 
   return (
