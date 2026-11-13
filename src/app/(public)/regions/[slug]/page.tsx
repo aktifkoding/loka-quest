@@ -118,7 +118,7 @@ export default function RegionDetailPage() {
     if (params.slug) {
       fetchRegion();
     }
-  }, [params.slug]);
+  }, [params.slug, t]);
 
   // Lightbox close on Escape
   useEffect(() => {

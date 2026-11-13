@@ -151,16 +151,30 @@ export default async function PlayerDashboardPage() {
       <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
         <Onboarding />
         <DailyChallengeCard />
-        <header className="mt-10 max-w-2xl">
-          <h1 className="font-display text-4xl font-semibold tracking-tight">
-            {t(playerDict.dashboardTitle)}
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            {user.fullName
-              ? t(playerDict.greetingHello, { name: user.fullName })
-              : t(playerDict.greetingWelcome)}{" "}
-            {t(playerDict.greetingIntro)}
-          </p>
+        <header className="mt-10 flex flex-wrap items-end justify-between gap-4">
+          <div className="max-w-2xl">
+            <h1 className="font-display text-4xl font-semibold tracking-tight">
+              {t(playerDict.dashboardTitle)}
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              {user.fullName
+                ? t(playerDict.greetingHello, { name: user.fullName })
+                : t(playerDict.greetingWelcome)}{" "}
+              {t(playerDict.greetingIntro)}
+            </p>
+          </div>
+          {(user.role === "educator" || user.role === "admin") && (
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/educator/dashboard">Dasbor Pendidik</Link>
+              </Button>
+              {user.role === "admin" && (
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/admin">Dasbor Admin</Link>
+                </Button>
+              )}
+            </div>
+          )}
         </header>
 
         {/* Metric tier: hero (XP to next level) + supports */}

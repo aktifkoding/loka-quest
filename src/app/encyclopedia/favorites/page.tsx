@@ -48,6 +48,7 @@ export default function EncyclopediaFavoritesPage() {
 
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function remove(id: string) {

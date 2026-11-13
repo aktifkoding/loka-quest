@@ -33,7 +33,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<NavUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const { lang, t } = useI18n();
+  const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();

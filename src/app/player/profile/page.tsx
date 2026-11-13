@@ -46,7 +46,7 @@ export default function ProfilePage() {
       })
       .catch(() => setMessage({ type: "error", text: t(playerDict.loadProfileError) }))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   const save = async () => {
     setSaving(true);

@@ -1,15 +1,17 @@
 import { redirect } from "next/navigation";
-import { requireRole } from "@/lib/auth/session";
+import { getSessionUser } from "@/lib/auth/session";
 
 export default async function EducatorLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  try {
-    await requireRole(["educator", "admin"]);
-    return <>{children}</>;
-  } catch {
+  const user = await getSessionUser();
+  if (!user) {
+    redirect("/auth/login");
+  }
+  if (user.role !== "educator" && user.role !== "admin") {
     redirect("/");
   }
+  return <>{children}</>;
 }

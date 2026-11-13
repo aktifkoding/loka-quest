@@ -57,16 +57,15 @@ export default async function EducatorAnalyticsPage() {
       // Authorized privileged read: only members of this educator's groups
       const service = createServiceClient();
 
-      const [{ data: attempts }] = await Promise.all([
+      const [{ data: attempts }, { data: resp }] = await Promise.all([
         service
           .from("mission_attempts")
           .select("profile_id, score")
           .in("profile_id", memberIds),
         service
-          .from("learning_assessments!inner")
-          .select("assessment_responses!inner(profile_id, score, assessment_type)")
-          .in("assessment_responses.profile_id", memberIds)
-          .limit(1),
+          .from("assessment_responses")
+          .select("profile_id, score, learning_assessments (assessment_type)")
+          .in("profile_id", memberIds),
       ]);
 
       const scores = ((attempts ?? []) as { score: number }[]).map((a) => a.score);
@@ -77,12 +76,6 @@ export default async function EducatorAnalyticsPage() {
             ? Math.round(scores.reduce((s, v) => s + v, 0) / scores.length)
             : 0,
       };
-
-      // Simpler second query for assessments (supabase nested filters are finicky)
-      const { data: resp } = await service
-        .from("assessment_responses")
-        .select("profile_id, score, learning_assessments (assessment_type)")
-        .in("profile_id", memberIds);
 
       const byType: Record<string, number[]> = {};
       (resp ?? []).forEach((r: { profile_id: string; score: number; learning_assessments: { assessment_type: string } | { assessment_type: string }[] | null }) => {

@@ -71,7 +71,7 @@ export default function TakeAssessmentPage() {
       }
     };
     load();
-  }, [params.id]);
+  }, [params.id, t]);
 
   const question = assessment?.questions[current];
   const progress = useMemo(

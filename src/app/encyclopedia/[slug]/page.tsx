@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { WikimediaImage } from "@/components/wikimedia-image";
 import { notFound } from "next/navigation";

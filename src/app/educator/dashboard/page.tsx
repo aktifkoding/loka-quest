@@ -93,6 +93,9 @@ export default async function EducatorDashboardPage() {
             <Button asChild variant="outline">
               <Link href="/educator/quiz">{t(d.liveQuizCta)}</Link>
             </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/submissions">Moderasi komunitas</Link>
+            </Button>
           </div>
         </header>
 

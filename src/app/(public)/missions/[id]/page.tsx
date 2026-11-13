@@ -134,7 +134,7 @@ export default function MissionPage() {
     } finally {
       setLoading(false);
     }
-  }, [params.id]);
+  }, [params.id, t]);
 
   useEffect(() => {
     if (params.id) {

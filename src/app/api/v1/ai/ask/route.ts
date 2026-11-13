@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { withErrorHandling } from "@/lib/api/handler";
 import { parseJsonBody } from "@/lib/api/response";
-import { requireAuth } from "@/lib/auth/session";
+import { getSessionUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { durableRateLimit } from "@/lib/security/rate-limit-db";
 import { completeChat, isLlmConfigured } from "@/lib/llm";
@@ -71,6 +71,18 @@ type ContentRow = {
   source: { title: string; license: string | null } | { title: string; license: string | null }[] | null;
 };
 
+type ArticleRow = {
+  id: string;
+  title: string;
+  summary: string | null;
+  body: string | null;
+  cultural_meaning: string | null;
+  historical_context: string | null;
+  encyclopedia_article_regions?: Array<{
+    region: { name: string } | { name: string }[] | null;
+  }>;
+};
+
 const askSchema = z.object({
   question: z.string().trim().min(3).max(500),
 });
@@ -107,32 +119,74 @@ export async function POST(request: Request) {
       );
     }
 
-    const user = await requireAuth();
+    const user = await getSessionUser();
     const { question } = await parseJsonBody(request, askSchema);
 
     const supabase = await createClient();
     const queryTokens = tokenize(question);
 
-    const { data: contents } = await supabase
-      .from("cultural_contents")
-      .select(
-        "id, title, body, content_type, region_id, source_id, region:cultural_regions!region_id (name), source:cultural_sources!source_id (title, license)"
-      )
-      .eq("status", "published")
-      .limit(200);
+    const [{ data: contents }, { data: articles }] = await Promise.all([
+      supabase
+        .from("cultural_contents")
+        .select(
+          "id, title, body, content_type, region_id, source_id, region:cultural_regions!region_id (name), source:cultural_sources!source_id (title, license)"
+        )
+        .eq("status", "published")
+        .limit(200),
+      supabase
+        .from("encyclopedia_articles")
+        .select(
+          "id, title, summary, body, cultural_meaning, historical_context, encyclopedia_article_regions(region:cultural_regions(name))"
+        )
+        .eq("status", "published")
+        .limit(100),
+    ]);
 
     const rows = (contents ?? []) as unknown as ContentRow[];
-    const scored = rows
-      .map((row) => {
+    const articleRows = (articles ?? []) as unknown as ArticleRow[];
+
+    const normalizedCandidates = [
+      ...rows.map((row) => {
         const region = one(row.region);
         const source = one(row.source);
+        return {
+          id: row.id,
+          title: row.title,
+          body: row.body ?? "",
+          regionName: region?.name ?? null,
+          source: source ?? null,
+        };
+      }),
+      ...articleRows.map((article) => {
+        const firstRegionLink = article.encyclopedia_article_regions?.[0]?.region ?? null;
+        const region = one(firstRegionLink);
+        const combinedBody = [
+          article.summary ?? "",
+          article.body ?? "",
+          article.cultural_meaning ?? "",
+          article.historical_context ?? "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+        return {
+          id: article.id,
+          title: article.title,
+          body: combinedBody,
+          regionName: region?.name ?? null,
+          source: { title: "Ensiklopedia Budaya LokaQuest", license: "CC BY-SA 4.0" },
+        };
+      }),
+    ];
+
+    const scored = normalizedCandidates
+      .map((row) => {
         const haystack = [
           row.title,
           row.body ?? "",
-          region?.name ?? "",
-          source?.title ?? "",
+          row.regionName ?? "",
+          row.source?.title ?? "",
         ].join(" ");
-        return { ...row, regionName: region?.name ?? null, source, score: score(haystack, queryTokens) };
+        return { ...row, score: score(haystack, queryTokens) };
       })
       .filter((row) => row.score > 0)
       .sort((a, b) => b.score - a.score)
@@ -192,15 +246,17 @@ export async function POST(request: Request) {
     }
 
     // Best-effort quality log (RLS: users may only insert their own rows).
-    try {
-      await supabase.from("ai_qa_logs").insert({
-        profile_id: user.id,
-        question,
-        answer,
-        citations,
-      });
-    } catch {
-      // logging must not break the answer
+    if (user) {
+      try {
+        await supabase.from("ai_qa_logs").insert({
+          profile_id: user.id,
+          question,
+          answer,
+          citations,
+        });
+      } catch {
+        // logging must not break the answer
+      }
     }
 
     return Response.json({

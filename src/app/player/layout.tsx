@@ -1,18 +1,14 @@
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/auth/session";
+import { getSessionUser } from "@/lib/auth/session";
 
 export default async function PlayerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  try {
-    const user = await requireAuth();
-    if (user.role !== "player" && user.role !== "admin") {
-      redirect("/");
-    }
-    return <>{children}</>;
-  } catch {
+  const user = await getSessionUser();
+  if (!user) {
     redirect("/auth/login");
   }
+  return <>{children}</>;
 }

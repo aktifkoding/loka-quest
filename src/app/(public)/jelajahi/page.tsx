@@ -47,7 +47,7 @@ export default function KnowledgeGraphPage() {
       }
     };
     fetchGraph();
-  }, []);
+  }, [t]);
 
   const neighbors = selected
     ? {

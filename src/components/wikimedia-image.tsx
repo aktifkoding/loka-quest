@@ -10,6 +10,6 @@ type WikimediaImageProps = Omit<React.ComponentProps<typeof Image>, "loader">;
  * Server Component: fungsi loader tidak bisa dikirim langsung dari server,
  * jadi ia dipasang di dalam batas Client Component ini.
  */
-export function WikimediaImage(props: WikimediaImageProps) {
-  return <Image {...props} loader={wikimediaLoader} />;
+export function WikimediaImage({ alt, ...props }: WikimediaImageProps) {
+  return <Image alt={alt} {...props} loader={wikimediaLoader} />;
 }
