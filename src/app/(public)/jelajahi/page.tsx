@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,6 +48,11 @@ export default function KnowledgeGraphPage() {
     };
     fetchGraph();
   }, [t]);
+
+  const nodeById = useMemo(
+    () => new Map(graph.nodes.map((n) => [n.id, n])),
+    [graph.nodes]
+  );
 
   const neighbors = selected
     ? {
@@ -150,7 +155,9 @@ export default function KnowledgeGraphPage() {
                             <p className="text-sm font-medium">
                               {relationLabel[e.relation] ? t(relationLabel[e.relation]) : e.relation}
                             </p>
-                            <p className="text-xs text-muted-foreground">{e.target}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {nodeById.get(e.target)?.label ?? e.target}
+                            </p>
                           </li>
                         ))}
                       </ul>
@@ -168,7 +175,9 @@ export default function KnowledgeGraphPage() {
                             <p className="text-sm font-medium">
                               {relationLabel[e.relation] ? t(relationLabel[e.relation]) : e.relation}
                             </p>
-                            <p className="text-xs text-muted-foreground">{e.source}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {nodeById.get(e.source)?.label ?? e.source}
+                            </p>
                           </li>
                         ))}
                       </ul>
