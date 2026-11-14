@@ -77,4 +77,6 @@ export const gameDict = {
   discussionTitle: { id: "Pembahasan", en: "Explanations" },
   correctAria: { id: "Benar", en: "Correct" },
   incorrectAria: { id: "Belum tepat", en: "Not quite right" },
+  curriculumBadge: { id: "Kurikulum Merdeka", en: "Kurikulum Merdeka" },
+  curriculumAria: { id: "Pemetaan Capaian Pembelajaran", en: "Learning outcome mapping" },
 } satisfies Record<string, Localized>;

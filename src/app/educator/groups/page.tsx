@@ -252,6 +252,12 @@ export default function EducatorGroupsPage() {
                       {activeGroup.join_code}
                     </Button>
                   )}
+                  <Button asChild variant="secondary" size="sm">
+                    <Link href={`/educator/groups/${activeGroup.id}/report`}>
+                      <ClipboardList className="size-4" aria-hidden="true" />
+                      {t(d.reportTitle)}
+                    </Link>
+                  </Button>
                 </div>
               </Card>
 

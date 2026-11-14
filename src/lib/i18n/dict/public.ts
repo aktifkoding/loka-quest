@@ -209,4 +209,31 @@ export const publicDict = {
   contentTypeArtifact: { id: "Artefak", en: "Artifact" },
   contentTypePractice: { id: "Praktik", en: "Practice" },
   contentTypeStory: { id: "Cerita", en: "Story" },
+
+  // Jalur Budaya (halaman wilayah)
+  storyPathTitle: { id: "Jalur Budaya", en: "Culture Path" },
+  storyPathDescription: {
+    id: "Satu perjalanan utuh: mainkan misi, kenali konten, lalu dalami artikel ensiklopedia.",
+    en: "One complete journey: play the missions, meet the content, then dive into encyclopedia articles.",
+  },
+  storyPathStep1: { id: "Mainkan Misi", en: "Play Missions" },
+  storyPathStep2: { id: "Kenali Konten", en: "Meet the Content" },
+  storyPathStep3: { id: "Dalami Artikel", en: "Dive into Articles" },
+  storyPathMissionsCount: {
+    id: "{n} misi menanti",
+    en: "{n} missions await",
+  },
+  storyPathContentsCount: {
+    id: "{n} konten budaya",
+    en: "{n} cultural entries",
+  },
+  storyPathArticlesCount: {
+    id: "{n} artikel ensiklopedia",
+    en: "{n} encyclopedia articles",
+  },
+  storyPathEmpty: {
+    id: "Konten untuk wilayah ini sedang disusun editor budaya.",
+    en: "Content for this region is being prepared by our cultural editors.",
+  },
+  certificateCta: { id: "Sertifikat Wilayah", en: "Region Certificate" },
 } satisfies Record<string, Localized>;

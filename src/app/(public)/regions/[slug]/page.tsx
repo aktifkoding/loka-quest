@@ -25,6 +25,7 @@ import {
   ExternalLink,
   X,
   Maximize2,
+  Award,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { publicDict as d } from "@/lib/i18n/dict/public";
@@ -49,6 +50,13 @@ interface RegionContent {
   image_credit: ImageCredit | null;
 }
 
+interface RegionArticle {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+}
+
 interface RegionDetail {
   id: string;
   slug: string;
@@ -58,6 +66,7 @@ interface RegionDetail {
   image_url: string | null;
   image_credit: ImageCredit | null;
   contents: RegionContent[];
+  articles?: RegionArticle[];
 }
 
 interface Mission {
@@ -210,9 +219,96 @@ export default function RegionDetailPage() {
         </Reveal>
       </section>
 
+      {/* Jalur Budaya — satu perjalanan: misi → konten → artikel → sertifikat */}
+      <section className="mb-14" aria-label={t(d.storyPathTitle)}>
+        <Reveal>
+          <h2 className="font-display text-xl font-semibold">{t(d.storyPathTitle)}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{t(d.storyPathDescription)}</p>
+        </Reveal>
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <Reveal>
+            <Link href="#misi" className="group block h-full">
+              <Card interactive className="h-full">
+                <div className="p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <Gamepad2 className="size-4" aria-hidden="true" />
+                    </span>
+                    <span className="font-display text-xs font-semibold text-muted-foreground">01</span>
+                  </div>
+                  <p className="mt-3 text-sm font-medium">{t(d.storyPathStep1)}</p>
+                  <p className="mt-1 text-[12px] text-muted-foreground">
+                    {t(d.storyPathMissionsCount, { n: missions.length })}
+                  </p>
+                </div>
+              </Card>
+            </Link>
+          </Reveal>
+          <Reveal>
+            <Link href="#konten" className="group block h-full">
+              <Card interactive className="h-full">
+                <div className="p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="flex size-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                      <ScrollText className="size-4" aria-hidden="true" />
+                    </span>
+                    <span className="font-display text-xs font-semibold text-muted-foreground">02</span>
+                  </div>
+                  <p className="mt-3 text-sm font-medium">{t(d.storyPathStep2)}</p>
+                  <p className="mt-1 text-[12px] text-muted-foreground">
+                    {t(d.storyPathContentsCount, { n: region.contents.length })}
+                  </p>
+                </div>
+              </Card>
+            </Link>
+          </Reveal>
+          <Reveal>
+            {(region.articles?.length ?? 0) > 0 ? (
+              <Link href={`/encyclopedia`} className="group block h-full">
+                <Card interactive className="h-full">
+                  <div className="p-5">
+                    <div className="flex items-center justify-between">
+                      <span className="flex size-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-400">
+                        <BookMarked className="size-4" aria-hidden="true" />
+                      </span>
+                      <span className="font-display text-xs font-semibold text-muted-foreground">03</span>
+                    </div>
+                    <p className="mt-3 text-sm font-medium">{t(d.storyPathStep3)}</p>
+                    <p className="mt-1 text-[12px] text-muted-foreground">
+                      {t(d.storyPathArticlesCount, { n: region.articles?.length ?? 0 })}
+                    </p>
+                  </div>
+                </Card>
+              </Link>
+            ) : (
+              <Card className="h-full">
+                <div className="p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                      <BookMarked className="size-4" aria-hidden="true" />
+                    </span>
+                    <span className="font-display text-xs font-semibold text-muted-foreground">03</span>
+                  </div>
+                  <p className="mt-3 text-sm font-medium">{t(d.storyPathStep3)}</p>
+                  <p className="mt-1 text-[12px] text-muted-foreground">{t(d.storyPathEmpty)}</p>
+                </div>
+              </Card>
+            )}
+          </Reveal>
+        </div>
+        <Reveal>
+          <Button asChild variant="outline" size="sm" className="mt-4">
+            <Link href={`/player/certificate/${region.slug}`}>
+              <Award className="size-4" aria-hidden="true" />
+              {t(d.certificateCta)}
+            </Link>
+          </Button>
+        </Reveal>
+      </section>
+
       {/* Konten budaya */}
       {region.contents.length > 0 && (
-        <section className="mb-14" aria-label={t(d.contentsSectionAria)}>
+        <section id="konten" className="mb-14 scroll-mt-24" aria-label={t(d.contentsSectionAria)}>
           <Reveal>
             <div className="flex items-center gap-2">
               <Sparkles className="size-5 text-primary" aria-hidden="true" />
@@ -311,7 +407,7 @@ export default function RegionDetailPage() {
       )}
 
       {/* Misi di wilayah ini */}
-      <section className="mb-14" aria-label={t(d.missionsSectionAria)}>
+      <section id="misi" className="mb-14 scroll-mt-24" aria-label={t(d.missionsSectionAria)}>
         <Reveal>
           <h2 className="font-display text-2xl font-semibold">{t(d.missionsHeading)}</h2>
         </Reveal>

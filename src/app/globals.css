@@ -579,3 +579,23 @@
 .leaflet-container a.leaflet-popup-close-button {
   color: hsl(var(--muted-foreground));
 }
+
+/* ==========================================================================
+   Cetak (rapor kelas, sertifikat) — sembunyikan navigasi & aksi layar
+   ========================================================================== */
+@media print {
+  .no-print,
+  header[class*="sticky"],
+  nav {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  table {
+    font-size: 11px;
+  }
+}

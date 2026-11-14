@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ArrowLeft, Loader2, CheckCircle2, XCircle, Zap, Gamepad2, Trophy, Gem } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle2, XCircle, Zap, Gamepad2, Trophy, Gem, ScrollText } from "lucide-react";
 import { Confetti } from "@/components/ui/confetti";
 import { MissionMediaGuide } from "@/components/game/mission-media-guide";
 
@@ -25,6 +25,7 @@ interface Mission {
   learning_objectives: string[];
   difficulty: string;
   xp_reward: number;
+  curriculum_ref?: string | null;
 }
 
 interface Question {
@@ -233,6 +234,19 @@ export default function MissionPage() {
       </header>
 
       <div className="tenun my-8" aria-hidden="true" />
+
+      {mission.curriculum_ref && (
+        <p
+          className="mb-6 inline-flex max-w-full items-start gap-2 rounded-full border border-primary/30 bg-primary/5 px-3.5 py-1.5 text-[12px] text-primary"
+          aria-label={t(d.curriculumAria)}
+        >
+          <ScrollText className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+          <span>
+            <span className="font-semibold">{t(d.curriculumBadge)}:</span>{" "}
+            {mission.curriculum_ref}
+          </span>
+        </p>
+      )}
 
       <div className="mb-6">
         <MissionMediaGuide missionSlug={mission.slug} />

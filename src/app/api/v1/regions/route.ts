@@ -39,6 +39,17 @@ export async function GET(request: Request) {
         .eq("id", region.image_source_id ?? "")
         .maybeSingle();
 
+      // Artikel ensiklopedia yang melekat pada wilayah ini — langkah akhir
+      // "Jalur Budaya" di halaman wilayah (misi → konten → artikel).
+      const { data: articleLinks } = await supabase
+        .from("encyclopedia_article_regions")
+        .select(
+          "article:encyclopedia_articles!inner(id, slug, title, summary, status)"
+        )
+        .eq("region_id", region.id)
+        .eq("encyclopedia_articles.status", "published")
+        .limit(8);
+
       return Response.json({
         success: true,
         data: {
@@ -51,6 +62,15 @@ export async function GET(request: Request) {
               ? c.image_credit[0] ?? null
               : c.image_credit,
           })),
+          articles: (articleLinks ?? [])
+            .map((link) => {
+              const article = link.article as
+                | { id: string; slug: string; title: string; summary: string }
+                | { id: string; slug: string; title: string; summary: string }[]
+                | null;
+              return Array.isArray(article) ? article[0] ?? null : article;
+            })
+            .filter((a): a is NonNullable<typeof a> => Boolean(a)),
         },
       });
     }

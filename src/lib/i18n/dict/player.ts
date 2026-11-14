@@ -269,4 +269,30 @@ export const playerDict = {
   shortcutsTitle: { id: "Pintasan", en: "Shortcuts" },
   shortcutCollection: { id: "Koleksi", en: "Collection" },
   signOut: { id: "Keluar", en: "Sign out" },
+  // Sertifikat wilayah
+  certificateTitle: { id: "Sertifikat Penjelajah Budaya", en: "Culture Explorer Certificate" },
+  certificateBody: {
+    id: "dinyatakan telah menuntaskan seluruh misi budaya",
+    en: "has completed every cultural mission of",
+  },
+  certificateWilayah: { id: "wilayah", en: "the region of" },
+  certificateMissionsNote: {
+    id: "{done} dari {total} misi selesai",
+    en: "{done} of {total} missions completed",
+  },
+  certificateEligibleTitle: {
+    id: "Selamat, sertifikat wilayah ini sudah bisa diklaim!",
+    en: "Congratulations — this region's certificate is ready to claim!",
+  },
+  certificatePrintCta: { id: "Cetak / Simpan PDF", en: "Print / Save PDF" },
+  certificateIssuedAt: { id: "Diterbitkan", en: "Issued" },
+  certificateFooter: {
+    id: "Diterbitkan secara otomatis oleh LokaQuest — platform pembelajaran budaya Nusantara.",
+    en: "Issued automatically by LokaQuest — the Nusantara culture learning platform.",
+  },
+  certificateNotReadyCta: { id: "Lanjutkan misi wilayah ini", en: "Continue this region's missions" },
+  certificateProgressHeading: {
+    id: "Tuntaskan semua misi wilayah ini untuk membuka sertifikat",
+    en: "Complete every mission in this region to unlock the certificate",
+  },
 } satisfies Record<string, Localized>;

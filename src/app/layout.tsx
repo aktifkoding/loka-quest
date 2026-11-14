@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { ConsentBanner } from "@/components/layout/consent-banner";
+import { PwaRegister } from "@/components/layout/pwa-register";
 import { I18nProvider } from "@/lib/i18n";
 import { getServerI18n, getServerLang } from "@/lib/i18n/server";
 import { appMetaDict as meta, metaKeywords } from "@/lib/i18n/dict/common";
@@ -76,6 +77,7 @@ export default async function RootLayout({
           <Navbar />
           <main className="min-h-screen pt-24">{children}</main>
           <ConsentBanner />
+          <PwaRegister />
         </I18nProvider>
       </body>
     </html>

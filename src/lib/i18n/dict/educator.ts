@@ -205,4 +205,42 @@ export const educatorDict = {
     id: "Angka ini indikasi awal berdasarkan sampel kecil, bukan bukti efektivitas pembelajaran.",
     en: "These numbers are an early indication based on a small sample, not proof of learning effectiveness.",
   },
+  // Rapor kelas
+  reportTitle: { id: "Rapor Kelas", en: "Class Report" },
+  reportDescription: {
+    id: "Ringkasan belajar per siswa: upaya misi, skor, dan progres tugas.",
+    en: "Per-student learning summary: mission attempts, scores, and assignment progress.",
+  },
+  reportDownloadCsv: { id: "Unduh CSV (Excel)", en: "Download CSV (Excel)" },
+  reportPrint: { id: "Cetak / PDF", en: "Print / PDF" },
+  reportEmpty: {
+    id: "Belum ada siswa di kelompok ini. Bagikan kode gabung terlebih dahulu.",
+    en: "No students in this group yet. Share the join code first.",
+  },
+  reportLoadFailed: {
+    id: "Rapor gagal dimuat. Coba lagi.",
+    en: "Failed to load the report. Try again.",
+  },
+  reportGeneratedAt: { id: "Dibuat", en: "Generated" },
+  reportStudent: { id: "Siswa", en: "Student" },
+  reportLevel: { id: "Level", en: "Level" },
+  reportXp: { id: "XP", en: "XP" },
+  reportAttempts: { id: "Upaya", en: "Attempts" },
+  reportCompleted: { id: "Misi selesai", en: "Missions done" },
+  reportAvgScore: { id: "Rata-rata", en: "Average" },
+  reportBest: { id: "Terbaik", en: "Best" },
+  reportAssignments: { id: "Tugas", en: "Assignments" },
+  reportLastActivity: { id: "Aktivitas terakhir", en: "Last activity" },
+  reportAssignmentsPattern: {
+    id: "{done}/{total} tugas",
+    en: "{done}/{total} assignments",
+  },
+  reportNever: { id: "Belum ada", en: "None yet" },
+  reportClassSummary: { id: "Ringkasan kelas", en: "Class summary" },
+  reportStudentsCount: { id: "siswa", en: "students" },
+  reportCompletionRate: {
+    id: "tingkat penyelesaian misi",
+    en: "mission completion rate",
+  },
+  reportAvgScoreAll: { id: "rata-rata skor kelas", en: "class average score" },
 } satisfies Record<string, Localized>;

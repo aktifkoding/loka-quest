@@ -17,7 +17,8 @@
     "prepare": "husky install",
     "db:seed:remote": "node scripts/seed-remote.mjs",
     "db:seed:content": "node --env-file=.env.local scripts/seed-content.mjs",
-    "db:seed:images": "node --env-file=.env.local scripts/seed-images.mjs"
+    "db:seed:images": "node --env-file=.env.local scripts/seed-images.mjs",
+    "db:seed:expansion": "node --env-file=.env.local scripts/seed-expansion.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
