@@ -18,7 +18,7 @@ export async function sendEmail(input: EmailInput): Promise<boolean> {
     return false;
   }
 
-  const from = process.env.EMAIL_FROM ?? "LokaQuest <noreply@lokaquest.id>";
+  const from = process.env.EMAIL_FROM ?? "LokaQuest <noreply@lokaquest.web.id>";
 
   try {
     const response = await fetch("https://api.resend.com/emails", {

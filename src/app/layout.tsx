@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const { lang, t } = await getServerI18n();
   return {
     metadataBase: new URL(
-      process.env.NEXT_PUBLIC_APP_URL ?? "https://lokaquest.vercel.app"
+      process.env.NEXT_PUBLIC_APP_URL ?? "https://www.lokaquest.web.id"
     ),
     title: {
       default: t(meta.title),
