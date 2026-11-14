@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { durableRateLimit } from "@/lib/security/rate-limit-db";
 import { completeChat, isLlmConfigured } from "@/lib/llm";
+import { tokenize, score as scoreFields } from "@/lib/ai/retrieval";
 import { type Lang } from "@/lib/i18n";
 import { getLangFromRequest } from "@/lib/i18n/server";
 import { errorsDict as E } from "@/lib/i18n/dict/errors";
@@ -87,22 +88,6 @@ const askSchema = z.object({
   question: z.string().trim().min(3).max(500),
 });
 
-function tokenize(text: string): string[] {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .split(/\s+/)
-    .filter((word) => word.length > 2);
-}
-
-function score(text: string, queryTokens: string[]): number {
-  const lower = text.toLowerCase();
-  return queryTokens.reduce(
-    (total, token) => (lower.includes(token) ? total + 1 : total),
-    0
-  );
-}
-
 function one<T>(value: T | T[] | null): T | null {
   return Array.isArray(value) ? (value[0] ?? null) : value;
 }
@@ -179,15 +164,13 @@ export async function POST(request: Request) {
     ];
 
     const scored = normalizedCandidates
-      .map((row) => {
-        const haystack = [
-          row.title,
-          row.body ?? "",
-          row.regionName ?? "",
-          row.source?.title ?? "",
-        ].join(" ");
-        return { ...row, score: score(haystack, queryTokens) };
-      })
+      .map((row) => ({
+        ...row,
+        score: scoreFields(
+          { title: row.title, body: row.body, extras: [row.regionName, row.source?.title] },
+          queryTokens
+        ),
+      }))
       .filter((row) => row.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, 5);
