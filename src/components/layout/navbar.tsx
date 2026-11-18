@@ -104,8 +104,10 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-3 z-50 px-3 md:px-6">
       <div
         className={cn(
-          "mx-auto flex h-14 max-w-7xl items-center justify-between rounded-2xl border border-border/80 bg-background/85 pl-4 pr-2 backdrop-blur-md transition-[box-shadow,border-color] duration-300 ease-out-expo",
-          scrolled ? "border-border shadow-raised" : "shadow-card"
+          "mx-auto flex h-14 max-w-7xl items-center justify-between rounded-2xl border bg-background/85 pl-4 pr-2 backdrop-blur-md transition-[box-shadow,border-color,background-color] duration-300 ease-out-expo",
+          scrolled
+            ? "border-[#D4AF37]/40 bg-background/95 shadow-raised"
+            : "border-border/80 shadow-card"
         )}
       >
         <Link

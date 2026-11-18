@@ -9,6 +9,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { CountUp } from "@/components/ui/count-up";
 import { HeroMotion, ScrollStagger } from "@/components/landing/motion";
 import { BatikHeritageBackground } from "@/components/landing/batik-heritage-background";
+import { HeroDemoQuiz } from "@/components/landing/hero-demo-quiz";
 import { createServiceClient } from "@/lib/supabase/service-role";
 import {
   SwatchBook,
@@ -88,6 +89,7 @@ const getLandingData = unstable_cache(
           title: mission.title,
           description: mission.description,
           xp: mission.xp_reward,
+          difficulty: mission.difficulty ?? undefined,
           region: regionNames.get(mission.region_id) ?? "",
         }));
       }
@@ -113,6 +115,7 @@ type LandingMission = {
   title: string;
   description: string;
   xp: number;
+  difficulty?: string;
   region: string;
   icon: LucideIcon;
 };
@@ -146,6 +149,7 @@ const FALLBACK_MISSIONS: CachedLandingMission[] = [
     title: "Batik Detective",
     description: "Pelajari pola dan makna di balik batik khas Jawa Tengah.",
     xp: 150,
+    difficulty: "easy",
     region: "Jawa Tengah",
   },
   {
@@ -154,6 +158,7 @@ const FALLBACK_MISSIONS: CachedLandingMission[] = [
     description:
       "Kenali instrumen gamelan dan peranannya dalam orkestra tradisional.",
     xp: 200,
+    difficulty: "medium",
     region: "Jawa Barat",
   },
   {
@@ -162,9 +167,16 @@ const FALLBACK_MISSIONS: CachedLandingMission[] = [
     description:
       "Ikuti petualangan wayang dan pelajari cerita rakyat Nusantara.",
     xp: 200,
+    difficulty: "medium",
     region: "Yogyakarta",
   },
 ];
+
+const DIFFICULTY_LABELS: Record<string, { id: string; en: string }> = {
+  easy: { id: "Pemula", en: "Beginner" },
+  medium: { id: "Menengah", en: "Intermediate" },
+  hard: { id: "Mahir", en: "Advanced" },
+};
 
 const steps = [
   { number: "1", title: d.step1Title, description: d.step1Desc },
@@ -249,88 +261,54 @@ export default async function HomePage() {
               </p>
             </div>
 
-            {/* Real product pattern: an actual mission question card.
-                GSAP menganimasikan pembungkus luar; float CSS di kartu dalam
-                agar dua transform tidak saling menimpa. */}
-            <div className="hero-card relative text-card-foreground md:translate-x-6">
-              <div className="animate-float rounded-2xl border border-[#D4AF37]/25 bg-card p-6 shadow-raised">
-              <div className="mb-4 flex items-center justify-between">
-                <p className="text-[13px] font-medium text-muted-foreground">
-                  {t(d.demoMissionLabel)}
-                </p>
-                <p className="text-[13px] tabular-nums text-muted-foreground">
-                  {t(d.demoQuestionOf)}
-                </p>
-              </div>
-              <div
-                className="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-muted"
-                role="presentation"
-              >
-                <div className="h-full w-1/2 rounded-full bg-primary" />
-              </div>
-              <p className="font-display text-lg font-semibold leading-snug">
-                {t(d.demoQuestion)}
-              </p>
-              <div className="mt-4 grid gap-2" role="presentation">
-                <span className="rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary">
-                  Parang Rusak
-                </span>
-                <span className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground/80">
-                  Kawung
-                </span>
-                <span className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground/80">
-                  Semen Rama
-                </span>
-              </div>
-            </div>
-            <div className="hero-xp absolute -right-3 -top-3 flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 shadow-card md:-right-6">
-              <Zap className="size-4 text-gold" aria-hidden="true" />
-              <span className="text-sm font-semibold tabular-nums">
-                +150 XP
-              </span>
-            </div>
-          </div>
-        </HeroMotion>
+            {/* Real product pattern: interactive mission question card. */}
+            <HeroDemoQuiz
+              lang={lang}
+              missionLabel={t(d.demoMissionLabel)}
+              questionOf={t(d.demoQuestionOf)}
+              question={t(d.demoQuestion)}
+            />
+          </HeroMotion>
         </section>
       </BatikHeritageBackground>
 
-      <div className="tenun mx-auto max-w-6xl" aria-hidden="true" />
+      <div className="tenun-gold" aria-hidden="true" />
 
-      {/* Proof strip — live product stats from the database */}
-      <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+      {/* Proof strip — elevated stats bridging dark hero to light body */}
+      <section className="relative z-10 mx-auto -mt-8 max-w-6xl px-4 pb-10 md:-mt-10 md:pb-14">
         <ScrollStagger>
-          <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-            <div data-stagger-item>
+          <div className="grid grid-cols-2 gap-6 rounded-2xl border border-[#D4AF37]/25 bg-card/95 p-6 shadow-raised backdrop-blur-sm md:p-8 lg:grid-cols-4 lg:gap-8">
+            <div data-stagger-item className="border-l-2 border-[#D4AF37]/50 pl-4">
               <CountUp
                 value={stats.missions}
-                className="font-display text-4xl font-semibold tabular-nums"
+                className="font-display text-3xl font-semibold tabular-nums md:text-4xl"
               />
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 {t(d.statMissionsCaption)}
               </p>
             </div>
-            <div data-stagger-item>
+            <div data-stagger-item className="border-l-2 border-[#D4AF37]/50 pl-4">
               <CountUp
                 value={stats.regions}
-                className="font-display text-4xl font-semibold tabular-nums"
+                className="font-display text-3xl font-semibold tabular-nums md:text-4xl"
               />
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 {t(d.statRegionsCaption)}
               </p>
             </div>
-            <div data-stagger-item>
+            <div data-stagger-item className="border-l-2 border-[#D4AF37]/50 pl-4">
               <CountUp
                 value={stats.questions}
-                className="font-display text-4xl font-semibold tabular-nums"
+                className="font-display text-3xl font-semibold tabular-nums md:text-4xl"
               />
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 {t(d.statQuestionsCaption)}
               </p>
             </div>
-            <div data-stagger-item>
+            <div data-stagger-item className="border-l-2 border-[#D4AF37]/50 pl-4">
               <CountUp
                 value={stats.sources}
-                className="font-display text-4xl font-semibold tabular-nums"
+                className="font-display text-3xl font-semibold tabular-nums md:text-4xl"
               />
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 {t(d.statSourcesCaption)}
@@ -446,56 +424,74 @@ export default async function HomePage() {
         </div>
         <ScrollStagger>
           <ul className="divide-y divide-border rounded-2xl border border-border/80 bg-card shadow-card">
-            {missions.map((mission) => (
-              <li key={mission.slug} data-stagger-item>
-                <Link
-                  href={`/missions/${mission.slug}`}
-                  className="group flex items-center gap-4 px-5 py-5 transition-colors duration-200 hover:bg-secondary/50 sm:px-6"
-                >
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-foreground">
-                    <mission.icon className="size-5" aria-hidden="true" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold">{mission.title}</p>
-                    <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                      {mission.description}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right sm:text-right">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground sm:text-sm sm:normal-case sm:tracking-normal">
-                      {mission.region}
-                    </p>
-                    <p className="text-sm font-semibold tabular-nums text-gold">
-                      {mission.xp} XP
-                    </p>
-                  </div>
-                  <ArrowRight
-                    className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary"
-                    aria-hidden="true"
-                  />
-                </Link>
-              </li>
-            ))}
+            {missions.map((mission) => {
+              const difficultyLabel = mission.difficulty
+                ? DIFFICULTY_LABELS[mission.difficulty]?.[lang]
+                : undefined;
+
+              return (
+                <li key={mission.slug} data-stagger-item>
+                  <Link
+                    href={`/missions/${mission.slug}`}
+                    className="group flex items-center gap-4 px-5 py-5 transition-colors duration-200 hover:bg-secondary/50 sm:px-6"
+                  >
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-200 group-hover:scale-105 group-hover:bg-[#D4AF37]/15 group-hover:text-[#9C6B3B] dark:group-hover:text-[#D4AF37]">
+                      <mission.icon className="size-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold">{mission.title}</p>
+                        {difficultyLabel ? (
+                          <span className="rounded-full border border-border bg-secondary/70 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                            {difficultyLabel}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                        {mission.description}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground sm:text-sm sm:normal-case sm:tracking-normal">
+                        {mission.region}
+                      </p>
+                      <p className="text-sm font-semibold tabular-nums text-gold">
+                        {mission.xp} XP
+                      </p>
+                    </div>
+                    <ArrowRight
+                      className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-[#D4AF37]"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </ScrollStagger>
+        <div className="mt-5 flex justify-center sm:hidden">
+          <Button variant="outline" asChild className="w-full">
+            <Link href="/missions" className="inline-flex items-center gap-1.5">
+              {t(d.allMissions)}
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </Button>
+        </div>
       </section>
 
       {/* How it works — 3 real steps in order */}
       <Reveal>
         <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
           <h2 className="font-display text-3xl font-semibold">{t(d.howTitle)}</h2>
-          <ol className="mt-10 grid gap-8 md:grid-cols-3">
-            {steps.map((step, index) => (
-              <li key={step.number} className="relative">
-                <span className="flex size-9 items-center justify-center rounded-full bg-primary font-display text-sm font-semibold text-primary-foreground">
+          <ol className="mt-10 grid gap-6 md:grid-cols-3">
+            {steps.map((step) => (
+              <li
+                key={step.number}
+                className="group relative rounded-2xl border border-border/80 bg-card p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-[#D4AF37]/50 hover:shadow-raised"
+              >
+                <span className="flex size-10 items-center justify-center rounded-full border border-[#D4AF37]/40 bg-primary font-display text-sm font-semibold text-primary-foreground transition-colors duration-300 group-hover:bg-[#D4AF37] group-hover:text-[#121214]">
                   {step.number}
                 </span>
-                {index < steps.length - 1 && (
-                  <span
-                    className="absolute left-[2.4rem] top-[1.1rem] hidden w-[calc(100%-3.5rem)] border-t-2 border-dashed border-border md:block"
-                    aria-hidden="true"
-                  />
-                )}
                 <p className="mt-4 font-semibold">{t(step.title)}</p>
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                   {t(step.description)}
