@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { CountUp } from "@/components/ui/count-up";
 import { HeroMotion, ScrollStagger } from "@/components/landing/motion";
+import { BatikHeritageBackground } from "@/components/landing/batik-heritage-background";
 import { createServiceClient } from "@/lib/supabase/service-role";
 import {
   SwatchBook,
@@ -184,66 +185,75 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero — split geometry, product visual built from real UI primitives */}
-      <section className="relative overflow-hidden">
-        <div className="batik-grid absolute inset-0" aria-hidden="true" />
-        <HeroMotion className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-10 md:grid-cols-2 md:pb-28 md:pt-16 lg:gap-8">
-          <div>
-            <p className="hero-badge mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[13px] font-medium text-muted-foreground">
-              <span
-                className="size-1.5 rounded-full bg-gold"
-                aria-hidden="true"
-              />
-              {t(d.badge)}
-            </p>
-            <h1
-              aria-label={t(d.heroAria)}
-              className="font-display text-4xl font-semibold leading-[1.1] sm:text-5xl md:text-[3.4rem]"
-            >
-              <span aria-hidden="true">
-                {heroWords.main.map((word, i) => (
-                  <Fragment key={`${word}-${i}`}>
-                    <span className="hero-word inline-block will-change-transform">
-                      {word}
-                    </span>{" "}
-                  </Fragment>
-                ))}
-                <span className="relative inline-block pb-1">
-                  {heroWords.tail.map((word, i) => (
+      <BatikHeritageBackground className="text-stone-100">
+        <section className="relative overflow-hidden">
+          <HeroMotion className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-10 md:grid-cols-2 md:pb-28 md:pt-16 lg:gap-8">
+            <div>
+              <p className="hero-badge mb-5 inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/30 bg-[#18171A]/80 px-3 py-1 text-[13px] font-medium text-stone-200">
+                <span
+                  className="size-1.5 rounded-full bg-[#D4AF37]"
+                  aria-hidden="true"
+                />
+                {t(d.badge)}
+              </p>
+              <h1
+                aria-label={t(d.heroAria)}
+                className="font-display text-4xl font-semibold leading-[1.1] text-stone-50 sm:text-5xl md:text-[3.4rem]"
+              >
+                <span aria-hidden="true">
+                  {heroWords.main.map((word, i) => (
                     <Fragment key={`${word}-${i}`}>
                       <span className="hero-word inline-block will-change-transform">
                         {word}
-                      </span>
-                      {i < heroWords.tail.length - 1 ? " " : null}
+                      </span>{" "}
                     </Fragment>
                   ))}
-                  <span
-                    className="hero-underline absolute inset-x-0 bottom-0 h-1 origin-left rounded-full bg-gold/60"
-                    aria-hidden="true"
-                  />
+                  <span className="relative inline-block pb-1">
+                    {heroWords.tail.map((word, i) => (
+                      <Fragment key={`${word}-${i}`}>
+                        <span className="hero-word inline-block will-change-transform">
+                          {word}
+                        </span>
+                        {i < heroWords.tail.length - 1 ? " " : null}
+                      </Fragment>
+                    ))}
+                    <span
+                      className="hero-underline absolute inset-x-0 bottom-0 h-1 origin-left rounded-full bg-[#D4AF37]/80"
+                      aria-hidden="true"
+                    />
+                  </span>
                 </span>
-              </span>
-            </h1>
-            <p className="hero-sub mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
-              {t(d.heroSub, { missions: stats.missions, regions: stats.regions })}
-            </p>
-            <div className="hero-cta mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button size="lg" asChild>
-                <Link href="/auth/register">{t(d.ctaStart)}</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/missions">{t(d.ctaExploreMissions)}</Link>
-              </Button>
+              </h1>
+              <p className="hero-sub mt-5 max-w-md text-lg leading-relaxed text-stone-300">
+                {t(d.heroSub, { missions: stats.missions, regions: stats.regions })}
+              </p>
+              <div className="hero-cta mt-8 flex flex-col gap-3 sm:flex-row">
+                <Button
+                  size="lg"
+                  asChild
+                  className="bg-[#D4AF37] text-[#121214] hover:bg-[#e0be4c]"
+                >
+                  <Link href="/auth/register">{t(d.ctaStart)}</Link>
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  asChild
+                  className="border-[#D4AF37]/40 bg-white/5 text-stone-100 hover:bg-[#D4AF37]/15 hover:text-stone-50"
+                >
+                  <Link href="/missions">{t(d.ctaExploreMissions)}</Link>
+                </Button>
+              </div>
+              <p className="hero-note mt-4 text-sm text-stone-400">
+                {t(d.heroNote)}
+              </p>
             </div>
-            <p className="hero-note mt-4 text-sm text-muted-foreground">
-              {t(d.heroNote)}
-            </p>
-          </div>
 
-          {/* Real product pattern: an actual mission question card.
-              GSAP menganimasikan pembungkus luar; float CSS di kartu dalam
-              agar dua transform tidak saling menimpa. */}
-          <div className="hero-card relative md:translate-x-6">
-            <div className="animate-float rounded-2xl border border-border/80 bg-card p-6 shadow-raised">
+            {/* Real product pattern: an actual mission question card.
+                GSAP menganimasikan pembungkus luar; float CSS di kartu dalam
+                agar dua transform tidak saling menimpa. */}
+            <div className="hero-card relative text-card-foreground md:translate-x-6">
+              <div className="animate-float rounded-2xl border border-[#D4AF37]/25 bg-card p-6 shadow-raised">
               <div className="mb-4 flex items-center justify-between">
                 <p className="text-[13px] font-medium text-muted-foreground">
                   {t(d.demoMissionLabel)}
@@ -281,7 +291,8 @@ export default async function HomePage() {
             </div>
           </div>
         </HeroMotion>
-      </section>
+        </section>
+      </BatikHeritageBackground>
 
       <div className="tenun mx-auto max-w-6xl" aria-hidden="true" />
 
@@ -541,25 +552,35 @@ export default async function HomePage() {
 
       {/* Final CTA */}
       <Reveal>
-        <section className="relative overflow-hidden px-4 py-16 text-center md:py-24">
-          <div className="batik-grid absolute inset-0" aria-hidden="true" />
-          <div className="relative mx-auto max-w-3xl">
-            <h2 className="font-display text-4xl font-semibold leading-tight">
-              {t(d.finalTitle)}
-            </h2>
-            <p className="mx-auto mt-4 max-w-md leading-relaxed text-muted-foreground">
-              {t(d.finalBody)}
-            </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Button size="lg" asChild>
-                <Link href="/auth/register">{t(d.ctaStart)}</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/encyclopedia">{t(d.ctaEncyclopedia)}</Link>
-              </Button>
+        <BatikHeritageBackground className="text-stone-100" patternOpacity={0.85}>
+          <section className="relative overflow-hidden px-4 py-16 text-center md:py-24">
+            <div className="relative mx-auto max-w-3xl">
+              <h2 className="font-display text-4xl font-semibold leading-tight text-stone-50">
+                {t(d.finalTitle)}
+              </h2>
+              <p className="mx-auto mt-4 max-w-md leading-relaxed text-stone-300">
+                {t(d.finalBody)}
+              </p>
+              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Button
+                  size="lg"
+                  asChild
+                  className="bg-[#D4AF37] text-[#121214] hover:bg-[#e0be4c]"
+                >
+                  <Link href="/auth/register">{t(d.ctaStart)}</Link>
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  asChild
+                  className="border-[#D4AF37]/40 bg-white/5 text-stone-100 hover:bg-[#D4AF37]/15 hover:text-stone-50"
+                >
+                  <Link href="/encyclopedia">{t(d.ctaEncyclopedia)}</Link>
+                </Button>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </BatikHeritageBackground>
       </Reveal>
     </div>
   );
