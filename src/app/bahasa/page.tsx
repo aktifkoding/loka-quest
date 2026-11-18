@@ -88,8 +88,7 @@ export default async function BahasaDaerahHubPage() {
           {languages.map((lang) => (
             <Card
               key={lang.slug}
-              interactive
-              className="flex flex-col justify-between p-6 transition-[box-shadow] hover:shadow-lg"
+              className="flex flex-col justify-between p-6 transition-[border-color,box-shadow] hover:border-primary/40 hover:shadow-lg"
             >
               <div>
                 <div className="flex items-start justify-between gap-3">
@@ -117,8 +116,8 @@ export default async function BahasaDaerahHubPage() {
 
                 {/* Sapaan Greeting Preview */}
                 <div className="mt-5 rounded-xl border border-border/80 bg-secondary/50 p-3.5">
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                         {t(d.greetingLabel)}
                       </span>
@@ -134,6 +133,7 @@ export default async function BahasaDaerahHubPage() {
                       phonetic={lang.greeting.phonetic}
                       audioUrl={lang.greeting.audioUrl}
                       size="icon"
+                      className="shrink-0"
                     />
                   </div>
                 </div>

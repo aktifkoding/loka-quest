@@ -6,11 +6,13 @@ import { useI18n } from "@/lib/i18n";
 import { shellDict as d } from "@/lib/i18n/dict/shell";
 
 export function ThemeToggle() {
+  const [mounted, setMounted] = useState(false);
   const [dark, setDark] = useState(false);
   const { t } = useI18n();
 
   useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));
+    setMounted(true);
   }, []);
 
   const toggle = () => {
@@ -29,7 +31,8 @@ export function ThemeToggle() {
       aria-label={dark ? t(d.themeLightAria) : t(d.themeDarkAria)}
       className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
     >
-      {dark ? <Sun className="size-4" aria-hidden="true" /> : <Moon className="size-4" aria-hidden="true" />}
+      {/* Sembunyikan ikon sampai tema terbaca — hindari flip ikon setelah hidrasi */}
+      {mounted && (dark ? <Sun className="size-4" aria-hidden="true" /> : <Moon className="size-4" aria-hidden="true" />)}
     </button>
   );
 }

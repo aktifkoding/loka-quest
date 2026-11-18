@@ -5,26 +5,43 @@ const ANON_KEY = "lokaquest.anonymous-id";
 
 export type Consent = "granted" | "denied" | null;
 
+/** localStorage bisa melempar di browser privat/terkunci — jangan pernah crash UI. */
+function readStorage(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStorage(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // storage tidak tersedia — analitik anonim dilewati.
+  }
+}
+
 export function getConsent(): Consent {
   if (typeof window === "undefined") return null;
-  const value = window.localStorage.getItem(CONSENT_KEY);
+  const value = readStorage(CONSENT_KEY);
   return value === "granted" || value === "denied" ? value : null;
 }
 
 export function setConsent(value: "granted" | "denied") {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(CONSENT_KEY, value);
+  writeStorage(CONSENT_KEY, value);
   window.dispatchEvent(new Event("lokaquest:consent"));
 }
 
 function anonymousId(): string {
-  const existing = window.localStorage.getItem(ANON_KEY);
+  const existing = readStorage(ANON_KEY);
   if (existing) return existing;
   const id =
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
       : Math.random().toString(36).slice(2);
-  window.localStorage.setItem(ANON_KEY, id);
+  writeStorage(ANON_KEY, id);
   return id;
 }
 

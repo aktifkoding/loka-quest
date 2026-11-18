@@ -9,7 +9,7 @@ import { staticDict as d } from "@/lib/i18n/dict/static";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getServerI18n();
-  return { title: t(d.aboutMetaTitle) };
+  return { title: t(d.aboutMetaTitle), description: t(d.aboutMetaDescription) };
 }
 
 export default async function AboutPage() {

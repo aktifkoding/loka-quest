@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth/session";
 import { getServerI18n } from "@/lib/i18n/server";
+import type { Localized } from "@/lib/i18n";
 import { adminDict as d } from "@/lib/i18n/dict/admin";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,6 +18,13 @@ const statusDot: Record<string, string> = {
   review: "bg-gold",
   draft: "bg-muted-foreground/50",
   archived: "bg-muted-foreground/30",
+};
+
+const statusLabels: Record<string, Localized> = {
+  published: d.statusPublished,
+  review: d.statusReview,
+  draft: d.statusDraft,
+  archived: d.statusArchived,
 };
 
 export default async function AdminContentsPage() {
@@ -92,7 +100,7 @@ export default async function AdminContentsPage() {
                           className={`size-2 rounded-full ${statusDot[c.status] ?? "bg-muted-foreground/50"}`}
                           aria-hidden="true"
                         />
-                        {c.status}
+                        {statusLabels[c.status] ? t(statusLabels[c.status]) : c.status}
                       </span>
                     </div>
                   </Card>

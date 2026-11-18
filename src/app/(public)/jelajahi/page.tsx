@@ -26,6 +26,15 @@ const relationLabel: Record<string, Localized> = {
   practiced_in: d.relationPracticedIn,
 };
 
+const nodeTypeLabel: Record<string, Localized> = {
+  region: d.nodeTypeRegion,
+  content: d.nodeTypeContent,
+  source: d.nodeTypeSource,
+  artifact: d.nodeTypeArtifact,
+  person: d.nodeTypePerson,
+  concept: d.nodeTypeConcept,
+};
+
 export default function KnowledgeGraphPage() {
   const { t } = useI18n();
   const [graph, setGraph] = useState<KnowledgeGraph>({ nodes: [], edges: [] });
@@ -103,20 +112,23 @@ export default function KnowledgeGraphPage() {
                 ).length;
                 return (
                 <Reveal key={node.id} delay={index * 60}>
-                  <Card
-                    interactive
-                    className={
-                      "cursor-pointer " + (selected?.id === node.id ? "ring-2 ring-primary" : "")
-                    }
-                    onClick={() => setSelected(node)}
-                  >
-                    <div className="px-5 py-5">
-                      <p className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">{node.type}</p>
+                  <Card className={selected?.id === node.id ? "ring-2 ring-primary" : ""}>
+                    {/* Tombol asli agar simpul bisa dipilih lewat keyboard */}
+                    <button
+                      type="button"
+                      onClick={() => setSelected(node)}
+                      aria-pressed={selected?.id === node.id}
+                      aria-label={t(d.selectNodeAria, { label: node.label })}
+                      className="w-full rounded-[inherit] px-5 py-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <p className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                        {nodeTypeLabel[node.type] ? t(nodeTypeLabel[node.type]) : node.type}
+                      </p>
                       <p className="mt-1 font-display text-lg font-semibold leading-snug">{node.label}</p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {t(d.connectionsCount, { x: connections })}
                       </p>
-                    </div>
+                    </button>
                   </Card>
                 </Reveal>
                 );
@@ -140,7 +152,10 @@ export default function KnowledgeGraphPage() {
                   <div>
                     <p className="text-sm font-medium">{t(d.selectedLabel)}</p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {selected.label} <span className="text-xs">({selected.type})</span>
+                      {selected.label}{" "}
+                      <span className="text-xs">
+                        ({nodeTypeLabel[selected.type] ? t(nodeTypeLabel[selected.type]) : selected.type})
+                      </span>
                     </p>
                   </div>
 
@@ -194,7 +209,9 @@ export default function KnowledgeGraphPage() {
                   const count = graph.nodes.filter((n) => n.type === type).length;
                   return (
                     <div key={type} className="rounded-lg border border-border bg-secondary/40 px-3 py-2">
-                      <p className="text-xs text-muted-foreground">{type}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {nodeTypeLabel[type] ? t(nodeTypeLabel[type]) : type}
+                      </p>
                       <p className="text-sm font-semibold tabular-nums">{count}</p>
                     </div>
                   );

@@ -92,6 +92,30 @@ export const educatorDict = {
   },
   createGroupCta: { id: "Buat kelompok", en: "Create group" },
   groupsLoadFailed: { id: "Gagal memuat kelompok", en: "Failed to load groups" },
+  sessionNotFoundHint: {
+    id: "Sesi tidak ditemukan atau kode salah. Periksa kode di halaman Kelas Kuis.",
+    en: "Session not found or wrong code. Check the code on the Class Quiz page.",
+  },
+  dashboardErrorTitle: {
+    id: "Dasbor tidak dapat dimuat",
+    en: "Dashboard could not be loaded",
+  },
+  dashboardErrorDescription: {
+    id: "Terjadi kesalahan saat mengambil data dasbor. Coba lagi.",
+    en: "Something went wrong while fetching dashboard data. Please try again.",
+  },
+  analyticsErrorTitle: {
+    id: "Analitik tidak dapat dimuat",
+    en: "Analytics could not be loaded",
+  },
+  analyticsErrorDescription: {
+    id: "Terjadi kesalahan saat mengambil data analitik. Coba lagi.",
+    en: "Something went wrong while fetching analytics data. Please try again.",
+  },
+  detailLoadFailed: {
+    id: "Gagal memuat detail kelompok. Coba pilih kelompok lagi.",
+    en: "Failed to load group details. Try selecting the group again.",
+  },
   createGroupFailed: { id: "Gagal membuat kelompok", en: "Failed to create group" },
   groupCreatedToast: {
     id: "Kelompok dibuat. Bagikan kode join ke siswa.",
@@ -200,6 +224,10 @@ export const educatorDict = {
   },
   preTest: { id: "Pre-test", en: "Pre-test" },
   postTest: { id: "Post-test", en: "Post-test" },
+  communityModerationCta: {
+    id: "Moderasi komunitas",
+    en: "Community moderation",
+  },
   change: { id: "perubahan", en: "change" },
   privacyNote: {
     id: "Angka ini indikasi awal berdasarkan sampel kecil, bukan bukti efektivitas pembelajaran.",

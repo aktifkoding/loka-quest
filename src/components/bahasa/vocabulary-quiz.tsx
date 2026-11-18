@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, XCircle, Trophy, RotateCcw, Zap, ArrowRight } from "lucide-react";
 import { Confetti } from "@/components/ui/confetti";
+import { useI18n } from "@/lib/i18n";
+import { bahasaDict as d } from "@/lib/i18n/dict/bahasa";
 import { PronunciationButton } from "./pronunciation-button";
 import type { LanguageQuizQuestion } from "@/lib/languages";
 
@@ -21,6 +23,7 @@ export function VocabularyQuiz({
   questions,
   onFinish,
 }: VocabularyQuizProps) {
+  const { t } = useI18n();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -30,11 +33,12 @@ export function VocabularyQuiz({
   const [isCompleted, setIsCompleted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [earnedXp, setEarnedXp] = useState(0);
+  const [submitFailed, setSubmitFailed] = useState(false);
 
   if (questions.length === 0) {
     return (
       <Card className="p-8 text-center">
-        <p className="text-muted-foreground">Kuis belum tersedia untuk bahasa ini.</p>
+        <p className="text-muted-foreground">{t(d.quizUnavailable)}</p>
       </Card>
     );
   }
@@ -78,10 +82,13 @@ export function VocabularyQuiz({
         const data = await res.json();
         if (data.success && data.data.xpEarned) {
           setEarnedXp(data.data.xpEarned);
+          setSubmitFailed(false);
+        } else {
+          // Gagal menyimpan — jangan tampilkan XP yang tidak benar-benar dicatat.
+          setSubmitFailed(true);
         }
       } catch {
-        // Fallback calculation
-        setEarnedXp(totalCorrect * 15);
+        setSubmitFailed(true);
       } finally {
         setSubmitting(false);
         setIsCompleted(true);
@@ -97,6 +104,7 @@ export function VocabularyQuiz({
     setAnswers([]);
     setIsCompleted(false);
     setEarnedXp(0);
+    setSubmitFailed(false);
   };
 
   const correctCount = answers.filter((a) => a.isCorrect).length;
@@ -105,31 +113,35 @@ export function VocabularyQuiz({
   if (isCompleted) {
     return (
       <Card className="relative overflow-hidden p-8 text-center animate-fade-up">
-        {score >= 60 && <Confetti count={50} />}
+        {score >= 60 && !submitFailed && <Confetti count={50} />}
         <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-gold/10 text-gold">
           <Trophy className="size-7" aria-hidden="true" />
         </span>
-        <h3 className="mt-4 font-display text-2xl font-bold">Kuis Selesai!</h3>
+        <h3 className="mt-4 font-display text-2xl font-bold">{t(d.quizDoneTitle)}</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Performa pemahaman kosakata {languageName}
+          {t(d.quizDonePerformance, { name: languageName })}
         </p>
         <p className="mt-4 font-display text-5xl font-extrabold text-foreground">
           {score}
           <span className="text-xl text-muted-foreground">/100</span>
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          {correctCount} dari {questions.length} kosakata terjawab benar
+          {t(d.quizDoneScore, { correct: correctCount, total: questions.length })}
         </p>
-        {earnedXp > 0 && (
+        {submitFailed ? (
+          <p role="alert" className="mx-auto mt-4 max-w-sm rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
+            {t(d.quizSubmitFailed)}
+          </p>
+        ) : earnedXp > 0 ? (
           <div className="mx-auto mt-4 inline-flex items-center gap-1.5 rounded-full bg-gold/10 px-4 py-1.5 text-sm font-semibold text-gold">
             <Zap className="size-4" aria-hidden="true" />
-            +{earnedXp} XP Diperoleh
+            {t(d.quizXpEarned, { xp: earnedXp })}
           </div>
-        )}
+        ) : null}
         <div className="mt-6 flex justify-center gap-3">
           <Button variant="outline" onClick={handleRestart} className="gap-2">
             <RotateCcw className="size-4" aria-hidden="true" />
-            Coba Lagi
+            {t(d.quizRetryCta)}
           </Button>
         </div>
       </Card>
@@ -141,7 +153,7 @@ export function VocabularyQuiz({
       {/* Progress header */}
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
-          Pertanyaan {currentIndex + 1} dari {questions.length}
+          {t(d.quizQuestionOf, { current: currentIndex + 1, total: questions.length })}
         </span>
         <span className="font-medium text-primary">{languageName}</span>
       </div>
@@ -192,10 +204,10 @@ export function VocabularyQuiz({
             >
               <span>{option}</span>
               {isAnswered && isRight && (
-                <CheckCircle2 className="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <CheckCircle2 className="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
               )}
               {isAnswered && isSelected && !isRight && (
-                <XCircle className="size-5 shrink-0 text-destructive" />
+                <XCircle className="size-5 shrink-0 text-destructive" aria-hidden="true" />
               )}
             </button>
           );
@@ -205,11 +217,13 @@ export function VocabularyQuiz({
       {/* Explanation & Next */}
       {isAnswered && (
         <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4 animate-fade-in">
-          <p className="text-xs font-semibold text-primary">Penjelasan Budaya:</p>
+          <p className="text-xs font-semibold text-primary">{t(d.quizExplanationLabel)}</p>
           <p className="mt-1 text-sm text-foreground/90">{currentQ.explanation}</p>
           <div className="mt-4 flex justify-end">
             <Button onClick={handleNext} disabled={submitting} className="gap-2">
-              <span>{currentIndex < questions.length - 1 ? "Soal Berikutnya" : "Lihat Hasil"}</span>
+              <span>
+                {currentIndex < questions.length - 1 ? t(d.quizNextCta) : t(d.quizResultCta)}
+              </span>
               <ArrowRight className="size-4" aria-hidden="true" />
             </Button>
           </div>

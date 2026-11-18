@@ -44,6 +44,9 @@ export default function EducatorGroupsPage() {
   const [dueAt, setDueAt] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [detailError, setDetailError] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [assigning, setAssigning] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadGroups = useCallback(async () => {
@@ -66,16 +69,21 @@ export default function EducatorGroupsPage() {
   }, [t]);
 
   const loadDetail = useCallback(async (groupId: string) => {
-    const [detailRes, assignmentRes] = await Promise.all([
-      fetch(`/api/v1/educator/groups/${groupId}`, { cache: "no-store" }),
-      fetch(`/api/v1/educator/groups/${groupId}/assignments`, {
-        cache: "no-store",
-      }),
-    ]);
-    const detailJson = await detailRes.json();
-    const assignmentJson = await assignmentRes.json();
-    if (detailRes.ok) setMembers(detailJson.data?.members ?? []);
-    if (assignmentRes.ok) setAssignments(assignmentJson.data ?? []);
+    try {
+      const [detailRes, assignmentRes] = await Promise.all([
+        fetch(`/api/v1/educator/groups/${groupId}`, { cache: "no-store" }),
+        fetch(`/api/v1/educator/groups/${groupId}/assignments`, {
+          cache: "no-store",
+        }),
+      ]);
+      const detailJson = await detailRes.json();
+      const assignmentJson = await assignmentRes.json();
+      if (detailRes.ok) setMembers(detailJson.data?.members ?? []);
+      if (assignmentRes.ok) setAssignments(assignmentJson.data ?? []);
+      setDetailError(!detailRes.ok || !assignmentRes.ok);
+    } catch {
+      setDetailError(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -88,54 +96,73 @@ export default function EducatorGroupsPage() {
 
   async function createGroup(event: React.FormEvent) {
     event.preventDefault();
+    setCreating(true);
     setMessage("");
     setError(null);
-    const response = await fetch("/api/v1/educator/groups", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: groupName }),
-    });
-    const json = await response.json();
-    if (!response.ok) {
-      setError(json.error || t(d.createGroupFailed));
-      return;
+    try {
+      const response = await fetch("/api/v1/educator/groups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: groupName }),
+      });
+      const json = await response.json();
+      if (!response.ok) {
+        setError(json.error || t(d.createGroupFailed));
+        return;
+      }
+      setGroupName("");
+      setMessage(t(d.groupCreatedToast));
+      await loadGroups();
+      setSelected(json.data.id);
+    } catch {
+      setError(t(d.createGroupFailed));
+    } finally {
+      setCreating(false);
     }
-    setGroupName("");
-    setMessage(t(d.groupCreatedToast));
-    await loadGroups();
-    setSelected(json.data.id);
   }
 
   async function assignMission(event: React.FormEvent) {
     event.preventDefault();
     if (!selected) return;
+    setAssigning(true);
     setMessage("");
     setError(null);
-    const response = await fetch(
-      `/api/v1/educator/groups/${selected}/assignments`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          missionId,
-          dueAt: dueAt ? new Date(dueAt).toISOString() : null,
-        }),
+    try {
+      const response = await fetch(
+        `/api/v1/educator/groups/${selected}/assignments`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            missionId,
+            dueAt: dueAt ? new Date(dueAt).toISOString() : null,
+          }),
+        }
+      );
+      const json = await response.json();
+      if (!response.ok) {
+        setError(json.error || t(d.assignFailed));
+        return;
       }
-    );
-    const json = await response.json();
-    if (!response.ok) {
-      setError(json.error || t(d.assignFailed));
-      return;
+      setMissionId("");
+      setDueAt("");
+      setMessage(t(d.assignmentAddedToast));
+      await loadDetail(selected);
+    } catch {
+      setError(t(d.assignFailed));
+    } finally {
+      setAssigning(false);
     }
-    setMissionId("");
-    setDueAt("");
-    setMessage(t(d.assignmentAddedToast));
-    await loadDetail(selected);
   }
 
   async function copyCode(code: string) {
-    await navigator.clipboard.writeText(code);
-    setMessage(t(d.joinCodeCopiedToast));
+    try {
+      await navigator.clipboard.writeText(code);
+      setMessage(t(d.joinCodeCopiedToast));
+    } catch {
+      // Clipboard API bisa ditolak browser — tampilkan kode agar bisa disalin manual.
+      setMessage(code);
+    }
   }
 
   const activeGroup = groups.find((group) => group.id === selected);
@@ -184,7 +211,7 @@ export default function EducatorGroupsPage() {
               placeholder={t(d.newGroupNamePlaceholder)}
             />
           </label>
-          <Button type="submit">
+          <Button type="submit" disabled={creating}>
             <Plus className="size-4" aria-hidden="true" />
             {t(d.createGroupCta)}
           </Button>
@@ -195,7 +222,7 @@ export default function EducatorGroupsPage() {
         <aside>
           {loading ? (
             <p className="text-sm text-muted-foreground">{t(commonDict.loadingShort)}</p>
-          ) : groups.length === 0 ? (
+          ) : groups.length === 0 && !error ? (
             <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
               {t(d.emptyGroups)}
             </p>
@@ -290,7 +317,7 @@ export default function EducatorGroupsPage() {
                     />
                   </label>
                   <div className="flex items-end">
-                    <Button type="submit">
+                    <Button type="submit" disabled={assigning}>
                       <ClipboardList className="size-4" aria-hidden="true" />
                       {t(d.assignCta)}
                     </Button>
@@ -329,7 +356,11 @@ export default function EducatorGroupsPage() {
                 <h3 className="font-display text-lg font-semibold">
                   {t(d.studentsHeading, { n: members.length })}
                 </h3>
-                {members.length === 0 ? (
+                {detailError ? (
+                  <p role="alert" className="mt-2 text-sm text-destructive">
+                    {t(d.detailLoadFailed)}
+                  </p>
+                ) : members.length === 0 ? (
                   <p className="mt-2 text-sm text-muted-foreground">
                     {t(d.shareJoinCodeHint)}
                   </p>

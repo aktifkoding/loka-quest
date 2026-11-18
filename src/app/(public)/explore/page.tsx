@@ -38,7 +38,7 @@ export default function ExplorePage() {
   useEffect(() => {
     const fetchRegions = async () => {
       try {
-        const response = await fetch("/api/v1/regions");
+        const response = await fetch("/api/v1/regions?limit=100");
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || t(d.errorLoadRegions));
         setRegions(result.data || []);

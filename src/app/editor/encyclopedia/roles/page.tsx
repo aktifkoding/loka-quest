@@ -34,6 +34,8 @@ export default function EncyclopediaRolesPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [assigning, setAssigning] = useState(false);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -56,36 +58,53 @@ export default function EncyclopediaRolesPage() {
 
   async function assign(event: React.FormEvent) {
     event.preventDefault();
+    if (assigning) return;
+    setAssigning(true);
     setMessage("");
     setError(null);
-    const response = await fetch("/api/v1/admin/encyclopedia/roles", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, editorRole }),
-    });
-    const json = await response.json();
-    if (!response.ok) {
-      setError(json.error || t(d.assignRoleFailed));
-      return;
+    try {
+      const response = await fetch("/api/v1/admin/encyclopedia/roles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, editorRole }),
+      });
+      const json = await response.json();
+      if (!response.ok) {
+        setError(json.error || t(d.assignRoleFailed));
+        return;
+      }
+      setEmail("");
+      setMessage(t(d.roleUpdatedToast));
+      await load();
+    } catch {
+      setError(t(d.assignRoleFailed));
+    } finally {
+      setAssigning(false);
     }
-    setEmail("");
-    setMessage(t(d.roleUpdatedToast));
-    await load();
   }
 
   async function remove(profileId: string) {
+    if (revokingId) return;
     if (!confirm(t(d.revokeRoleConfirm))) return;
-    const response = await fetch(
-      `/api/v1/admin/encyclopedia/roles/${profileId}`,
-      { method: "DELETE" }
-    );
-    if (!response.ok) {
-      const json = await response.json();
-      setError(json.error || t(d.revokeRoleFailed));
-      return;
+    setRevokingId(profileId);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/v1/admin/encyclopedia/roles/${profileId}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) {
+        const json = await response.json();
+        setError(json.error || t(d.revokeRoleFailed));
+        return;
+      }
+      setMessage(t(d.roleRevokedToast));
+      await load();
+    } catch {
+      setError(t(d.revokeRoleFailed));
+    } finally {
+      setRevokingId(null);
     }
-    setMessage(t(d.roleRevokedToast));
-    await load();
   }
 
   return (
@@ -144,7 +163,7 @@ export default function EncyclopediaRolesPage() {
             </select>
           </label>
           <div className="flex items-end">
-            <Button type="submit">
+            <Button type="submit" disabled={assigning}>
               <UserPlus className="size-4" aria-hidden="true" />
               {t(d.assignCta)}
             </Button>
@@ -178,6 +197,7 @@ export default function EncyclopediaRolesPage() {
                   <Button
                     size="sm"
                     variant="ghost"
+                    disabled={revokingId !== null}
                     onClick={() => remove(role.profile_id)}
                     aria-label={t(d.revokeRoleAria)}
                   >

@@ -52,6 +52,16 @@ export const publicDict = {
   },
   nodesSectionAria: { id: "Simpul budaya", en: "Culture nodes" },
   nodesHeading: { id: "Simpul", en: "Nodes" },
+  nodeTypeRegion: { id: "Wilayah", en: "Region" },
+  nodeTypeContent: { id: "Konten", en: "Content" },
+  nodeTypeSource: { id: "Sumber", en: "Source" },
+  nodeTypeArtifact: { id: "Artefak", en: "Artifact" },
+  nodeTypePerson: { id: "Tokoh", en: "Figure" },
+  nodeTypeConcept: { id: "Konsep", en: "Concept" },
+  selectNodeAria: {
+    id: "Pilih simpul {label}",
+    en: "Select node {label}",
+  },
   connectionsCount: { id: "{x} koneksi terdaftar", en: "{x} registered connections" },
   detailHeading: { id: "Detail hubungan", en: "Relation details" },
   detailEmpty: {
@@ -95,6 +105,14 @@ export const publicDict = {
     en: "Be the first to propose cultural content.",
   },
   proposeCta: { id: "Usulkan konten", en: "Propose content" },
+  signInToProposeTitle: {
+    id: "Masuk untuk mengusulkan",
+    en: "Sign in to propose",
+  },
+  signInToProposeDescription: {
+    id: "Usulan konten hanya dapat dikirim dari akun terdaftar agar dapat ditinjau dan dikreditkan kepada Anda.",
+    en: "Proposals can only be sent from a registered account so they can be reviewed and credited to you.",
+  },
   proposeHeading: {
     id: "Usulkan dokumentasi",
     en: "Propose documentation",

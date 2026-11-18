@@ -24,6 +24,9 @@ export const playerDict = {
   xpToNextLevel: { id: "XP lagi ke level {n}", en: "XP to reach level {n}" },
   missionsCompletedLabel: { id: "Misi selesai", en: "Missions completed" },
   missionsAvailableSuffix: { id: "misi yang tersedia", en: "missions available" },
+  ofPrefix: { id: "dari", en: "of" },
+  educatorDashboardCta: { id: "Dasbor Pendidik", en: "Educator dashboard" },
+  adminDashboardCta: { id: "Dasbor Admin", en: "Admin dashboard" },
   badgesLabel: { id: "Lencana", en: "Badges" },
   badgesCaption: { id: "penghargaan yang sudah diraih", en: "achievements earned" },
   assessmentLabel: { id: "Asesmen:", en: "Assessment:" },
@@ -112,6 +115,11 @@ export const playerDict = {
   reasonPrefix: { id: "Alasan: {reason}", en: "Why: {reason}" },
   startCta: { id: "Mulai", en: "Start" },
   loadingQueue: { id: "Memuat antrean…", en: "Loading queue…" },
+  queueErrorTitle: { id: "Gagal memuat antrean", en: "Failed to load the queue" },
+  queueErrorDesc: {
+    id: "Terjadi kesalahan saat mengambil antrean review. Coba muat ulang halaman.",
+    en: "Something went wrong while fetching your review queue. Try reloading the page.",
+  },
   reviewDoneTitle: { id: "Review selesai!", en: "Review complete!" },
   reviewQueueEmptyTitle: { id: "Antrean review kosong", en: "Review queue is empty" },
   reviewDoneDesc: {
@@ -211,9 +219,23 @@ export const playerDict = {
   },
   classCodeLabel: { id: "Kode kelas", en: "Class code" },
   joinCta: { id: "Gabung kelas", en: "Join class" },
+  joiningCta: { id: "Bergabung…", en: "Joining…" },
   errorJoin: { id: "Gagal bergabung", en: "Failed to join" },
   joinedSuccess: { id: "Berhasil bergabung ke {name}.", en: "Successfully joined {name}." },
   loadingAssignments: { id: "Memuat tugas…", en: "Loading assignments…" },
+  errorLoadTitle: { id: "Gagal memuat tugas", en: "Failed to load assignments" },
+  errorLoadDesc: {
+    id: "Terjadi kesalahan saat mengambil tugas kelas Anda. Coba muat ulang halaman.",
+    en: "Something went wrong while fetching your class assignments. Try reloading the page.",
+  },
+  emptyAssessmentTitle: {
+    id: "Asesmen belum memiliki soal",
+    en: "This assessment has no questions yet",
+  },
+  emptyAssessmentDesc: {
+    id: "Silakan kembali setelah soal asesmen ditambahkan.",
+    en: "Please come back once assessment questions have been added.",
+  },
   emptyAssignmentsTitle: { id: "Belum ada tugas kelas", en: "No class assignments yet" },
   emptyAssignmentsDesc: {
     id: "Setelah bergabung dengan kelas, tugas dari guru akan muncul di sini.",

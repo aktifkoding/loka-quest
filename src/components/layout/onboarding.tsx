@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Gamepad2, TrendingUp, X } from "lucide-react";
@@ -44,10 +44,18 @@ const STEPS: {
 export function Onboarding() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { t } = useI18n();
 
   useEffect(() => {
-    if (window.localStorage.getItem(STORAGE_KEY)) return;
+    // localStorage bisa melempar di browser privat/terkunci — jangan crash dashboard.
+    let seen = false;
+    try {
+      seen = Boolean(window.localStorage.getItem(STORAGE_KEY));
+    } catch {
+      seen = false;
+    }
+    if (seen) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // give the dashboard a beat to settle before interrupting
     const timer = setTimeout(() => setOpen(true), reduced ? 300 : 900);
@@ -56,8 +64,24 @@ export function Onboarding() {
 
   const close = () => {
     setOpen(false);
-    window.localStorage.setItem(STORAGE_KEY, "1");
+    try {
+      window.localStorage.setItem(STORAGE_KEY, "1");
+    } catch {
+      // Penanda "sudah dilihat" tidak tersimpan — tour akan muncul lagi di kunjungan berikutnya.
+    }
   };
+
+  // Escape menutup tour, konsisten dengan dialog lain; fokus pindah ke dialog.
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    document.addEventListener("keydown", handleKey);
+    closeButtonRef.current?.focus();
+    return () => document.removeEventListener("keydown", handleKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!open) return null;
 
@@ -73,10 +97,11 @@ export function Onboarding() {
     >
       <div className="animate-fade-up relative w-full max-w-md rounded-2xl border border-border/70 bg-card p-7 shadow-raised">
         <button
+          ref={closeButtonRef}
           type="button"
           onClick={close}
           aria-label={t(d.onbCloseAria)}
-          className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >
           <X className="size-4" aria-hidden="true" />
         </button>

@@ -6,6 +6,7 @@ import { createServiceClient } from "@/lib/supabase/service-role";
 import { requireRole } from "@/lib/auth/session";
 import { getServerI18n } from "@/lib/i18n/server";
 import { educatorDict as d } from "@/lib/i18n/dict/educator";
+import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -31,11 +32,25 @@ export default async function EducatorAnalyticsPage() {
     const supabase = await createClient();
     const { t } = await getServerI18n();
 
-    const { data: groups } = await supabase
+    const { data: groups, error: groupsError } = await supabase
       .from("educator_groups")
       .select("id, name")
       .eq("educator_id", educator.id)
       .order("created_at", { ascending: false });
+
+    // Kegagalan query tidak boleh tampil sebagai "belum ada data kelas".
+    if (groupsError) {
+      return (
+        <div className="mx-auto max-w-3xl px-4 py-16">
+          <EmptyState
+            icon={TrendingUp}
+            title={t(d.analyticsErrorTitle)}
+            description={t(d.analyticsErrorDescription)}
+            action={{ label: t(commonDict.retry), href: "/educator/analytics" }}
+          />
+        </div>
+      );
+    }
 
     const groupList = (groups ?? []) as { id: string; name: string }[];
     const groupIds = groupList.map((g) => g.id);
@@ -203,13 +218,13 @@ export default async function EducatorAnalyticsPage() {
                     {/* Bar pre vs post (skala 0–100) */}
                     <div className="mt-6 space-y-2.5" aria-hidden="true">
                       <div className="flex items-center gap-3">
-                        <span className="w-16 text-right text-xs text-muted-foreground">Pre</span>
+                        <span className="w-16 text-right text-xs text-muted-foreground">{t(d.preTest)}</span>
                         <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary">
                           <div className="h-full rounded-full bg-muted-foreground/50" style={{ width: `${assessmentStats.pre}%` }} />
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="w-16 text-right text-xs text-muted-foreground">Post</span>
+                        <span className="w-16 text-right text-xs text-muted-foreground">{t(d.postTest)}</span>
                         <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary">
                           <div className="progress-live h-full rounded-full bg-gradient-to-r from-primary to-gold" style={{ width: `${assessmentStats.post}%` }} />
                         </div>

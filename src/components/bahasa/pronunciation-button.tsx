@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
@@ -26,7 +26,19 @@ export function PronunciationButton({
   label,
 }: PronunciationButtonProps) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { t } = useI18n();
+
+  // Hentikan audio/TTS saat komponen dibongkar — suara tidak boleh lanjut sendiri.
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   const speak = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -36,6 +48,7 @@ export function PronunciationButton({
 
     if (audioUrl) {
       const audio = new Audio(audioUrl);
+      audioRef.current = audio;
       setIsPlaying(true);
       audio.onended = () => setIsPlaying(false);
       audio.onerror = () => {
@@ -87,13 +100,18 @@ export function PronunciationButton({
         }`}
         aria-hidden="true"
       />
-      {label ? (
-        <span>{label}</span>
-      ) : phonetic ? (
-        <span className="font-mono text-xs text-muted-foreground">{phonetic}</span>
-      ) : (
-        <span className="text-xs">{t(d.pronounceListen)}</span>
-      )}
+      {/* Teks hanya pada ukuran sm/default — di mode icon, fonetik panjang
+          meluber keluar tombol 40px dan memicu scroll horizontal di mobile. */}
+      {size !== "icon" &&
+        (label ? (
+          <span>{label}</span>
+        ) : phonetic ? (
+          <span className="font-mono text-xs text-muted-foreground [overflow-wrap:anywhere]">
+            {phonetic}
+          </span>
+        ) : (
+          <span className="text-xs">{t(d.pronounceListen)}</span>
+        ))}
     </Button>
   );
 }

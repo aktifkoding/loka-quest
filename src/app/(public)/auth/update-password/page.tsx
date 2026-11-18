@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { authDict as d } from "@/lib/i18n/dict/auth";
-import { Loader2, KeyRound, CheckCircle2 } from "lucide-react";
+import { Loader2, KeyRound, CheckCircle2, Eye, EyeOff } from "lucide-react";
 
 const rules = [
   { label: d.ruleMinLength, test: (v: string) => v.length >= 8 },
@@ -23,6 +23,8 @@ export default function UpdatePasswordPage() {
   const supabase = useMemo(() => createClient(), []);
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [checking, setChecking] = useState(true);
   const [hasSession, setHasSession] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -149,41 +151,74 @@ export default function UpdatePasswordPage() {
 
         <div className="space-y-2">
           <Label htmlFor="password">{t(d.newPassword)}</Label>
-          <Input
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+              className="pr-11"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? t(d.hidePasswordAria) : t(d.showPasswordAria)}
+              className="absolute right-1 top-1 flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              {showPassword ? (
+                <EyeOff className="size-4" aria-hidden="true" />
+              ) : (
+                <Eye className="size-4" aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="confirmation">{t(d.labelConfirmPassword)}</Label>
-          <Input
-            id="confirmation"
-            type="password"
-            autoComplete="new-password"
-            value={confirmation}
-            onChange={(event) => setConfirmation(event.target.value)}
-            required
-          />
+          <div className="relative">
+            <Input
+              id="confirmation"
+              type={showConfirmation ? "text" : "password"}
+              autoComplete="new-password"
+              value={confirmation}
+              onChange={(event) => setConfirmation(event.target.value)}
+              required
+              className="pr-11"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmation(!showConfirmation)}
+              aria-label={showConfirmation ? t(d.hidePasswordAria) : t(d.showPasswordAria)}
+              className="absolute right-1 top-1 flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              {showConfirmation ? (
+                <EyeOff className="size-4" aria-hidden="true" />
+              ) : (
+                <Eye className="size-4" aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </div>
 
-        <ul className="space-y-1.5 text-sm">
-          {rules.map((rule) => {
-            const passed = rule.test(password);
-            return (
-              <li
-                key={rule.label.en}
-                className={passed ? "text-primary" : "text-muted-foreground"}
-              >
-                {passed ? "✓" : "•"} {t(rule.label)}
-              </li>
-            );
-          })}
-        </ul>
+        {/* Aturan muncul setelah pengguna mulai mengetik — konsisten dengan halaman registrasi */}
+        {password.length > 0 && (
+          <ul className="space-y-1.5 text-sm" aria-live="polite">
+            {rules.map((rule) => {
+              const passed = rule.test(password);
+              return (
+                <li
+                  key={rule.label.en}
+                  className={passed ? "text-primary" : "text-muted-foreground"}
+                >
+                  {passed ? "✓" : "•"} {t(rule.label)}
+                </li>
+              );
+            })}
+          </ul>
+        )}
 
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? (

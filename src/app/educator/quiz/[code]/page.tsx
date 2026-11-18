@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import { educatorDict as d } from "@/lib/i18n/dict/educator";
+import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Play, SkipForward, Square, Users } from "lucide-react";
@@ -26,23 +27,67 @@ export default function QuizHostPage() {
   const { t } = useI18n();
   const [state, setState] = useState<State | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sessionGone, setSessionGone] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const load = useCallback(async () => {
-    const response = await fetch(`/api/v1/quiz/${code}`, { cache: "no-store" });
-    const json = await response.json();
-    if (!response.ok) {
-      setError(json.error || t(d.loadSessionFailed));
-      return;
+  // Simpan t terbaru di ref agar polling tidak dipasang ulang saat bahasa diganti.
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
+
+  const stateRef = useRef<State | null>(null);
+
+  const load = useCallback(async (): Promise<"ok" | "gone" | "retry" | null> => {
+    try {
+      const response = await fetch(`/api/v1/quiz/${code}`, { cache: "no-store" });
+      const json = await response.json();
+      if (!response.ok) {
+        setError(json.error || tRef.current(d.loadSessionFailed));
+        // 404/403 gagal permanen — jangan terus ulangi tiap 2 detik.
+        return response.status === 404 || response.status === 403 ? "gone" : "retry";
+      }
+      setState(json.data);
+      stateRef.current = json.data;
+      setError(null);
+      setSessionGone(false);
+      return "ok";
+    } catch {
+      setError(tRef.current(commonDict.errorNetwork));
+      return "retry";
     }
-    setState(json.data);
-    setError(null);
-  }, [code, t]);
+  }, [code]);
 
   useEffect(() => {
-    void load();
-    const timer = setInterval(() => void load(), 2000);
-    return () => clearInterval(timer);
+    let cancelled = false;
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    const stopPolling = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+
+    void load().then((first) => {
+      if (cancelled || first === "gone" || first === null) {
+        if (first === "gone") setSessionGone(true);
+        return;
+      }
+      timer = setInterval(() => {
+        void load().then((result) => {
+          if (!cancelled && (result === "gone" || stateRef.current?.status === "finished")) {
+            if (result === "gone") setSessionGone(true);
+            stopPolling();
+          }
+        });
+      }, 2000);
+    });
+
+    return () => {
+      cancelled = true;
+      stopPolling();
+    };
   }, [load]);
 
   async function control(action: "start" | "next" | "finish") {
@@ -79,7 +124,11 @@ export default function QuizHostPage() {
       )}
 
       {!state ? (
-        <p className="text-sm text-muted-foreground">{t(d.loadingSession)}</p>
+        sessionGone ? (
+          <p className="mt-8 text-sm text-muted-foreground">{t(d.sessionNotFoundHint)}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t(d.loadingSession)}</p>
+        )
       ) : (
         <>
           <header className="flex flex-wrap items-end justify-between gap-4">

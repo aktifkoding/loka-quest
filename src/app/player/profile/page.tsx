@@ -73,7 +73,11 @@ export default function ProfilePage() {
 
   const signOut = async () => {
     const supabase = createClient();
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Sesi sudah tidak valid — tetap arahkan ke beranda.
+    }
     window.location.href = "/";
   };
 

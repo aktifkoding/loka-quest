@@ -18,24 +18,27 @@ export function RoleSelect({
   const { t } = useI18n();
   const [role, setRole] = useState(currentRole);
   const [saving, setSaving] = useState(false);
+  const [failed, setFailed] = useState(false);
   const router = useRouter();
 
   const change = async (next: string) => {
-    if (next === role) return;
+    if (next === role || saving) return;
     setSaving(true);
+    setFailed(false);
     try {
       const res = await fetch(`/api/v1/admin/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: next }),
       });
-      const json = await res.json();
       if (res.ok) {
         setRole(next);
         router.refresh();
       } else {
-        console.error(json.error);
+        setFailed(true);
       }
+    } catch {
+      setFailed(true);
     } finally {
       setSaving(false);
     }
@@ -48,7 +51,10 @@ export function RoleSelect({
         onChange={(e) => void change(e.target.value)}
         disabled={saving}
         aria-label={t(d.changeRoleAria)}
-        className="h-8 rounded-md border border-input bg-card px-2 text-[13px] capitalize outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/50"
+        aria-invalid={failed || undefined}
+        className={`h-8 rounded-md border bg-card px-2 text-[13px] capitalize outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 ${
+          failed ? "border-destructive" : "border-input"
+        }`}
       >
         {ROLES.map((r) => (
           <option key={r} value={r}>
@@ -57,6 +63,11 @@ export function RoleSelect({
         ))}
       </select>
       {saving && <Loader2 className="size-3.5 animate-spin text-muted-foreground" aria-hidden="true" />}
+      {failed && !saving && (
+        <span role="alert" className="text-[12px] text-destructive">
+          {t(d.roleChangeFailed)}
+        </span>
+      )}
     </span>
   );
 }

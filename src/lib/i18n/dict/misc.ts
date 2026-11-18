@@ -60,6 +60,18 @@ export const miscDict = {
     id: "Jadilah yang pertama menyelesaikan misi dan masuk papan peringkat.",
     en: "Be the first to complete missions and make it onto the leaderboard.",
   },
+  leaderboardErrorTitle: {
+    id: "Papan peringkat tidak dapat dimuat",
+    en: "Leaderboard could not be loaded",
+  },
+  leaderboardErrorDescription: {
+    id: "Terjadi kesalahan saat mengambil data peringkat. Coba muat ulang halaman.",
+    en: "Something went wrong while fetching the rankings. Try reloading the page.",
+  },
+  signInRequiredMessage: {
+    id: "Masuk diperlukan untuk bergabung ke sesi kuis.",
+    en: "You need to sign in to join a quiz session.",
+  },
   startMissionCta: { id: "Mulai misi", en: "Start a mission" },
   explorerFallback: { id: "Penjelajah", en: "Explorer" },
   levelMissions: {

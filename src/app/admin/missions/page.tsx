@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
-import { adminDict as d } from "@/lib/i18n/dict/admin";
+import type { Localized } from "@/lib/i18n";
+import { adminDict as d, adminDict } from "@/lib/i18n/dict/admin";
 import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,6 +30,13 @@ const statusStyle: Record<string, string> = {
   review: "bg-amber-500/10 text-amber-600",
   draft: "bg-secondary text-muted-foreground",
   archived: "bg-muted text-muted-foreground",
+};
+
+const statusLabels: Record<string, Localized> = {
+  published: adminDict.statusPublished,
+  review: adminDict.statusReview,
+  draft: adminDict.statusDraft,
+  archived: adminDict.statusArchived,
 };
 
 export default function AdminMissionsPage() {
@@ -59,11 +67,15 @@ export default function AdminMissionsPage() {
       const regionJson = await regionRes.json();
       if (!missionRes.ok) throw new Error(missionJson.error || t(d.loadMissionsFailed));
       setMissions(missionJson.data ?? []);
-      setRegions(regionJson.data ?? []);
-      setForm((current) => ({
-        ...current,
-        regionId: current.regionId || regionJson.data?.[0]?.id || "",
-      }));
+      // Region API admin-only: educator yang membuka halaman ini dapat 403 —
+      // jangan biarkan form "misi baru" diam-diam tidak bisa dikirim.
+      setRegions(regionRes.ok ? (regionJson.data ?? []) : []);
+      if (regionRes.ok) {
+        setForm((current) => ({
+          ...current,
+          regionId: current.regionId || regionJson.data?.[0]?.id || "",
+        }));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : t(commonDict.errorGeneric));
     } finally {
@@ -131,10 +143,13 @@ export default function AdminMissionsPage() {
             {t(d.missionsDescription)}
           </p>
         </div>
-        <Button onClick={() => setShowForm((value) => !value)}>
-          <Plus className="size-4" aria-hidden="true" />
-          {t(d.newMissionCta)}
-        </Button>
+        {/* Misi baru butuh pilihan wilayah — sembunyikan jika daftar wilayah tidak tersedia */}
+        {regions.length > 0 && (
+          <Button onClick={() => setShowForm((value) => !value)}>
+            <Plus className="size-4" aria-hidden="true" />
+            {t(d.newMissionCta)}
+          </Button>
+        )}
       </header>
 
       {error && (
@@ -284,7 +299,7 @@ export default function AdminMissionsPage() {
                       statusStyle[mission.status] ?? "bg-secondary"
                     }`}
                   >
-                    {mission.status}
+                    {statusLabels[mission.status] ? t(statusLabels[mission.status]) : mission.status}
                   </span>
                   <Button asChild size="sm" variant="outline">
                     <Link href={`/admin/missions/${mission.id}`}>{t(d.manageQuestionsCta)}</Link>

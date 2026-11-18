@@ -37,7 +37,7 @@ export default function MissionsPage() {
     const fetchMissions = async () => {
       try {
         const [missionsRes, adaptiveRes] = await Promise.all([
-          fetch("/api/v1/missions"),
+          fetch("/api/v1/missions?limit=100"),
           fetch("/api/v1/adaptive").catch(() => null),
         ]);
         const result = await missionsRes.json();

@@ -69,6 +69,8 @@ export default function ReviewPage() {
   const [adaptive, setAdaptive] = useState<AdaptiveProfile | null>(null);
   const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [result, setResult] = useState<boolean | null>(null);
   const [done, setDone] = useState(0);
@@ -86,10 +88,15 @@ export default function ReviewPage() {
       if (reviewRes.ok) {
         setItems(reviewJson.data ?? []);
         setIndex(0);
+        setLoadError(false);
+      } else {
+        setLoadError(true);
       }
       if (adaptiveRes.ok) {
         setAdaptive(adaptiveJson.data ?? null);
       }
+    } catch {
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -100,20 +107,28 @@ export default function ReviewPage() {
   }, [load]);
 
   async function answer(questionId: string, value: string) {
+    if (pending) return;
+    setPending(true);
     setFeedback(null);
-    const response = await fetch("/api/v1/review", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ questionId, answer: { selected: value } }),
-    });
-    const json = await response.json();
-    if (!response.ok) {
-      setFeedback(json.error || t(playerDict.errorSaveAnswer));
-      return;
+    try {
+      const response = await fetch("/api/v1/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionId, answer: { selected: value } }),
+      });
+      const json = await response.json();
+      if (!response.ok) {
+        setFeedback(json.error || t(playerDict.errorSaveAnswer));
+        return;
+      }
+      setResult(json.data.isCorrect);
+      setFeedback(json.data.explanation || null);
+      setDone((count) => count + 1);
+    } catch {
+      setFeedback(t(playerDict.errorSaveAnswer));
+    } finally {
+      setPending(false);
     }
-    setResult(json.data.isCorrect);
-    setFeedback(json.data.explanation || null);
-    setDone((count) => count + 1);
   }
 
   function next() {
@@ -162,6 +177,7 @@ export default function ReviewPage() {
         <div className="mt-8 flex border-b border-border">
           <button
             onClick={() => setActiveView("queue")}
+            aria-pressed={activeView === "queue"}
             className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-colors ${
               activeView === "queue"
                 ? "border-primary text-primary"
@@ -173,6 +189,7 @@ export default function ReviewPage() {
           </button>
           <button
             onClick={() => setActiveView("adaptive")}
+            aria-pressed={activeView === "adaptive"}
             className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-colors ${
               activeView === "adaptive"
                 ? "border-primary text-primary"
@@ -306,6 +323,15 @@ export default function ReviewPage() {
         <div className="mt-8 animate-fade-in max-w-2xl mx-auto">
           {loading ? (
             <p className="mt-10 text-sm text-muted-foreground">{t(playerDict.loadingQueue)}</p>
+          ) : loadError ? (
+            <div className="mt-10">
+              <EmptyState
+                icon={RotateCcw}
+                title={t(playerDict.queueErrorTitle)}
+                description={t(playerDict.queueErrorDesc)}
+                action={{ label: t(playerDict.goToList), href: "/missions" }}
+              />
+            </div>
           ) : !item ? (
             <div className="mt-10">
               <EmptyState
@@ -358,7 +384,7 @@ export default function ReviewPage() {
                     <button
                       key={choice}
                       type="button"
-                      disabled={result !== null}
+                      disabled={pending || result !== null}
                       onClick={() => answer(item.question_id, choice)}
                       className="w-full rounded-xl border border-border px-4 py-3 text-left text-sm transition-colors hover:border-primary/50 hover:bg-secondary/50 disabled:opacity-60"
                     >

@@ -279,6 +279,7 @@ export const adminDict = {
   unnamedUser: { id: "Tanpa nama", en: "Unnamed" },
   youBadge: { id: "kamu", en: "you" },
   changeRoleAria: { id: "Ubah peran pengguna", en: "Change user role" },
+  roleChangeFailed: { id: "Gagal menyimpan peran", en: "Failed to save role" },
 
   // Analitik aplikasi
   appAnalyticsMetaTitle: { id: "Analitik Aplikasi", en: "App Analytics" },
@@ -361,6 +362,14 @@ export const adminDict = {
   articleSaveFailed: {
     id: "Artikel tidak dapat disimpan",
     en: "The article could not be saved",
+  },
+  articleLoadFailed: {
+    id: "Artikel tidak dapat dimuat. Muat ulang halaman sebelum mengedit agar konten tidak tertimpa.",
+    en: "The article could not be loaded. Reload the page before editing so existing content is not overwritten.",
+  },
+  matchingFormatInvalid: {
+    id: "Setiap baris pasangan harus berformat \"kiri=kanan\". Periksa kembali kolom pilihan.",
+    en: "Each pair line must use the \"left=right\" format. Please check the options field.",
   },
   articleSubmittedToast: {
     id: "Artikel diajukan untuk tinjauan.",

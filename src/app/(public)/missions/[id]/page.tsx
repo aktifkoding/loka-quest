@@ -127,6 +127,10 @@ export default function MissionPage() {
       if (!missionRes.ok) {
         throw new Error(missionData.error || t(d.errorLoadMissions));
       }
+      if (!questionsRes.ok) {
+        // Tanpa ini, soal gagal dimuat menampilkan "0 tantangan" pada misi yang tidak bisa dimainkan.
+        throw new Error(questionsData.error || t(d.errorLoadMissions));
+      }
 
       setMission(missionData.data ?? null);
       setQuestions(questionsData.data ?? []);

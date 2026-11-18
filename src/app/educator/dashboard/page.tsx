@@ -5,8 +5,10 @@ import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth/session";
 import { getServerI18n } from "@/lib/i18n/server";
 import { educatorDict as d } from "@/lib/i18n/dict/educator";
+import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ScrollStagger } from "@/components/landing/motion";
 import {
   Users,
@@ -41,6 +43,20 @@ export default async function EducatorDashboardPage() {
         .select("id", { count: "exact", head: true })
         .eq("status", "published"),
     ]);
+
+    // Kegagalan query tidak boleh tampil sebagai "belum ada kelompok".
+    if (groupsRes.error || missionsRes.error) {
+      return (
+        <div className="mx-auto max-w-3xl px-4 py-16">
+          <EmptyState
+            icon={LineChart}
+            title={t(d.dashboardErrorTitle)}
+            description={t(d.dashboardErrorDescription)}
+            action={{ label: t(commonDict.retry), href: "/educator/dashboard" }}
+          />
+        </div>
+      );
+    }
 
     const groups_ = groupsRes.data ?? [];
     const groupIds = groups_.map((g) => g.id);
@@ -94,7 +110,7 @@ export default async function EducatorDashboardPage() {
               <Link href="/educator/quiz">{t(d.liveQuizCta)}</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/admin/submissions">Moderasi komunitas</Link>
+              <Link href="/admin/submissions">{t(d.communityModerationCta)}</Link>
             </Button>
           </div>
         </header>

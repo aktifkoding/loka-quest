@@ -14,6 +14,7 @@ import { useI18n } from "@/lib/i18n";
 import { bahasaDict as d } from "@/lib/i18n/dict/bahasa";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PronunciationButton } from "@/components/bahasa/pronunciation-button";
 import { VocabularyQuiz } from "@/components/bahasa/vocabulary-quiz";
 import {
@@ -30,7 +31,7 @@ export default function LanguageDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const language = getLanguageBySlug(slug);
 
   const [activeTab, setActiveTab] = useState<"vocab" | "quiz">("vocab");
@@ -45,8 +46,8 @@ export default function LanguageDetailPage({
         category: selectedCategory !== "all" ? selectedCategory : undefined,
       })
     );
-    setQuizQuestions(generateLanguageQuiz(slug, 5));
-  }, [slug, language, selectedCategory]);
+    setQuizQuestions(generateLanguageQuiz(slug, 5, lang));
+  }, [slug, language, selectedCategory, lang]);
 
   if (!language) {
     notFound();
@@ -119,6 +120,7 @@ export default function LanguageDetailPage({
       <div className="mt-8 flex border-b border-border">
         <button
           onClick={() => setActiveTab("vocab")}
+          aria-pressed={activeTab === "vocab"}
           className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-colors ${
             activeTab === "vocab"
               ? "border-primary text-primary"
@@ -130,6 +132,7 @@ export default function LanguageDetailPage({
         </button>
         <button
           onClick={() => setActiveTab("quiz")}
+          aria-pressed={activeTab === "quiz"}
           className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-colors ${
             activeTab === "quiz"
               ? "border-primary text-primary"
@@ -165,6 +168,15 @@ export default function LanguageDetailPage({
           </div>
 
           {/* Vocabulary Cards */}
+          {vocabList.length === 0 ? (
+            <div className="mt-6">
+              <EmptyState
+                icon={BookOpen}
+                title={t(d.vocabEmptyTitle)}
+                description={t(d.vocabEmptyDescription)}
+              />
+            </div>
+          ) : (
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {vocabList.map((item) => (
               <Card
@@ -218,6 +230,7 @@ export default function LanguageDetailPage({
               </Card>
             ))}
           </div>
+          )}
         </div>
       )}
 

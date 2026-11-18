@@ -8,8 +8,8 @@ import type { Localized } from "../types";
 export const bahasaDict = {
   // Hub bahasa daerah
   metaTitle: {
-    id: "Modul Bahasa Daerah Nusantara | LokaQuest",
-    en: "Archipelago Regional Language Modules | LokaQuest",
+    id: "Modul Bahasa Daerah Nusantara",
+    en: "Archipelago Regional Language Modules",
   },
   metaDescription: {
     id: "Pelajari kosakata, pelafalan otentik, dan uji pemahaman ragam bahasa daerah Nusantara yang terintegrasi dengan ensiklopedia budaya.",
@@ -83,4 +83,38 @@ export const bahasaDict = {
   categoryNature: { id: "Alam", en: "Nature" },
   categoryExpressions: { id: "Ungkapan", en: "Expressions" },
   relatedArticleCta: { id: "Artikel Terkait", en: "Related Article" },
+  quizUnavailable: {
+    id: "Kuis belum tersedia untuk bahasa ini.",
+    en: "Quiz is not available for this language yet.",
+  },
+  quizDoneTitle: { id: "Kuis Selesai!", en: "Quiz Complete!" },
+  quizDonePerformance: {
+    id: "Performa pemahaman kosakata {name}",
+    en: "{name} vocabulary comprehension",
+  },
+  quizDoneScore: {
+    id: "{correct} dari {total} kosakata terjawab benar",
+    en: "{correct} of {total} vocabulary answered correctly",
+  },
+  quizXpEarned: { id: "+{xp} XP Diperoleh", en: "+{xp} XP Earned" },
+  quizRetryCta: { id: "Coba Lagi", en: "Try Again" },
+  quizQuestionOf: {
+    id: "Pertanyaan {current} dari {total}",
+    en: "Question {current} of {total}",
+  },
+  quizExplanationLabel: { id: "Penjelasan Budaya:", en: "Cultural note:" },
+  quizNextCta: { id: "Soal Berikutnya", en: "Next Question" },
+  quizResultCta: { id: "Lihat Hasil", en: "See Results" },
+  quizSubmitFailed: {
+    id: "Gagal menyimpan hasil kuis. XP tidak dicatat — coba lagi nanti.",
+    en: "Failed to save your quiz result. XP was not recorded — please try again later.",
+  },
+  vocabEmptyTitle: {
+    id: "Belum ada kosakata pada kategori ini",
+    en: "No vocabulary in this category yet",
+  },
+  vocabEmptyDescription: {
+    id: "Pilih kategori lain untuk melihat kosakata bahasa ini.",
+    en: "Choose another category to view this language's vocabulary.",
+  },
 } satisfies Record<string, Localized>;

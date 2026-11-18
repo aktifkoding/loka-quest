@@ -75,7 +75,11 @@ export function Navbar() {
   }, [supabase.auth]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Sesi sudah tidak valid — tetap arahkan ke beranda dan bersihkan state.
+    }
     setUser(null);
     setIsOpen(false);
     router.push("/");
@@ -217,7 +221,12 @@ export function Navbar() {
             <div className="mb-3 flex justify-end">
               <LanguageToggle />
             </div>
-            {user ? (
+            {loading ? (
+              <span
+                className="h-9 w-full animate-shimmer rounded-full"
+                aria-hidden="true"
+              />
+            ) : user ? (
               <div className="space-y-2">
                 <p className="truncate px-1 text-sm text-muted-foreground">
                   {user.fullName || user.email}

@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import { miscDict as d } from "@/lib/i18n/dict/misc";
+import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, XCircle, Trophy, Loader2 } from "lucide-react";
@@ -26,51 +27,96 @@ type State = {
   me: { profileId: string; score: number };
 };
 
+type LoadResult = { ok: boolean; auth: boolean } | null;
+type ErrorState = { auth: boolean; message: string } | null;
+
 export default function QuizPlayerPage() {
   const params = useParams<{ code: string }>();
   const code = params.code;
   const { t } = useI18n();
   const [state, setState] = useState<State | null>(null);
   const [joined, setJoined] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ErrorState>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const load = useCallback(async () => {
-    const response = await fetch(`/api/v1/quiz/${code}`, { cache: "no-store" });
-    const json = await response.json();
-    if (!response.ok) {
-      setError(json.error || t(d.loadSessionFailed));
-      return;
+  // Simpan t terbaru di ref agar efek join/polling tidak berjalan ulang saat bahasa diganti.
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
+
+  const stateRef = useRef<State | null>(null);
+
+  const load = useCallback(async (): Promise<LoadResult> => {
+    try {
+      const response = await fetch(`/api/v1/quiz/${code}`, { cache: "no-store" });
+      const json = await response.json();
+      if (!response.ok) {
+        setError({
+          auth: response.status === 401,
+          message: json.error || tRef.current(d.loadSessionFailed),
+        });
+        return { ok: false, auth: response.status === 401 };
+      }
+      setState(json.data);
+      stateRef.current = json.data;
+      setError(null);
+      return { ok: true, auth: false };
+    } catch {
+      setError({ auth: false, message: tRef.current(commonDict.errorNetwork) });
+      return { ok: false, auth: false };
     }
-    setState(json.data);
-    setError(null);
-  }, [code, t]);
+  }, [code]);
 
   useEffect(() => {
+    let cancelled = false;
     let timer: ReturnType<typeof setInterval> | null = null;
 
     async function join() {
-      const response = await fetch("/api/v1/quiz/join", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
-      const json = await response.json();
-      if (!response.ok) {
-        setError(json.error || t(d.joinFailed));
-        return;
+      try {
+        const response = await fetch("/api/v1/quiz/join", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code }),
+        });
+        const json = await response.json();
+        if (cancelled) return;
+        if (!response.ok) {
+          // Gagal permanen (401/404/salah kode) — jangan mulai polling.
+          setError({
+            auth: response.status === 401,
+            message: json.error || tRef.current(d.joinFailed),
+          });
+          return;
+        }
+        setJoined(true);
+        const result = await load();
+        if (cancelled) return;
+        if (result?.ok) {
+          timer = setInterval(() => {
+            void load().then((poll) => {
+              // Berhenti memantau setelah kuis selesai — hindari polling abadi.
+              if (poll?.ok && stateRef.current?.status === "finished" && timer) {
+                clearInterval(timer);
+                timer = null;
+              }
+            });
+          }, 2000);
+        }
+      } catch {
+        if (!cancelled) {
+          setError({ auth: false, message: tRef.current(commonDict.errorNetwork) });
+        }
       }
-      setJoined(true);
-      await load();
-      timer = setInterval(() => void load(), 2000);
     }
 
     void join();
     return () => {
+      cancelled = true;
       if (timer) clearInterval(timer);
     };
-  }, [code, load, t]);
+  }, [code, load]);
 
   async function answer(questionId: string, value: string) {
     setPending(true);
@@ -116,8 +162,9 @@ export default function QuizPlayerPage() {
 
       {error && (
         <div role="alert" className="mt-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
-          {(error.includes("belum bergabung") || error.includes("not joined this session")) && (
+          {/* 401 dari server berupa teks Inggris mentah — tampilkan pesan yang dilokalkan */}
+          {error.auth ? t(d.signInRequiredMessage) : error.message}
+          {error.auth && (
             <Button asChild variant="outline" size="sm" className="ml-3">
               <Link href="/auth/login">{t(d.signInCta)}</Link>
             </Button>

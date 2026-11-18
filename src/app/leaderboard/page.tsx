@@ -23,11 +23,35 @@ export default async function LeaderboardPage() {
   const service = createServiceClient();
   const { t, lang } = await getServerI18n();
 
-  const { data: rows } = await service
+  const { data: rows, error } = await service
     .from("player_progress")
     .select("profile_id, total_xp, missions_completed, profiles (full_name, level)")
     .order("total_xp", { ascending: false })
     .limit(20);
+
+  // Kegagalan query tidak boleh tampil sebagai papan peringkat yang kosong.
+  if (error) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-10 md:py-14">
+        <PageHeader
+          icon={Trophy}
+          title={t(d.leaderboardTitle)}
+          description={t(d.leaderboardDescription)}
+          backHref="/"
+          backLabel={t(d.homeBackLabel)}
+        />
+        <Card className="mt-10 overflow-hidden">
+          <div className="m-4">
+            <EmptyState
+              icon={Trophy}
+              title={t(d.leaderboardErrorTitle)}
+              description={t(d.leaderboardErrorDescription)}
+            />
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const board = (rows ?? [])
     .map((r) => {

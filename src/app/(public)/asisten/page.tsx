@@ -59,7 +59,8 @@ export default function AiAssistantPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || t(d.errorAsk));
-      const data = json.data as AskResponse;
+      const data = json.data as AskResponse | undefined;
+      if (!data?.answer) throw new Error(t(d.errorAsk));
       setResponse(data);
       setHistory((h) => [...h, { q, a: data }]);
     } catch (err) {

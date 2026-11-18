@@ -13,9 +13,10 @@ import { evaluateCertificate } from "@/lib/certificate";
 import { Award, ScrollText } from "lucide-react";
 import { PrintButton } from "./print-button";
 
-export const metadata: Metadata = {
-  title: "Sertifikat Penjelajah Budaya — LokaQuest",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: `${t(playerDict.certificateTitle)} — LokaQuest` };
+}
 
 export default async function RegionCertificatePage({
   params,

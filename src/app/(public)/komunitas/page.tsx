@@ -20,10 +20,13 @@ import {
   Clock,
   BookMarked,
   Lightbulb,
+  LogIn,
   Network,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import { useI18n, formatDate } from "@/lib/i18n";
 import { publicDict as d } from "@/lib/i18n/dict/public";
+import { navDict as nav } from "@/lib/i18n/dict/nav";
 import { commonDict } from "@/lib/i18n/dict/common";
 import type { Localized } from "@/lib/i18n";
 
@@ -38,14 +41,19 @@ type Submission = {
   created_at: string;
 };
 
+const EMPTY_FORM = { title: "", body: "", submitter_name: "", submitter_email: "", region_slug: "" };
+
 export default function CommunityPage() {
   const { lang, t } = useI18n();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({ title: "", body: "", submitter_name: "", submitter_email: "", region_slug: "" });
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [form, setForm] = useState(EMPTY_FORM);
 
   const fetchSubmissions = async () => {
     try {
@@ -62,12 +70,20 @@ export default function CommunityPage() {
 
   useEffect(() => {
     void fetchSubmissions();
+
+    const supabase = createClient();
+    supabase.auth
+      .getUser()
+      .then(({ data: { user } }) => setIsAuthenticated(Boolean(user)))
+      .catch(() => setIsAuthenticated(false))
+      .finally(() => setAuthChecked(true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setSubmitError(null);
     try {
       const res = await fetch("/api/v1/community/submissions", {
         method: "POST",
@@ -77,8 +93,9 @@ export default function CommunityPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || t(d.errorSubmit));
       setSubmitted(true);
+      setForm(EMPTY_FORM);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t(d.errorSubmit));
+      setSubmitError(err instanceof Error ? err.message : t(d.errorSubmit));
     } finally {
       setSubmitting(false);
     }
@@ -171,12 +188,36 @@ export default function CommunityPage() {
               <div className="mt-4 rounded-lg border border-border bg-secondary/40 p-4 text-sm">
                 {t(d.proposeSuccess)}
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="title">{t(d.labelTitle)}</Label>
-                  <Input id="title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+            ) : !authChecked ? (
+              <div className="mt-5 h-40 animate-shimmer rounded-lg" aria-hidden="true" />
+            ) : !isAuthenticated ? (
+              <div className="mt-5">
+                <EmptyState
+                  icon={LogIn}
+                  title={t(d.signInToProposeTitle)}
+                  description={t(d.signInToProposeDescription)}
+                />
+                <div className="mt-4 flex gap-2">
+                  <Button variant="outline" className="flex-1" asChild>
+                    <Link href="/auth/login">{t(nav.login)}</Link>
+                  </Button>
+                  <Button className="flex-1" asChild>
+                    <Link href="/auth/register">{t(nav.register)}</Link>
+                  </Button>
                 </div>
+              </div>
+            ) : (
+              <>
+                {submitError && (
+                  <p role="alert" className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+                    {submitError}
+                  </p>
+                )}
+                <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="title">{t(d.labelTitle)}</Label>
+                    <Input id="title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+                  </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="body">{t(d.labelBody)}</Label>
                   <Textarea
@@ -203,6 +244,7 @@ export default function CommunityPage() {
                   {submitting ? t(commonDict.sending) : t(d.submitProposalCta)}
                 </Button>
               </form>
+              </>
             )}
           </Card>
 

@@ -30,7 +30,11 @@ export function UserMenu({ user }: { user: NavUser }) {
   const initial = (user.fullName || user.email).trim().charAt(0).toUpperCase();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Sesi sudah tidak valid — tetap arahkan ke beranda.
+    }
     router.push("/");
     router.refresh();
   };

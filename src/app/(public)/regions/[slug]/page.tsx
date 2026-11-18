@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { wikimediaLoader } from "@/lib/wikimedia-loader";
@@ -76,6 +76,66 @@ interface Mission {
   description: string;
   difficulty: string;
   xp_reward: number;
+}
+
+/**
+ * Lightbox gambar: Escape menutup, fokus pindah ke tombol tutup, dan scroll
+ * halaman dikunci selama dialog terbuka.
+ */
+function Lightbox({
+  url,
+  onClose,
+  ariaLabel,
+  closeAria,
+  previewAlt,
+}: {
+  url: string;
+  onClose: () => void;
+  ariaLabel: string;
+  closeAria: string;
+  previewAlt: string;
+}) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={ariaLabel}
+    >
+      <button
+        ref={closeButtonRef}
+        onClick={onClose}
+        className="animate-scale-in absolute right-4 top-4 inline-flex size-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white"
+        aria-label={closeAria}
+      >
+        <X className="size-5" aria-hidden="true" />
+      </button>
+      {/* eslint-disable-next-line @next/next/no-img-element -- lightbox perlu ukuran asli gambar */}
+      <img
+        src={url}
+        alt={previewAlt}
+        className="animate-scale-in max-h-[90vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
 }
 
 const difficultyLabel: Record<string, Localized> = {
@@ -200,15 +260,25 @@ export default function RegionDetailPage() {
                   <MapPin className="size-6" aria-hidden="true" />
                 </span>
                 <div>
-                  <h1 className="font-display text-3xl font-semibold text-white sm:text-4xl">
+                  <p className="font-display text-3xl font-semibold text-white sm:text-4xl">
                     {region.name}
-                  </h1>
+                  </p>
                   <p className="mt-1 text-sm text-white/80">{region.geographic_context}</p>
                 </div>
               </div>
             </div>
           </figure>
         </Reveal>
+      )}
+
+      {/* Judul halaman — selalu satu h1, juga saat hero image tidak ada */}
+      {!region.image_url && (
+        <header className="mb-10">
+          <h1 className="font-display text-4xl font-semibold tracking-tight">{region.name}</h1>
+          {region.geographic_context && (
+            <p className="mt-2 text-muted-foreground">{region.geographic_context}</p>
+          )}
+        </header>
       )}
 
       {/* Description */}
@@ -467,28 +537,7 @@ export default function RegionDetailPage() {
 
       {/* Lightbox */}
       {lightbox && (
-        <div
-          className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          onClick={() => setLightbox(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label={t(d.lightboxAria)}
-        >
-          <button
-            onClick={() => setLightbox(null)}
-            className="animate-scale-in absolute right-4 top-4 inline-flex size-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
-            aria-label={t(d.lightboxCloseAria)}
-          >
-            <X className="size-5" aria-hidden="true" />
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element -- lightbox perlu ukuran asli gambar */}
-          <img
-            src={lightbox}
-            alt={t(d.previewAlt)}
-            className="animate-scale-in max-h-[90vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
+        <Lightbox url={lightbox} onClose={() => setLightbox(null)} ariaLabel={t(d.lightboxAria)} closeAria={t(d.lightboxCloseAria)} previewAlt={t(d.previewAlt)} />
       )}
     </div>
   );

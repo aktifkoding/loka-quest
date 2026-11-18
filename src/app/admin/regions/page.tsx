@@ -228,7 +228,7 @@ export default function AdminRegionsPage() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="font-medium">{region.name}</p>
-                      <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
+                      <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground" title={region.description}>
                         {region.description}
                       </p>
                     </div>

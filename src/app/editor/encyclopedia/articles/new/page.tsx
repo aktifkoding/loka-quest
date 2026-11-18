@@ -1,49 +1,317 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
+import type { Localized } from "@/lib/i18n";
 import { adminDict as d } from "@/lib/i18n/dict/admin";
 import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
 import { SourceEditor } from "@/components/encyclopedia/source-editor";
 
-type Category = { id:string; name:string; slug:string };
-type Region = { id:string; name:string; slug:string };
+type Category = { id: string; name: string; slug: string };
+type Region = { id: string; name: string; slug: string };
+
+const EMPTY_FORM = {
+  title: "",
+  slug: "",
+  summary: "",
+  body: "",
+  featuredImageUrl: "",
+  background: "",
+  historicalContext: "",
+  culturalMeaning: "",
+  characteristics: "",
+  socialFunction: "",
+  practices: "",
+  preservation: "",
+  seoTitle: "",
+  seoDescription: "",
+};
+
+const statusLabels: Record<string, Localized> = {
+  draft: d.statusDraft,
+  review: d.statusReview,
+  published: d.statusPublished,
+  archived: d.statusArchived,
+};
 
 function EncyclopediaArticleEditorContent() {
-  const params = useSearchParams(); const router = useRouter(); const id = params.get("id");
+  const params = useSearchParams();
+  const router = useRouter();
+  const id = params.get("id");
   const { t } = useI18n();
-  const [categories,setCategories]=useState<Category[]>([]); const [regions,setRegions]=useState<Region[]>([]); const [categoryIds,setCategoryIds]=useState<string[]>([]); const [regionIds,setRegionIds]=useState<string[]>([]);
-  const [status,setStatus]=useState("draft"); const [message,setMessage]=useState(""); const [busy,setBusy]=useState(false);
-  const [form,setForm]=useState({title:"",slug:"",summary:"",body:"",featuredImageUrl:"",background:"",historicalContext:"",culturalMeaning:"",characteristics:"",socialFunction:"",practices:"",preservation:"",seoTitle:"",seoDescription:""});
-  useEffect(()=>{
-    fetch("/api/v1/encyclopedia/categories").then((r)=>r.json()).then((j)=>setCategories(j.data??[])).catch(()=>{});
-    fetch("/api/v1/encyclopedia/regions").then((r)=>r.json()).then((j)=>setRegions(j.data??[])).catch(()=>{});
-    if(id) fetch(`/api/v1/admin/encyclopedia/articles/${id}`).then((r)=>r.json()).then((j)=>{
-      const article=j.data;if(!article)return;
-      setForm({title:article.title,slug:article.slug,summary:article.summary,body:article.body??"",featuredImageUrl:article.featured_image_url??"",background:article.background??"",historicalContext:article.historical_context??"",culturalMeaning:article.cultural_meaning??"",characteristics:article.characteristics??"",socialFunction:article.social_function??"",practices:article.practices??"",preservation:article.preservation??"",seoTitle:article.seo_title??"",seoDescription:article.seo_description??""});
-      setStatus(article.status);setCategoryIds((article.encyclopedia_article_categories??[]).map((row:{category_id:string})=>row.category_id));setRegionIds((article.encyclopedia_article_regions??[]).map((row:{region_id:string})=>row.region_id));
-    }).catch(()=>{});
-  },[id]);
-  const set=(key:keyof typeof form,value:string)=>setForm((current)=>({...current,[key]:value}));
-  async function submit(nextStatus:"draft"|"review"){
-    setBusy(true);setMessage("");try{
-      const response=await fetch(id?`/api/v1/admin/encyclopedia/articles/${id}`:"/api/v1/admin/encyclopedia/articles",{method:id?"PATCH":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...form,featuredImageUrl:form.featuredImageUrl||null,categoryIds,regionIds,status:nextStatus})});
-      const json=await response.json();if(!response.ok)throw new Error(json.error||t(d.articleSaveFailed));
-      setMessage(nextStatus==="review"?t(d.articleSubmittedToast):t(d.articleDraftSavedToast));if(!id&&json.data?.id)router.replace(`/editor/encyclopedia/articles/new?id=${json.data.id}`);setStatus(nextStatus);
-    }catch(error){setMessage(error instanceof Error?error.message:t(commonDict.errorGeneric));}finally{setBusy(false);}
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [regionIds, setRegionIds] = useState<string[]>([]);
+  const [status, setStatus] = useState("draft");
+  const [message, setMessage] = useState("");
+  const [messageIsError, setMessageIsError] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [loaded, setLoaded] = useState(!id);
+  const [form, setForm] = useState(EMPTY_FORM);
+
+  // Tombol mana yang men-trigger submit — dipakai oleh handler onSubmit form.
+  const intentRef = useRef<"draft" | "review">("draft");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/v1/encyclopedia/categories")
+      .then((r) => r.json())
+      .then((j) => !cancelled && setCategories(j.data ?? []))
+      .catch(() => {
+        // Filter kategori kosong — bukan bloker untuk menyimpan artikel.
+      });
+    fetch("/api/v1/encyclopedia/regions")
+      .then((r) => r.json())
+      .then((j) => !cancelled && setRegions(j.data ?? []))
+      .catch(() => {
+        // Filter wilayah kosong — bukan bloker untuk menyimpan artikel.
+      });
+
+    if (id) {
+      fetch(`/api/v1/admin/encyclopedia/articles/${id}`)
+        .then((r) => r.json())
+        .then((j) => {
+          if (cancelled) return;
+          const article = j.data;
+          if (!article) {
+            setLoadError(true);
+            setLoaded(true);
+            return;
+          }
+          setForm({
+            title: article.title,
+            slug: article.slug,
+            summary: article.summary,
+            body: article.body ?? "",
+            featuredImageUrl: article.featured_image_url ?? "",
+            background: article.background ?? "",
+            historicalContext: article.historical_context ?? "",
+            culturalMeaning: article.cultural_meaning ?? "",
+            characteristics: article.characteristics ?? "",
+            socialFunction: article.social_function ?? "",
+            practices: article.practices ?? "",
+            preservation: article.preservation ?? "",
+            seoTitle: article.seo_title ?? "",
+            seoDescription: article.seo_description ?? "",
+          });
+          setStatus(article.status);
+          setCategoryIds((article.encyclopedia_article_categories ?? []).map((row: { category_id: string }) => row.category_id));
+          setRegionIds((article.encyclopedia_article_regions ?? []).map((row: { region_id: string }) => row.region_id));
+          setLoaded(true);
+        })
+        .catch(() => {
+          // Tanpa ini, form kosong tampil di bawah judul "edit artikel" dan
+          // mengundang penimpaan konten dengan kosongan saat disimpan.
+          if (!cancelled) {
+            setLoadError(true);
+            setLoaded(true);
+          }
+        });
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const set = (key: keyof typeof form, value: string) =>
+    setForm((current) => ({ ...current, [key]: value }));
+
+  async function submit(nextStatus: "draft" | "review") {
+    if (busy || loadError || (id && !loaded)) return;
+    setBusy(true);
+    setMessage("");
+    setMessageIsError(false);
+    try {
+      const response = await fetch(
+        id ? `/api/v1/admin/encyclopedia/articles/${id}` : "/api/v1/admin/encyclopedia/articles",
+        {
+          method: id ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...form,
+            featuredImageUrl: form.featuredImageUrl || null,
+            categoryIds,
+            regionIds,
+            status: nextStatus,
+          }),
+        }
+      );
+      const json = await response.json();
+      if (!response.ok) throw new Error(json.error || t(d.articleSaveFailed));
+      setMessage(nextStatus === "review" ? t(d.articleSubmittedToast) : t(d.articleDraftSavedToast));
+      if (!id && json.data?.id) router.replace(`/editor/encyclopedia/articles/new?id=${json.data.id}`);
+      setStatus(nextStatus);
+    } catch (error) {
+      setMessageIsError(true);
+      setMessage(error instanceof Error ? error.message : t(commonDict.errorGeneric));
+    } finally {
+      setBusy(false);
+    }
   }
-  function toggle(value:string,current:string[],setter:(values:string[])=>void){setter(current.includes(value)?current.filter((item)=>item!==value):[...current,value]);}
-  const inputClass="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
-  return <main className="mx-auto max-w-4xl px-4 py-10 md:py-14"><Link href="/editor/encyclopedia" className="text-sm text-muted-foreground">← {t(d.backToCms)}</Link><h1 className="mt-4 font-display text-4xl font-semibold">{id?t(d.articleEditorTitleEdit):t(d.articleEditorTitleNew)}</h1><p className="mt-2 text-sm text-muted-foreground">{t(d.currentStatus)} <strong>{status}</strong>. {t(d.addReferencesNote)}</p><form className="mt-8 space-y-5" onSubmit={(event)=>event.preventDefault()}><label className="block text-sm font-medium">{t(d.articleTitleLabel)}<input className={inputClass} required minLength={3} value={form.title} onChange={(e)=>set("title",e.target.value)}/></label><label className="block text-sm font-medium">{t(d.slugUrlLabel)}<input className={inputClass} required pattern="[a-z0-9]+(-[a-z0-9]+)*" value={form.slug} onChange={(e)=>set("slug",e.target.value)}/></label><label className="block text-sm font-medium">{t(d.summaryLabel)}<input className={inputClass} required minLength={20} value={form.summary} onChange={(e)=>set("summary",e.target.value)}/></label><label className="block text-sm font-medium">{t(d.bodyMainLabel)}<textarea className={inputClass} rows={8} value={form.body} onChange={(e)=>set("body",e.target.value)}/></label><label className="block text-sm font-medium">{t(d.featuredImageUrlLabel)}<input className={inputClass} type="url" value={form.featuredImageUrl} onChange={(e)=>set("featuredImageUrl",e.target.value)}/></label>{([["background",t(d.sectionBackground)],["historicalContext",t(d.sectionHistoricalContext)],["culturalMeaning",t(d.sectionCulturalMeaning)],["characteristics",t(d.sectionCharacteristics)],["socialFunction",t(d.sectionSocialFunction)],["practices",t(d.sectionPractices)],["preservation",t(d.sectionPreservation)]] as const).map(([key,label])=><label key={key} className="block text-sm font-medium">{label}<textarea className={inputClass} rows={4} value={form[key]} onChange={(e)=>set(key,e.target.value)}/></label>)}<fieldset className="rounded-xl border border-border p-4"><legend className="px-2 text-sm font-medium">{t(d.categoriesLegend)}</legend><div className="flex flex-wrap gap-3">{categories.map((category)=><label key={category.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={categoryIds.includes(category.id)} onChange={()=>toggle(category.id,categoryIds,setCategoryIds)}/>{category.name}</label>)}</div></fieldset><fieldset className="rounded-xl border border-border p-4"><legend className="px-2 text-sm font-medium">{t(d.relatedRegionsLegend)}</legend><div className="flex flex-wrap gap-3">{regions.map((region)=><label key={region.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={regionIds.includes(region.id)} onChange={()=>toggle(region.id,regionIds,setRegionIds)}/>{region.name}</label>)}</div></fieldset><label className="block text-sm font-medium">{t(d.seoTitleLabel)}<input className={inputClass} value={form.seoTitle} onChange={(e)=>set("seoTitle",e.target.value)}/></label><label className="block text-sm font-medium">{t(d.seoDescriptionLabel)}<textarea className={inputClass} rows={2} value={form.seoDescription} onChange={(e)=>set("seoDescription",e.target.value)}/></label><div className="flex flex-wrap gap-3"><Button type="button" variant="outline" disabled={busy} onClick={()=>submit("draft")}>{t(d.saveDraftCta)}</Button><Button type="button" disabled={busy} onClick={()=>submit("review")}>{t(d.submitReviewCta)}</Button></div><p role="status" className="text-sm text-muted-foreground">{message}</p></form>{id&&<SourceEditor articleId={id}/>}</main>;
+
+  function toggle(value: string, current: string[], setter: (values: string[]) => void) {
+    setter(current.includes(value) ? current.filter((item) => item !== value) : [...current, value]);
+  }
+
+  const inputClass =
+    "mt-1 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+  if (loadError) {
+    return (
+      <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
+        <Link href="/editor/encyclopedia" className="text-sm text-muted-foreground">
+          ← {t(d.backToCms)}
+        </Link>
+        <p role="alert" className="mt-6 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {t(d.articleLoadFailed)}
+        </p>
+      </main>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
+      <Link href="/editor/encyclopedia" className="text-sm text-muted-foreground">
+        ← {t(d.backToCms)}
+      </Link>
+      <h1 className="mt-4 font-display text-4xl font-semibold">
+        {id ? t(d.articleEditorTitleEdit) : t(d.articleEditorTitleNew)}
+      </h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        {t(d.currentStatus)}{" "}
+        <strong>{statusLabels[status] ? t(statusLabels[status]) : status}</strong>.{" "}
+        {t(d.addReferencesNote)}
+      </p>
+      <form
+        className="mt-8 space-y-5"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void submit(intentRef.current);
+        }}
+      >
+        <label className="block text-sm font-medium">
+          {t(d.articleTitleLabel)}
+          <input className={inputClass} required minLength={3} value={form.title} onChange={(e) => set("title", e.target.value)} />
+        </label>
+        <label className="block text-sm font-medium">
+          {t(d.slugUrlLabel)}
+          <input className={inputClass} required pattern="[a-z0-9]+(-[a-z0-9]+)*" value={form.slug} onChange={(e) => set("slug", e.target.value)} />
+        </label>
+        <label className="block text-sm font-medium">
+          {t(d.summaryLabel)}
+          <input className={inputClass} required minLength={20} value={form.summary} onChange={(e) => set("summary", e.target.value)} />
+        </label>
+        <label className="block text-sm font-medium">
+          {t(d.bodyMainLabel)}
+          <textarea className={inputClass} rows={8} value={form.body} onChange={(e) => set("body", e.target.value)} />
+        </label>
+        <label className="block text-sm font-medium">
+          {t(d.featuredImageUrlLabel)}
+          <input className={inputClass} type="url" value={form.featuredImageUrl} onChange={(e) => set("featuredImageUrl", e.target.value)} />
+        </label>
+        {([
+          ["background", t(d.sectionBackground)],
+          ["historicalContext", t(d.sectionHistoricalContext)],
+          ["culturalMeaning", t(d.sectionCulturalMeaning)],
+          ["characteristics", t(d.sectionCharacteristics)],
+          ["socialFunction", t(d.sectionSocialFunction)],
+          ["practices", t(d.sectionPractices)],
+          ["preservation", t(d.sectionPreservation)],
+        ] as const).map(([key, label]) => (
+          <label key={key} className="block text-sm font-medium">
+            {label}
+            <textarea className={inputClass} rows={4} value={form[key]} onChange={(e) => set(key, e.target.value)} />
+          </label>
+        ))}
+        <fieldset className="rounded-xl border border-border p-4">
+          <legend className="px-2 text-sm font-medium">{t(d.categoriesLegend)}</legend>
+          <div className="flex flex-wrap gap-3">
+            {categories.map((category) => (
+              <label key={category.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={categoryIds.includes(category.id)}
+                  onChange={() => toggle(category.id, categoryIds, setCategoryIds)}
+                />
+                {category.name}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset className="rounded-xl border border-border p-4">
+          <legend className="px-2 text-sm font-medium">{t(d.relatedRegionsLegend)}</legend>
+          <div className="flex flex-wrap gap-3">
+            {regions.map((region) => (
+              <label key={region.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={regionIds.includes(region.id)}
+                  onChange={() => toggle(region.id, regionIds, setRegionIds)}
+                />
+                {region.name}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <label className="block text-sm font-medium">
+          {t(d.seoTitleLabel)}
+          <input className={inputClass} value={form.seoTitle} onChange={(e) => set("seoTitle", e.target.value)} />
+        </label>
+        <label className="block text-sm font-medium">
+          {t(d.seoDescriptionLabel)}
+          <textarea className={inputClass} rows={2} value={form.seoDescription} onChange={(e) => set("seoDescription", e.target.value)} />
+        </label>
+        <div className="flex flex-wrap gap-3">
+          {/* type="submit" agar validasi HTML5 (required/pattern) berjalan sebelum kirim */}
+          <Button
+            type="submit"
+            variant="outline"
+            disabled={busy || (Boolean(id) && !loaded)}
+            onClick={() => {
+              intentRef.current = "draft";
+            }}
+          >
+            {t(d.saveDraftCta)}
+          </Button>
+          <Button
+            type="submit"
+            disabled={busy || (Boolean(id) && !loaded)}
+            onClick={() => {
+              intentRef.current = "review";
+            }}
+          >
+            {t(d.submitReviewCta)}
+          </Button>
+        </div>
+        <p role={messageIsError ? "alert" : "status"} className="text-sm text-muted-foreground">
+          {message}
+        </p>
+      </form>
+      {id && <SourceEditor articleId={id} />}
+    </main>
+  );
 }
 
 export default function EncyclopediaArticleEditorPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-4xl px-4 py-10 text-sm text-muted-foreground">Memuat editor artikel...</div>}>
+    <Suspense fallback={<SuspenseFallback />}>
       <EncyclopediaArticleEditorContent />
     </Suspense>
+  );
+}
+
+function SuspenseFallback() {
+  const { t } = useI18n();
+  return (
+    <div className="mx-auto max-w-4xl px-4 py-10 text-sm text-muted-foreground">
+      {t(commonDict.loadingShort)}
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -43,7 +43,6 @@ interface SubmitResult {
 
 export default function TakeAssessmentPage() {
   const params = useParams();
-  const router = useRouter();
   const { t } = useI18n();
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,9 +74,29 @@ export default function TakeAssessmentPage() {
 
   const question = assessment?.questions[current];
   const progress = useMemo(
-    () => (assessment ? (current / assessment.questions.length) * 100 : 0),
+    () => (assessment ? (current / Math.max(assessment.questions.length, 1)) * 100 : 0),
     [current, assessment]
   );
+
+  async function submitAnswers(payload: { questionId: string; selected: string }[]) {
+    if (!assessment) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/v1/assessments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assessmentId: assessment.id, answers: payload }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || t(playerDict.errorSubmitAssessment));
+      setResult(json.data);
+      setSubmitError(null);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : t(playerDict.errorSendShort));
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   const choose = (selected: string) => {
     if (!assessment || !question) return;
@@ -90,22 +109,8 @@ export default function TakeAssessmentPage() {
     if (current + 1 < assessment.questions.length) {
       setCurrent(current + 1);
     } else {
-      // final answer -> submit
-      setSubmitting(true);
-      fetch("/api/v1/assessments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assessmentId: assessment.id, answers: next }),
-      })
-        .then(async (res) => {
-          const json = await res.json();
-          if (!res.ok) throw new Error(json.error || t(playerDict.errorSubmitAssessment));
-          setResult(json.data);
-        })
-        .catch((err) =>
-          setSubmitError(err instanceof Error ? err.message : t(playerDict.errorSendShort))
-        )
-        .finally(() => setSubmitting(false));
+      // jawaban terakhir -> kirim untuk penilaian
+      void submitAnswers(next);
     }
   };
 
@@ -134,6 +139,20 @@ export default function TakeAssessmentPage() {
   }
 
   const isPre = assessment.assessment_type === "pre";
+
+  /* ---------------- asesmen tanpa soal ---------------- */
+  if (assessment.questions.length === 0) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16">
+        <EmptyState
+          icon={BookOpen}
+          title={t(playerDict.emptyAssessmentTitle)}
+          description={t(playerDict.emptyAssessmentDesc)}
+          action={{ label: t(playerDict.backToAssessments), href: "/player/assessments" }}
+        />
+      </div>
+    );
+  }
 
   /* ---------------- selesai: hasil + pembahasan ---------------- */
   if (result) {
@@ -263,7 +282,13 @@ export default function TakeAssessmentPage() {
         <Card className="mt-8">
           <div className="p-8 text-center">
             <p className="text-sm text-destructive">{submitError}</p>
-            <Button className="mt-4" onClick={() => router.refresh()}>
+            <Button
+              className="mt-4"
+              onClick={() => {
+                setSubmitError(null);
+                void submitAnswers(answers);
+              }}
+            >
               {t(commonDict.retry)}
             </Button>
           </div>

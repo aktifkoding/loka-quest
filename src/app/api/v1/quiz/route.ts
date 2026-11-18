@@ -35,6 +35,19 @@ export async function POST(request: Request) {
       );
     }
 
+    // Misi tanpa soal akan menghasilkan sesi yang tidak bisa dimainkan — tolak sejak awal.
+    const { count: questionCount } = await service
+      .from("mission_questions")
+      .select("id", { count: "exact", head: true })
+      .eq("mission_id", mission.id);
+
+    if (!questionCount || questionCount < 1) {
+      return Response.json(
+        { success: false, error: E.missionNotAvailable[lang] },
+        { status: 422 }
+      );
+    }
+
     let code = makeCode();
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const { data: existing } = await service

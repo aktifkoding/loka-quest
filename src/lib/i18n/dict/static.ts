@@ -9,6 +9,10 @@ export const staticDict = {
 
   // Halaman tentang
   aboutMetaTitle: { id: "Tentang Kami", en: "About Us" },
+  aboutMetaDescription: {
+    id: "LokaQuest adalah aplikasi pembelajaran budaya Indonesia yang interaktif — misi permainan batik, gamelan, dan wayang dengan konten bersumber dan AI asisten budaya.",
+    en: "LokaQuest is an interactive way to learn Indonesian culture — batik, gamelan, and wayang game missions with sourced content and a culture AI assistant.",
+  },
   aboutTitle: { id: "Tentang LokaQuest", en: "About LokaQuest" },
   aboutDescription: {
     id: "LokaQuest lahir dari satu keyakinan: warisan budaya paling hidup ketika generasi muda menyentuhnya lewat cara mereka paling suka — bermain. Tiga misi kami (batik, gamelan, wayang) dibangun di atas konten bersumber dan teknologi yang menghormati privasi pemain.",
@@ -61,6 +65,22 @@ export const staticDict = {
   },
   licenseOnRecord: { id: "lisensi dicatat", en: "license on record" },
   catalogCta: { id: "Katalog", en: "Catalog" },
+  sourcesEmptyTitle: {
+    id: "Register sumber belum tersedia",
+    en: "Source register not available yet",
+  },
+  sourcesEmptyDescription: {
+    id: "Daftar referensi budaya sedang disusun dan akan muncul di sini.",
+    en: "The cultural reference list is being compiled and will appear here.",
+  },
+  sourcesErrorTitle: {
+    id: "Register sumber tidak dapat dimuat",
+    en: "Source register could not be loaded",
+  },
+  sourcesErrorDescription: {
+    id: "Terjadi kesalahan saat mengambil daftar sumber. Coba muat ulang halaman.",
+    en: "Something went wrong while fetching the source list. Try reloading the page.",
+  },
   sourcesLicenseNote: {
     id: "Memperhatikan lisensi budaya? Kami juga: setiap elemen permainan (termasuk bunyi gamelan) dibangkitkan secara sintetis dan ilustrasi memakai motif geometris generik — bukan reprodigsi karya berhak cipta.",
     en: "Care about cultural licensing? So do we: every game element (including gamelan sounds) is generated synthetically and illustrations use generic geometric motifs — not reproductions of copyrighted works.",

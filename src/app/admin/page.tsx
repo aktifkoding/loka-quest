@@ -13,7 +13,8 @@ import {
   FileText,
   MapPin,
   MessageSquare,
-  Settings,
+  ScrollText,
+  TrendingUp,
   ArrowUpRight,
 } from "lucide-react";
 
@@ -38,8 +39,8 @@ export default async function AdminDashboardPage() {
 
     const systemLinks = [
       { href: "/admin/users", label: t(d.linkUsersRoles), icon: Users },
-      { href: "/admin/audit-logs", label: t(d.linkAuditLogs), icon: Settings },
-      { href: "/admin/analytics", label: t(d.linkAppAnalytics), icon: Settings },
+      { href: "/admin/audit-logs", label: t(d.linkAuditLogs), icon: ScrollText },
+      { href: "/admin/analytics", label: t(d.linkAppAnalytics), icon: TrendingUp },
     ];
 
     const [

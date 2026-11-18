@@ -40,22 +40,25 @@ export default async function CollectionPage() {
       .eq("profile_id", user.id)
       .order("acquired_at", { ascending: false });
 
-    const artifacts = (owned ?? []).map((row) => {
-      const raw = Array.isArray(row.cultural_artifacts)
-        ? row.cultural_artifacts[0]
-        : row.cultural_artifacts;
-      const a = raw as {
-        id: string;
-        name: string;
-        description: string;
-        rarity: string;
-        cultural_regions: { name: string } | { name: string }[] | null;
-      } | null;
-      const region = Array.isArray(a?.cultural_regions)
-        ? a.cultural_regions[0]
-        : a?.cultural_regions;
-      return { ...a, region, acquiredAt: row.acquired_at };
-    });
+    const artifacts = (owned ?? [])
+      .map((row) => {
+        const raw = Array.isArray(row.cultural_artifacts)
+          ? row.cultural_artifacts[0]
+          : row.cultural_artifacts;
+        const a = raw as {
+          id: string;
+          name: string;
+          description: string;
+          rarity: string;
+          cultural_regions: { name: string } | { name: string }[] | null;
+        } | null;
+        if (!a) return null; // baris artefak yatim (artefak dihapus) — lewati
+        const region = Array.isArray(a.cultural_regions)
+          ? a.cultural_regions[0]
+          : a.cultural_regions;
+        return { ...a, region, acquiredAt: row.acquired_at };
+      })
+      .filter((a): a is NonNullable<typeof a> => a !== null);
 
     return (
       <div className="mx-auto max-w-4xl px-4 py-10 md:py-14">

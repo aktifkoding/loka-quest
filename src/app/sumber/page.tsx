@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Reveal } from "@/components/ui/reveal";
+import { EmptyState } from "@/components/ui/empty-state";
 import { BookMarked, ExternalLink } from "lucide-react";
 import { createServiceClient } from "@/lib/supabase/service-role";
 import { getServerI18n } from "@/lib/i18n/server";
@@ -21,13 +22,31 @@ export const dynamic = "force-dynamic";
  */
 export default async function SourcesPage() {
   const { t } = await getServerI18n();
-  const service = createServiceClient();
-  const { data: sources } = await service
-    .from("cultural_sources")
-    .select("id, title, author, publisher, year, url, license, attribution")
-    .order("title", { ascending: true });
 
-  const rows = sources ?? [];
+  // Sama seperti beranda: kegagalan Supabase tidak boleh menjatuhkan seluruh halaman.
+  let rows: {
+    id: string;
+    title: string;
+    author: string | null;
+    publisher: string | null;
+    year: number | null;
+    url: string | null;
+    license: string | null;
+    attribution: string | null;
+  }[] = [];
+  let fetchFailed = false;
+
+  try {
+    const service = createServiceClient();
+    const { data: sources, error } = await service
+      .from("cultural_sources")
+      .select("id, title, author, publisher, year, url, license, attribution")
+      .order("title", { ascending: true });
+    if (error) throw new Error(error.message);
+    rows = sources ?? [];
+  } catch {
+    fetchFailed = true;
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
@@ -39,6 +58,23 @@ export default async function SourcesPage() {
         backLabel={t(d.backHomeLabel)}
       />
 
+      {fetchFailed ? (
+        <div className="mt-10">
+          <EmptyState
+            icon={BookMarked}
+            title={t(d.sourcesErrorTitle)}
+            description={t(d.sourcesErrorDescription)}
+          />
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="mt-10">
+          <EmptyState
+            icon={BookMarked}
+            title={t(d.sourcesEmptyTitle)}
+            description={t(d.sourcesEmptyDescription)}
+          />
+        </div>
+      ) : (
       <div className="mt-10 space-y-4">
         {rows.map((source, i) => (
           <Reveal key={source.id} delay={i * 70}>
@@ -74,6 +110,7 @@ export default async function SourcesPage() {
           </Reveal>
         ))}
       </div>
+      )}
 
       <p className="mt-10 text-[13px] leading-relaxed text-muted-foreground">
         {t(d.sourcesLicenseNote)}

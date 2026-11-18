@@ -166,11 +166,11 @@ export default async function PlayerDashboardPage() {
           {(user.role === "educator" || user.role === "admin") && (
             <div className="flex flex-wrap gap-2">
               <Button asChild variant="outline" size="sm">
-                <Link href="/educator/dashboard">Dasbor Pendidik</Link>
+                <Link href="/educator/dashboard">{t(playerDict.educatorDashboardCta)}</Link>
               </Button>
               {user.role === "admin" && (
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/admin">Dasbor Admin</Link>
+                  <Link href="/admin">{t(playerDict.adminDashboardCta)}</Link>
                 </Button>
               )}
             </div>
@@ -226,7 +226,7 @@ export default async function PlayerDashboardPage() {
                 {progress.missions_completed}
               </p>
               <p className="mt-1 text-[13px] text-muted-foreground">
-                dari{" "}
+                {t(playerDict.ofPrefix)}{" "}
                 <span className="tabular-nums">
                   {missionsCountRes.count ?? 0}
                 </span>{" "}

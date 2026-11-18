@@ -27,16 +27,28 @@ export default function PlayerClassesPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [joining, setJoining] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const response = await fetch("/api/v1/educator/assignments", {
-      cache: "no-store",
-    });
-    const json = await response.json();
-    if (response.ok) setAssignments(json.data ?? []);
-    setLoading(false);
+    try {
+      const response = await fetch("/api/v1/educator/assignments", {
+        cache: "no-store",
+      });
+      const json = await response.json();
+      if (response.ok) {
+        setAssignments(json.data ?? []);
+        setLoadError(false);
+      } else {
+        setLoadError(true);
+      }
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -45,21 +57,28 @@ export default function PlayerClassesPage() {
 
   async function join(event: React.FormEvent) {
     event.preventDefault();
+    setJoining(true);
     setMessage("");
     setError(null);
-    const response = await fetch("/api/v1/educator/groups/join", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
-    const json = await response.json();
-    if (!response.ok) {
-      setError(json.error || t(playerDict.errorJoin));
-      return;
+    try {
+      const response = await fetch("/api/v1/educator/groups/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const json = await response.json();
+      if (!response.ok) {
+        setError(json.error || t(playerDict.errorJoin));
+        return;
+      }
+      setCode("");
+      setMessage(t(playerDict.joinedSuccess, { name: json.data.group.name }));
+      await load();
+    } catch {
+      setError(t(playerDict.errorJoin));
+    } finally {
+      setJoining(false);
     }
-    setCode("");
-    setMessage(t(playerDict.joinedSuccess, { name: json.data.group.name }));
-    await load();
   }
 
   return (
@@ -105,13 +124,21 @@ export default function PlayerClassesPage() {
               placeholder="ABC123"
             />
           </label>
-          <Button type="submit">{t(playerDict.joinCta)}</Button>
+          <Button type="submit" disabled={joining}>
+            {joining ? t(playerDict.joiningCta) : t(playerDict.joinCta)}
+          </Button>
         </form>
       </Card>
 
       <div className="mt-8">
         {loading ? (
           <p className="text-sm text-muted-foreground">{t(playerDict.loadingAssignments)}</p>
+        ) : loadError ? (
+          <EmptyState
+            icon={Users}
+            title={t(playerDict.errorLoadTitle)}
+            description={t(playerDict.errorLoadDesc)}
+          />
         ) : assignments.length === 0 ? (
           <EmptyState
             icon={Users}

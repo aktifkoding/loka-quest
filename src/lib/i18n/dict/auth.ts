@@ -158,4 +158,12 @@ export const authDict = {
     id: "Memproses autentikasi",
     en: "Processing authentication",
   },
+  verifyEmailTitle: {
+    id: "Periksa kotak masuk Anda",
+    en: "Check your inbox",
+  },
+  verifyEmailDescription: {
+    id: "Kami mengirim tautan verifikasi ke email Anda. Buka tautan tersebut untuk mengaktifkan akun, lalu masuk.",
+    en: "We sent a verification link to your email. Open it to activate your account, then sign in.",
+  },
 } satisfies Record<string, Localized>;

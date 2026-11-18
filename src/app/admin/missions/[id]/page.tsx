@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
+import type { Localized } from "@/lib/i18n";
 import { adminDict as d } from "@/lib/i18n/dict/admin";
 import { commonDict } from "@/lib/i18n/dict/common";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,13 @@ const emptyQuestion = {
   correctText: "",
   explanation: "",
   sortOrder: 0,
+};
+
+const questionTypeLabels: Record<string, Localized> = {
+  multiple_choice: d.typeMultipleChoice,
+  matching: d.typeMatching,
+  sequencing: d.typeSequencing,
+  identification: d.typeIdentification,
 };
 
 function pairsToLines(pairs: Record<string, string>) {
@@ -153,6 +161,9 @@ export default function AdminMissionDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [showQuestion, setShowQuestion] = useState(false);
   const [question, setQuestion] = useState({ ...emptyQuestion });
+  const [savingMission, setSavingMission] = useState(false);
+  const [savingQuestion, setSavingQuestion] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -178,70 +189,108 @@ export default function AdminMissionDetailPage() {
 
   async function saveMission(event: React.FormEvent) {
     event.preventDefault();
-    if (!mission) return;
+    if (!mission || savingMission) return;
+    setSavingMission(true);
     setError(null);
     setMessage("");
-    const response = await fetch(`/api/v1/admin/missions/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        slug: mission.slug,
-        title: mission.title,
-        description: mission.description,
-        regionId: mission.region_id,
-        difficulty: mission.difficulty,
-        xpReward: mission.xp_reward,
-        status: mission.status,
-        sortOrder: mission.sort_order,
-        learningObjectives: mission.learning_objectives ?? [],
-      }),
-    });
-    const json = await response.json();
-    if (!response.ok) {
-      setError(json.error || t(d.saveMissionFailed));
-      return;
+    try {
+      const response = await fetch(`/api/v1/admin/missions/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: mission.slug,
+          title: mission.title,
+          description: mission.description,
+          regionId: mission.region_id,
+          difficulty: mission.difficulty,
+          xpReward: mission.xp_reward,
+          status: mission.status,
+          sortOrder: mission.sort_order,
+          learningObjectives: mission.learning_objectives ?? [],
+        }),
+      });
+      const json = await response.json();
+      if (!response.ok) {
+        setError(json.error || t(d.saveMissionFailed));
+        return;
+      }
+      setMessage(t(d.missionSavedToast));
+      await load();
+    } catch {
+      setError(t(d.saveMissionFailed));
+    } finally {
+      setSavingMission(false);
     }
-    setMessage(t(d.missionSavedToast));
-    await load();
   }
 
   async function saveQuestion(event: React.FormEvent) {
     event.preventDefault();
+    if (savingQuestion) return;
+    setSavingQuestion(true);
     setError(null);
     setMessage("");
-    const editing = Boolean(question.id);
-    const url = editing
-      ? `/api/v1/admin/missions/${id}/questions/${question.id}`
-      : `/api/v1/admin/missions/${id}/questions`;
-    const response = await fetch(url, {
-      method: editing ? "PATCH" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formToPayload(question)),
-    });
-    const json = await response.json();
-    if (!response.ok) {
-      setError(json.error || t(d.saveQuestionFailed));
-      return;
+    // Format "kiri=kanan" wajib untuk soal mencocokkan — baris tanpa "=" akan
+    // terlempar diam-diam oleh parser, jadi tolak sebelum dikirim.
+    if (question.questionType === "matching") {
+      const badLine = question.optionsText
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .find((line) => line.split("=").length !== 2);
+      if (badLine) {
+        setError(t(d.matchingFormatInvalid));
+        setSavingQuestion(false);
+        return;
+      }
     }
-    setQuestion({ ...emptyQuestion });
-    setShowQuestion(false);
-    setMessage(editing ? t(d.questionUpdatedToast) : t(d.questionAddedToast));
-    await load();
+    try {
+      const editing = Boolean(question.id);
+      const url = editing
+        ? `/api/v1/admin/missions/${id}/questions/${question.id}`
+        : `/api/v1/admin/missions/${id}/questions`;
+      const response = await fetch(url, {
+        method: editing ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formToPayload(question)),
+      });
+      const json = await response.json();
+      if (!response.ok) {
+        setError(json.error || t(d.saveQuestionFailed));
+        return;
+      }
+      setQuestion({ ...emptyQuestion });
+      setShowQuestion(false);
+      setMessage(editing ? t(d.questionUpdatedToast) : t(d.questionAddedToast));
+      await load();
+    } catch {
+      setError(t(d.saveQuestionFailed));
+    } finally {
+      setSavingQuestion(false);
+    }
   }
 
   async function deleteQuestion(questionId: string) {
+    if (deletingId) return;
     if (!confirm(t(d.questionDeleteConfirm))) return;
-    const response = await fetch(
-      `/api/v1/admin/missions/${id}/questions/${questionId}`,
-      { method: "DELETE" }
-    );
-    if (!response.ok) {
-      const json = await response.json();
-      setError(json.error || t(d.deleteQuestionFailed));
-      return;
+    setDeletingId(questionId);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/v1/admin/missions/${id}/questions/${questionId}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) {
+        const json = await response.json();
+        setError(json.error || t(d.deleteQuestionFailed));
+        return;
+      }
+      setMessage(t(d.questionDeletedToast));
+      await load();
+    } catch {
+      setError(t(d.deleteQuestionFailed));
+    } finally {
+      setDeletingId(null);
     }
-    setMessage(t(d.questionDeletedToast));
-    await load();
   }
 
   const inputClass =
@@ -375,7 +424,7 @@ export default function AdminMissionDetailPage() {
             />
           </label>
           <div className="sm:col-span-2">
-            <Button type="submit">
+            <Button type="submit" disabled={savingMission}>
               <Save className="size-4" aria-hidden="true" />
               {t(d.saveMissionCta)}
             </Button>
@@ -492,10 +541,13 @@ export default function AdminMissionDetailPage() {
                 />
               </label>
               <div className="flex gap-3">
-                <Button type="submit">{t(d.saveQuestionCta)}</Button>
+                <Button type="submit" disabled={savingQuestion}>
+                  {t(d.saveQuestionCta)}
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
+                  disabled={savingQuestion}
                   onClick={() => {
                     setShowQuestion(false);
                     setQuestion({ ...emptyQuestion });
@@ -522,7 +574,10 @@ export default function AdminMissionDetailPage() {
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{item.prompt}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {item.question_type} · {t(d.orderSuffix, { n: item.sort_order })}
+                    {questionTypeLabels[item.question_type]
+                      ? t(questionTypeLabels[item.question_type])
+                      : item.question_type}{" "}
+                    · {t(d.orderSuffix, { n: item.sort_order })}
                   </p>
                 </div>
                 <Button
@@ -538,6 +593,7 @@ export default function AdminMissionDetailPage() {
                 <Button
                   size="sm"
                   variant="ghost"
+                  disabled={deletingId !== null}
                   onClick={() => deleteQuestion(item.id)}
                   aria-label={t(d.deleteQuestionAria)}
                 >

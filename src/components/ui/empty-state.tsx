@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
 import { Button } from "./button";
 
 interface EmptyStateProps {
@@ -29,7 +30,7 @@ export function EmptyState({
       </p>
       {action && (
         <Button asChild className="mt-5" size="sm">
-          <a href={action.href}>{action.label}</a>
+          <Link href={action.href}>{action.label}</Link>
         </Button>
       )}
     </div>
