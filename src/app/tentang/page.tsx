@@ -46,9 +46,9 @@ export default async function AboutPage() {
       <div className="mt-10 space-y-4">
         {ROLES.map((r, i) => (
           <Reveal key={r.role} delay={i * 80}>
-            <Card>
+            <Card interactive>
               <div className="flex gap-4 p-6">
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-[#D4AF37]/25">
                   <r.icon className="size-5" aria-hidden="true" />
                 </span>
                 <div>
