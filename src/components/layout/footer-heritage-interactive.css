@@ -1,0 +1,112 @@
+/*
+ * Footer Heritage Interactive Styles
+ * Woven gold tenun border, interactive Nusantara motif medallions, and smooth transitions.
+ */
+
+.footer-tenun-border {
+  position: relative;
+  height: 3px;
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    rgba(156, 107, 59, 0.25) 0%,
+    rgba(212, 175, 55, 0.65) 50%,
+    rgba(156, 107, 59, 0.25) 100%
+  );
+}
+
+.footer-tenun-border::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 10px,
+    rgba(14, 14, 16, 0.75) 10px 14px,
+    rgba(212, 175, 55, 0.95) 14px 20px,
+    rgba(14, 14, 16, 0.75) 20px 24px
+  );
+  background-size: 240px 100%;
+  animation: footer-tenun-weave 16s linear infinite;
+}
+
+.footer-motif-btn {
+  position: relative;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s ease,
+    background-color 0.3s ease,
+    box-shadow 0.35s ease;
+}
+
+.footer-motif-btn:hover,
+.footer-motif-btn[data-active="true"] {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -8px rgba(212, 175, 55, 0.35);
+}
+
+.footer-motif-svg {
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.footer-motif-btn:hover .footer-motif-svg,
+.footer-motif-btn[data-active="true"] .footer-motif-svg {
+  transform: rotate(45deg) scale(1.06);
+}
+
+.footer-link-item {
+  position: relative;
+  transition:
+    color 0.25s ease,
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.footer-link-item::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, #d4af37, rgba(156, 107, 59, 0.5));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.footer-link-item:hover::after,
+.footer-link-item:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.footer-compass-icon {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.footer-compass-btn:hover .footer-compass-icon {
+  transform: rotate(90deg);
+}
+
+@keyframes footer-tenun-weave {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-240px, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-tenun-border::after {
+    animation: none;
+  }
+
+  .footer-motif-btn,
+  .footer-motif-svg,
+  .footer-link-item,
+  .footer-link-item::after,
+  .footer-compass-icon {
+    transition: none;
+  }
+}
