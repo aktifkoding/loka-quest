@@ -46,7 +46,7 @@ export function PageHeader({
 
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
         <div className="flex items-start gap-3.5">
-          <span className="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <span className="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-[#D4AF37]/30">
             <Icon className="size-5" aria-hidden="true" />
           </span>
           <div>
@@ -64,7 +64,7 @@ export function PageHeader({
         {actions && <div className="flex items-center gap-2 pt-1">{actions}</div>}
       </div>
 
-      {!noDivider && <div className="tenun mt-6" aria-hidden="true" />}
+      {!noDivider && <div className="tenun-gold mt-6" aria-hidden="true" />}
     </div>
   );
 }
