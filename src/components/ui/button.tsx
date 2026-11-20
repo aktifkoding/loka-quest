@@ -9,11 +9,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "btn-sheen bg-primary text-primary-foreground shadow-card hover:bg-primary/92 hover:-translate-y-px hover:shadow-raised active:translate-y-0",
+          "btn-sheen bg-[#D4AF37] text-[#121214] font-semibold shadow-card hover:bg-[#e0be4c] hover:-translate-y-px hover:shadow-raised active:translate-y-0",
         destructive:
           "bg-destructive text-destructive-foreground shadow-card hover:bg-destructive/90 hover:-translate-y-px",
         outline:
-          "border border-input bg-card hover:bg-accent hover:text-accent-foreground hover:-translate-y-px hover:shadow-card",
+          "border border-input bg-card hover:border-[#D4AF37]/50 hover:bg-accent hover:text-accent-foreground hover:-translate-y-px hover:shadow-card",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/70 hover:-translate-y-px",
         ghost: "hover:bg-accent hover:text-accent-foreground",
