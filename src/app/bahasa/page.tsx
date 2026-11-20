@@ -29,23 +29,23 @@ export default async function BahasaDaerahHubPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <PageHeader
-          icon={Languages}
-          title={t(d.pageTitle)}
-          description={t(d.pageDescription)}
-        />
-        <Button asChild variant="outline" className="gap-2">
-          <Link href="/encyclopedia">
-            <BookOpen className="size-4" aria-hidden="true" />
-            {t(d.openEncyclopediaCta)}
-          </Link>
-        </Button>
-      </div>
+      <PageHeader
+        icon={Languages}
+        title={t(d.pageTitle)}
+        description={t(d.pageDescription)}
+        actions={
+          <Button asChild variant="outline" className="gap-2">
+            <Link href="/encyclopedia">
+              <BookOpen className="size-4" aria-hidden="true" />
+              {t(d.openEncyclopediaCta)}
+            </Link>
+          </Button>
+        }
+      />
 
       {/* Hero Stats */}
       <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Card className="p-5 border-primary/20 bg-primary/5">
+        <Card className="border-[#D4AF37]/35 bg-primary/5 p-5">
           <p className="text-xs font-medium text-muted-foreground">{t(d.statLanguages)}</p>
           <p className="mt-2 font-display text-3xl font-bold text-foreground">
             {languages.length}

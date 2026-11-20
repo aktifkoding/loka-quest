@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, Eye, EyeOff, Loader2, X } from "lucide-react";
 import { LokaQuestLogo } from "@/components/layout/lokaquest-logo";
+import { BatikHeritageBackground } from "@/components/landing/batik-heritage-background";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { authDict as d } from "@/lib/i18n/dict/auth";
@@ -80,36 +81,42 @@ export default function RegisterPage() {
 
   return (
     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 md:grid-cols-2 md:items-center md:gap-16 md:py-16">
-      {/* Brand panel */}
-      <aside className="batik-grid animate-fade-up hidden rounded-3xl border border-border/60 bg-secondary/70 p-8 md:block">
-        <LokaQuestLogo size="md" showSubtitle />
+      {/* Brand panel — deep charcoal batik heritage surface */}
+      <aside className="animate-fade-up hidden md:block">
+        <BatikHeritageBackground
+          className="rounded-3xl border border-[#D4AF37]/25 p-8 text-stone-100 shadow-raised"
+          patternOpacity={0.8}
+          parallaxStrength={18}
+        >
+          <LokaQuestLogo size="md" tone="dark" showSubtitle />
 
-        <div className="mt-10 rounded-2xl border border-border/70 bg-card p-6 shadow-card">
-          <p className="font-display text-lg font-semibold leading-snug">
-            {t(d.progressHeading)}
-          </p>
-          <div
-            className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-muted"
-            role="presentation"
-          >
-            <div className="h-full w-2/5 rounded-full bg-primary" />
+          <div className="mt-10 rounded-2xl border border-[#D4AF37]/25 bg-card p-6 text-card-foreground shadow-card">
+            <p className="font-display text-lg font-semibold leading-snug">
+              {t(d.progressHeading)}
+            </p>
+            <div
+              className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-muted"
+              role="presentation"
+            >
+              <div className="h-full w-2/5 rounded-full bg-[#D4AF37]" />
+            </div>
+            <p className="mt-3 text-sm tabular-nums text-muted-foreground">
+              {t(d.xpProgress)}
+            </p>
+            <div className="mt-4 flex items-center gap-2 border-t border-border pt-4 text-sm">
+              <span className="rounded-full bg-gold/10 px-2.5 py-1 font-semibold tabular-nums text-gold">
+                +150
+              </span>
+              <span className="text-muted-foreground">
+                {t(d.xpFromFirstMission)}
+              </span>
+            </div>
           </div>
-          <p className="mt-3 text-sm tabular-nums text-muted-foreground">
-            {t(d.xpProgress)}
-          </p>
-          <div className="mt-4 flex items-center gap-2 border-t border-border pt-4 text-sm">
-            <span className="rounded-full bg-gold/10 px-2.5 py-1 font-semibold tabular-nums text-gold">
-              +150
-            </span>
-            <span className="text-muted-foreground">
-              {t(d.xpFromFirstMission)}
-            </span>
-          </div>
-        </div>
 
-        <p className="mt-10 border-t border-border pt-6 text-[13px] leading-relaxed text-muted-foreground">
-          {t(d.registerPrivacyCopy)}
-        </p>
+          <p className="mt-10 border-t border-stone-800/80 pt-6 text-[13px] leading-relaxed text-stone-300">
+            {t(d.registerPrivacyCopy)}
+          </p>
+        </BatikHeritageBackground>
       </aside>
 
       {/* Form */}

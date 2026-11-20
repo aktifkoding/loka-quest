@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
 import { LokaQuestLogo } from "@/components/layout/lokaquest-logo";
+import { BatikHeritageBackground } from "@/components/landing/batik-heritage-background";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { authDict as d } from "@/lib/i18n/dict/auth";
@@ -69,35 +70,41 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 md:grid-cols-2 md:items-center md:gap-16 md:py-16">
-      {/* Brand panel — tinted neutral, one proof asset, trust footer */}
-      <aside className="batik-grid animate-fade-up hidden rounded-3xl border border-border/60 bg-secondary/70 p-8 md:block">
-        <LokaQuestLogo size="md" showSubtitle />
+      {/* Brand panel — deep charcoal batik heritage surface */}
+      <aside className="animate-fade-up hidden md:block">
+        <BatikHeritageBackground
+          className="rounded-3xl border border-[#D4AF37]/25 p-8 text-stone-100 shadow-raised"
+          patternOpacity={0.8}
+          parallaxStrength={18}
+        >
+          <LokaQuestLogo size="md" tone="dark" showSubtitle />
 
-        <div className="mt-10 rounded-2xl border border-border/70 bg-card p-6 shadow-card">
-          <div className="flex items-center justify-between">
-            <p className="text-[13px] font-medium text-muted-foreground">
-              {t(d.demoMissionName)}
+          <div className="mt-10 rounded-2xl border border-[#D4AF37]/25 bg-card p-6 text-card-foreground shadow-card">
+            <div className="flex items-center justify-between">
+              <p className="text-[13px] font-medium text-muted-foreground">
+                {t(d.demoMissionName)}
+              </p>
+              <p className="text-[13px] font-semibold tabular-nums text-gold">
+                150 XP
+              </p>
+            </div>
+            <p className="mt-3 font-display text-lg font-semibold leading-snug">
+              {t(d.demoQuestion)}
             </p>
-            <p className="text-[13px] font-semibold tabular-nums text-gold">
-              150 XP
-            </p>
+            <div className="mt-4 space-y-2 text-sm" role="presentation">
+              <p className="rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 font-medium text-primary">
+                Parang Rusak
+              </p>
+              <p className="rounded-lg border border-border px-4 py-2.5 text-muted-foreground">
+                Kawung
+              </p>
+            </div>
           </div>
-          <p className="mt-3 font-display text-lg font-semibold leading-snug">
-            {t(d.demoQuestion)}
+
+          <p className="mt-10 border-t border-stone-800/80 pt-6 text-[13px] leading-relaxed text-stone-300">
+            {t(d.trustCopy)}
           </p>
-          <div className="mt-4 space-y-2 text-sm" role="presentation">
-            <p className="rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 font-medium text-primary">
-              Parang Rusak
-            </p>
-            <p className="rounded-lg border border-border px-4 py-2.5 text-muted-foreground">
-              Kawung
-            </p>
-          </div>
-        </div>
-
-        <p className="mt-10 border-t border-border pt-6 text-[13px] leading-relaxed text-muted-foreground">
-          {t(d.trustCopy)}
-        </p>
+        </BatikHeritageBackground>
       </aside>
 
       {/* Form column — 360-400px, speed is the design */}
