@@ -6,7 +6,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Check, Eye, EyeOff, Gamepad2, Loader2, X } from "lucide-react";
+import { Check, Eye, EyeOff, Loader2, X } from "lucide-react";
+import { LokaQuestLogo } from "@/components/layout/lokaquest-logo";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { authDict as d } from "@/lib/i18n/dict/auth";
@@ -81,12 +82,7 @@ export default function RegisterPage() {
     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 md:grid-cols-2 md:items-center md:gap-16 md:py-16">
       {/* Brand panel */}
       <aside className="batik-grid animate-fade-up hidden rounded-3xl border border-border/60 bg-secondary/70 p-8 md:block">
-        <div className="flex items-center gap-2.5">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Gamepad2 className="size-4" aria-hidden="true" />
-          </span>
-          <span className="font-display text-lg font-semibold">LokaQuest</span>
-        </div>
+        <LokaQuestLogo size="md" showSubtitle />
 
         <div className="mt-10 rounded-2xl border border-border/70 bg-card p-6 shadow-card">
           <p className="font-display text-lg font-semibold leading-snug">

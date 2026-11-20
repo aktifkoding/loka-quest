@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { Gamepad2 } from "lucide-react";
 import { type Localized } from "@/lib/i18n";
 import { getServerI18n } from "@/lib/i18n/server";
 import { navDict } from "@/lib/i18n/dict/nav";
 import { shellDict as d } from "@/lib/i18n/dict/shell";
 import { BatikHeritageBackground } from "@/components/landing/batik-heritage-background";
+import { LokaQuestLogo } from "@/components/layout/lokaquest-logo";
 import {
   FooterBackToTop,
   FooterMotifGallery,
@@ -39,12 +39,9 @@ export async function SiteFooter() {
             <div className="max-w-md">
               <Link
                 href="/"
-                className="group inline-flex items-center gap-2.5 font-display text-lg font-semibold text-stone-50 transition-colors hover:text-[#D4AF37]"
+                className="group inline-flex items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
               >
-                <span className="flex size-8 items-center justify-center rounded-lg border border-[#D4AF37]/40 bg-[#D4AF37]/15 text-[#D4AF37] transition-transform duration-300 group-hover:scale-105">
-                  <Gamepad2 className="size-4" aria-hidden="true" />
-                </span>
-                <span>LokaQuest</span>
+                <LokaQuestLogo size="lg" tone="dark" showSubtitle />
               </Link>
               <p className="mt-3 text-sm leading-relaxed text-stone-300">
                 {t(d.footerTagline)}

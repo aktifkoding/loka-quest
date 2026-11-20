@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { LanguageToggle } from "@/components/layout/language-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
+import { LokaQuestLogo } from "@/components/layout/lokaquest-logo";
 import { useI18n } from "@/lib/i18n";
 import { navDict as d } from "@/lib/i18n/dict/nav";
 import { cn } from "@/lib/utils";
@@ -112,15 +113,10 @@ export function Navbar() {
       >
         <Link
           href="/"
-          className="flex items-center gap-2.5 rounded-md"
+          className="group flex items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
           aria-label={t(d.toHomeAria)}
         >
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Gamepad2 className="size-5" aria-hidden="true" />
-          </span>
-          <span className="font-display text-lg font-semibold tracking-tight">
-            LokaQuest
-          </span>
+          <LokaQuestLogo size="md" showSubtitle />
         </Link>
 
         {/* Desktop nav */}

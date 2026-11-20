@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, MailCheck, Gamepad2 } from "lucide-react";
+import { Loader2, MailCheck } from "lucide-react";
+import { LokaQuestLogo } from "@/components/layout/lokaquest-logo";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { authDict as d } from "@/lib/i18n/dict/auth";
@@ -44,11 +45,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="animate-fade-up mx-auto w-full max-w-[400px] px-4 py-16 md:py-24">
-      <div className="mb-8 flex items-center justify-center gap-2.5">
-        <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <Gamepad2 className="size-5" aria-hidden="true" />
-        </span>
-        <span className="font-display text-lg font-semibold">LokaQuest</span>
+      <div className="mb-8 flex justify-center">
+        <LokaQuestLogo size="lg" showSubtitle />
       </div>
       {success ? (
         <div className="animate-scale-in text-center">

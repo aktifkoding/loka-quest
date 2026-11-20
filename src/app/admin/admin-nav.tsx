@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import { LokaQuestLogo } from "@/components/layout/lokaquest-logo";
 import { adminDict as d } from "@/lib/i18n/dict/admin";
 import { LogOut, MapPin, BarChart3, BookOpen, FileText, Home, MessageSquare, ScrollText, Users } from "lucide-react";
 
@@ -39,12 +40,9 @@ export function AdminNav({ email }: { email: string }) {
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
         <Link
           href="/admin"
-          className="flex shrink-0 items-center gap-2 font-display text-sm font-semibold tracking-tight"
+          className="group flex shrink-0 items-center rounded-md"
         >
-          <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            LQ
-          </span>
-          <span className="hidden sm:inline">LokaQuest Admin</span>
+          <LokaQuestLogo size="sm" suffix="Admin" hideTextOnMobile />
         </Link>
 
         <nav aria-label={t(d.navAria)} className="flex-1 overflow-x-auto">
