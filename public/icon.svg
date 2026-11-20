@@ -1,14 +1,53 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#2b3a85"/>
-  <rect x="24" y="24" width="464" height="464" rx="96" fill="none" stroke="#f2f0e9" stroke-opacity="0.14" stroke-width="10"/>
-  <!-- gamepad body -->
-  <path fill="#f2f0e9" d="M176 176h160a96 96 0 0 1 96 96c0 44-30 80-64 80-24 0-40-16-52-16H196c-12 0-28 16-52 16-34 0-64-36-64-80a96 96 0 0 1 96-96z"/>
-  <!-- d-pad -->
-  <rect x="160" y="248" width="28" height="76" rx="8" fill="#2b3a85"/>
-  <rect x="136" y="272" width="76" height="28" rx="8" fill="#2b3a85"/>
-  <!-- buttons -->
-  <circle cx="316" cy="256" r="17" fill="#f0b429"/>
-  <circle cx="356" cy="296" r="17" fill="#8b9cf5"/>
-  <!-- spark dot -->
-  <circle cx="256" cy="120" r="22" fill="#f0b429"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <radialGradient id="lqBg" cx="32%" cy="24%" r="78%">
+      <stop offset="0%" stop-color="#262432"/>
+      <stop offset="60%" stop-color="#16151F"/>
+      <stop offset="100%" stop-color="#0E0E13"/>
+    </radialGradient>
+    <linearGradient id="lqGold" x1="88" y1="64" x2="424" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F7E392"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#A6722E"/>
+    </linearGradient>
+    <linearGradient id="lqBronze" x1="110" y1="90" x2="402" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#9C6B3B" stop-opacity="0.7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Deep charcoal squircle -->
+  <rect width="512" height="512" rx="116" fill="url(#lqBg)"/>
+  <rect x="20" y="20" width="472" height="472" rx="98" stroke="url(#lqGold)" stroke-opacity="0.55" stroke-width="10"/>
+
+  <!-- Gunungan Wayang Arch Frame -->
+  <path
+    d="M256 58 C304 128, 400 192, 410 314 C416 378, 362 430, 256 462 C150 430, 96 378, 102 314 C112 192, 208 128, 256 58 Z"
+    fill="#D4AF37"
+    fill-opacity="0.08"
+    stroke="url(#lqGold)"
+    stroke-width="16"
+    stroke-linejoin="round"
+  />
+
+  <!-- Surya Majapahit 8-Point Quest Compass -->
+  <path
+    d="M256 130 L278 238 L386 260 L278 282 L256 390 L234 282 L126 260 L234 238 Z"
+    fill="url(#lqGold)"
+  />
+  <path
+    d="M176 180 L236 240 M336 180 L276 240 M336 340 L276 280 M176 340 L236 280"
+    stroke="url(#lqBronze)"
+    stroke-width="14"
+    stroke-linecap="round"
+  />
+
+  <!-- Batik Kawung Center Core -->
+  <circle cx="256" cy="260" r="34" fill="#14131B" stroke="#F5DC7B" stroke-width="12"/>
+  <circle cx="256" cy="260" r="13" fill="#F7E392"/>
+
+  <!-- Ornamental Wajik Dots -->
+  <circle cx="256" cy="96" r="10" fill="#F7E392" opacity="0.9"/>
+  <circle cx="160" cy="392" r="9" fill="#D4AF37" opacity="0.75"/>
+  <circle cx="352" cy="392" r="9" fill="#D4AF37" opacity="0.75"/>
 </svg>
